@@ -1,0 +1,15 @@
+{
+    "name": "BreedingDemolisher",
+    "version": "0.1.9",
+    "factorio_version": "2.0",
+    "title": "BreedingDemolisher",
+    "author": "suumani",
+    "description": "Players will be environmentally friendly ;)",
+    "thumbnail": "thumbnail.png",
+	"dependencies": [
+	  "base >= 2.0.0",
+	  "elevated-rails >= 2.0.0",
+	  "quality >= 2.0.0",
+	  "space-age >= 2.0.0"
+	]
+}
