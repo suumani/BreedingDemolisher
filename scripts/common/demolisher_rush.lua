@@ -4,13 +4,15 @@
 -- ----------------------------
 function demolisher_rush(surface, evolution_factor)
 
-	local all_demolishers_result = surface.find_entities_filtered{force = "enemy", {name = "small-demolisher", name = "medium-demolisher", name = "big-demolisher"}}
 
 	local counter = 0
 	local all_demolishers_a = {}
+
+	-- このように検索にしないと、unit_numberが一意とならない（この検索ロジックは変更不可）
+	local all_demolishers_result = surface.find_entities_filtered{force = "enemy", {name = CONST_ENTITY_NAME.SMALL_DEMOLISHER, name = CONST_ENTITY_NAME.MIDIUM_DEMOLISHER, CONST_ENTITY_NAME.BIG_DEMOLISHER}}
 	for _, entity in pairs(all_demolishers_result) do
 		
-		if entity.valid and (entity.name == "small-demolisher" or entity.name == "medium-demolisher" or entity.name == "big-demolisher") then
+		if entity.valid and (entity.name == CONST_ENTITY_NAME.SMALL_DEMOLISHER or entity.name == CONST_ENTITY_NAME.MIDIUM_DEMOLISHER or entity.name == CONST_ENTITY_NAME.BIG_DEMOLISHER) then
 			all_demolishers_a[counter] = entity
 			counter = counter + 1
 		end
@@ -19,7 +21,7 @@ function demolisher_rush(surface, evolution_factor)
 	-- デモリッシャーの開始順での並び替え
 	local all_demolishers = {}
 	local start = math.random(counter)
-	for i = 0, counter - 1, 1 do
+	for i = 1, counter, 1 do
 		local param = i + start
 		if (param >= counter) then
 			param = param - counter
@@ -46,7 +48,7 @@ function demolisher_rush(surface, evolution_factor)
 				end
 				
 				-- パーツ名などは対象外
-				if not(entity.name == "small-demolisher" or entity.name == "medium-demolisher" or entity.name == "big-demolisher") then
+				if not(entity.name == CONST_ENTITY_NAME.SMALL_DEMOLISHER or entity.name == CONST_ENTITY_NAME.MIDIUM_DEMOLISHER or entity.name == CONST_ENTITY_NAME.BIG_DEMOLISHER) then
 					break
 				end
 				

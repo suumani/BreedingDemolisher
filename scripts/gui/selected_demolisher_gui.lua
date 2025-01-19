@@ -16,7 +16,7 @@ function update_selected_demolisher_gui(player, entity)
 		frame.destroy() -- 既存のGUIがあれば削除
 	end
 	
-	if entity and (entity.name == "small-demolisher" or entity.name == "medium-demolisher" or entity.name == "big-demolisher") then
+	if entity and (entity.name == CONST_ENTITY_NAME.SMALL_DEMOLISHER or entity.name == CONST_ENTITY_NAME.MIDIUM_DEMOLISHER or entity.name == CONST_ENTITY_NAME.BIG_DEMOLISHER) then
 		local success, result = pcall(function()
 			create_frame(player, entity)
 		end)
@@ -30,7 +30,6 @@ end
 -- デモリッシャーGUI更新
 -- ----------------------------
 function create_frame(player, entity)
-	-- game.print("entity.unit_number = " .. entity.unit_number)
 	-- 寿命
 	local life = get_life(entity)
 	-- 品質
@@ -66,7 +65,7 @@ end
 -- ----------------------------
 function wild_demolisher_frame(main_frame, entity)
 	-- 個体名
-	local name_label = main_frame.add{type = "label", caption = "name: vurcanus_typeB+_#" .. entity.unit_number}
+	local name_label = main_frame.add{type = "label", caption = "name: Vulcanus_typeB+_#" .. entity.unit_number}
 	name_label.style.font = "default-large-bold"
 	-- 勢力
 	local force_label = main_frame.add{type = "label", caption = "force: "..entity.force.name}
@@ -129,8 +128,8 @@ function my_demolisher_frame(main_frame, entity, my_demolisher)
 		basic_info_table.add{type = "label", caption = {"item-description.demolisher-growth-immature", my_demolisher.customparam:get_growth(),50}}
 	end
 	basic_info_table.add{type = "label", caption = {"item-description.demolisher-lv", my_demolisher.customparam:get_lv()}}
-	
-	basic_info_table.add{type = "label", caption = {"item-description.demolisher-size", entity.max_health}}
+
+	basic_info_table.add{type = "label", caption = {"item-description.demolisher-size", entity.max_health + my_demolisher.customparam:get_size()}}
 	
 	-- 解説
 	main_frame.add{type = "label", caption = {"item-description.demolisher-growth-description"}}

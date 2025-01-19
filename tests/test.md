@@ -1,6 +1,6 @@
 |No|group|index|single|multi|ja|en|
 |---|---|---|---|---|---|---|
-|001|init|savedata|〇|〇|||
+|001|<span style="color: red;>init</span>|savedata|〇|〇|||
 |002|item|demolisher-egg|〇|〇|||
 |003|item|demolisher-egg-frozen|〇|〇|||
 |004|item|new-spieces-demolisher-egg|〇|〇|||
