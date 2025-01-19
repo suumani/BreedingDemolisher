@@ -7,10 +7,12 @@ local on_entity_dead_local = {}
 script.on_event(defines.events.on_entity_died, function(event)
 
 	local entity = event.entity
-	-- デモリッシャー死亡イベント
-	if (entity.name == "small-demolisher" or entity.name == "medium-demolisher" or entity.name == "big-demolisher") then
+
+	if (entity.name == CONST_ENTITY_NAME.SMALL_DEMOLISHER or entity.name == CONST_ENTITY_NAME.MIDIUM_DEMOLISHER or entity.name == CONST_ENTITY_NAME.BIG_DEMOLISHER) then
+		-- デモリッシャー死亡イベント
 		on_entity_dead_local.demolisher_dead_event(event, entity)
-	elseif entity.force ~= "player" then
+	else
+		-- デモリッシャー食事イベント
 		on_entity_dead_local.enemy_except_demolisher_dead(event, entity)
 	end
 end)
@@ -19,6 +21,11 @@ end)
 -- デモリッシャー以外のすべての破壊イベント
 -- ----------------------------
 function on_entity_dead_local.enemy_except_demolisher_dead(event, entity)
+
+	if entity == nil or not entity.valid then
+		return
+	end
+
 	-- ペットが居なければ終了
 	if #storage.my_demolishers == 0 then
 		return
@@ -31,10 +38,12 @@ function on_entity_dead_local.enemy_except_demolisher_dead(event, entity)
 	local max = 900
 	for _, value in pairs(storage.my_demolishers) do
 		local demolisher_entity = value.customparam:get_entity()
-		local length = (entity.position.x - demolisher_entity.position.x)^2 + (entity.position.y - demolisher_entity.position.y)^2
-		if max > length then
-			max = length
-			nearby_demolisher = demolisher_entity
+		if demolisher_entity.valid then
+			local length = (entity.position.x - demolisher_entity.position.x)^2 + (entity.position.y - demolisher_entity.position.y)^2
+			if max > length then
+				max = length
+				nearby_demolisher = demolisher_entity
+			end
 		end
 	end
 	
@@ -55,7 +64,6 @@ function on_entity_dead_local.enemy_except_demolisher_dead(event, entity)
 	game.print("enemy_except_demolisher_dead error")
 end
 
-
 -- ----------------------------
 -- ペットのデモリッシャーが死んだ
 -- ----------------------------
@@ -74,34 +82,42 @@ function dead_my_demolisher(event, entity)
 			if my_demolisher.customparam:get_growth() > 20 then
 				local drop_rate = 0
 				local r2 = math.random()
-				local item = "demolisher-egg"
+				local item = CONST_ITEM_NAME.DEMOLISHER_EGG
 				
-				-- 標準種の場合、卵ドロップは50％、種類は固定
+				-- 標準種の場合、卵ドロップは50％、種類はランダム
 				if entity.force.name == "enemy" then
 					drop_rate = 0.5
+					if r2 < 0.2 then 
+						item = CONST_ITEM_NAME.NEW_SPIECES_DEMOLISHER_EGG
+					end
+					-- 標準種の進化
+					egg_customparam = my_demolisher.customparam:mutate(CONST_ITEM_NAME.DEMOLISHER_EGG, nil)
 					
 				-- 新種の場合、卵ドロップは70％、種類はランダム
 				elseif entity.force.name == "demolishers" then
 					-- game.print("test3")
 					drop_rate = 0.7
 					if r2 < 0.2 then 
-						item = "friend-demolisher-egg"
+						item = CONST_ITEM_NAME.FRIEND_DEMOLISHER_EGG
 					elseif r2 < 0.7 then
-						item = "new-spieces-demolisher-egg"
+						item = CONST_ITEM_NAME.NEW_SPIECES_DEMOLISHER_EGG
 					end
+					-- 新種の進化
+					egg_customparam = my_demolisher.customparam:mutate(CONST_ITEM_NAME.NEW_SPIECES_DEMOLISHER_EGG, nil)
 				
 				-- 友好種の場合、卵ドロップは90％、種類はランダム
 				elseif entity.force.name == "player" then
 					drop_rate = 0.9
 					if r2 < 0.9 then 
-						item = "friend-demolisher-egg"
+						item = CONST_ITEM_NAME.FRIEND_DEMOLISHER_EGG
 					else
-						item = "new-spieces-demolisher-egg"
+						item = CONST_ITEM_NAME.NEW_SPIECES_DEMOLISHER_EGG
 					end
+					-- 新種の進化
+					egg_customparam = my_demolisher.customparam:mutate(CONST_ITEM_NAME.FRIEND_DEMOLISHER_EGG, nil)
 				end
-				-- game.print("drop try item = " .. item .. ", rate = " .. drop_rate .. ", entity.force = " .. entity.force.name.. ", r2 = " .. r2)
 				-- アイテムドロップ
-				drop_item(entity, item, drop_rate)
+				drop_item(entity, item, drop_rate, egg_customparam)
 			end
 			
 			-- 除去
@@ -127,7 +143,7 @@ function on_entity_dead_local.demolisher_dead_event(event, entity)
 
 	-- 野良デモリッシャー
 	local drop_rate = 1.05
-	local item = "demolisher-egg"
+	local item = CONST_ITEM_NAME.DEMOLISHER_EGG
 	local drop = drop_item(event.entity, item, drop_rate)
 	
 	if drop == true then
@@ -173,22 +189,43 @@ end
 -- ----------------------------
 -- アイテムドロップ
 -- ----------------------------
-function drop_item(entity, drop_item, drop_rate, customparam)
+function drop_item(entity, item_name, drop_rate, customparam)
 	local surface = entity.surface
 	local position = entity.position
 	local drop_count = 1
 	
 	local r = math.random()
 	if r < drop_rate then
+		
 		-- アイテムをドロップ
 		surface.spill_item_stack{
 			position = position, -- ドロップする座標
-			stack = {name = drop_item, count = 1}, -- ドロップするアイテム
+			stack = {name = item_name, count = 1}, -- ドロップするアイテム
 		}
+
+		if item_name == CONST_ITEM_NAME.DEMOLISHER_EGG then
+			if storage.my_wild_eggs == nil then
+				storage.my_wild_eggs = {}
+			end
+			table.insert(storage.my_wild_eggs, {gametick = game.tick, customparam = customparam})
+		elseif item_name == CONST_ITEM_NAME.NEW_SPIECES_DEMOLISHER_EGG then
+			if storage.my_new_spieces_eggs == nil then
+				storage.my_new_spieces_eggs = {}
+			end
+			table.insert(storage.my_new_spieces_eggs, {gametick = game.tick, customparam = customparam})
+		else
+			if storage.my_friend_eggs == nil then
+				storage.my_friend_eggs = {}
+			end
+			table.insert(storage.my_friend_eggs, {gametick = game.tick, customparam = customparam})
+		end
 		
-		table.insert(storage.eggs, {gametick = game.tick, customparam = customparam})
-		
-		game.print("["..entity.surface.name.."]".."demolisher defeated, you can find egg somewhere!")
+		if customparam == nil then
+			game.print("["..entity.surface.name.."]".."demolisher defeated, you can find egg somewhere!")
+		else
+			game.print("["..entity.surface.name.."]".."demolisher lay eggs, you can find egg somewhere!")
+		end
+
 		return true
 	end
 	return false

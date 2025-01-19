@@ -1,16 +1,22 @@
 -- ----------------------------
 -- requires
 -- ----------------------------
+require("scripts.defines.constant_demolisher_parameters")
+require("scripts.defines.constant_demolisher_traits")
+require("scripts.defines.constant_entity_name")
+require("scripts.defines.constant_item_name")
+
 require("scripts.common.customparam")
 require("scripts.common.choose_quality")
 require("scripts.common.demolisher_rush")
+
 require("scripts.events.on_player_used_capsule")
 require("scripts.events.on_selected_entity_changed")
 require("scripts.events.on_entity_died")
+require("scripts.events.on_tick")
+
 require("scripts.gui.selected_demolisher_gui")
 require("scripts.updates.ver_0_1_9_save_update")
-
-require("scripts.events.on_tick")
 -- ----------------------------
 -- 開始
 -- ----------------------------
@@ -24,6 +30,7 @@ end)
 -- ロード
 -- ----------------------------
 script.on_load(function()
+
     -- Customparamのmetatableを設定する関数
     local function restore_customparam_metatable(data_table)
         for _, item in pairs(data_table) do
@@ -39,27 +46,24 @@ script.on_load(function()
     if storage.my_demolishers then
         restore_customparam_metatable(storage.my_demolishers)
     end
-
-    if storage.additional_demolishers then
-        restore_customparam_metatable(storage.additional_demolishers)
-    end
-
-    if storage.fulgora_demolishers then
-        restore_customparam_metatable(storage.fulgora_demolishers)
-    end
-	--[[
-    if storage.eggs then
-        restore_customparam_metatable(storage.eggs)
-    end
-	]]
 end)
 
 -- ----------------------------
 -- 構成変更
 -- ----------------------------
 script.on_configuration_changed(function(event)
-	storage = storage or {}
-	storage.teststr = storage.teststr or "teststr3"
+	init()
+	local vulcanus_surface = game.surfaces["vulcanus"]
+	if vulcanus_surface ~= nil then
+		-- vulcanusのデモリッシャーを検索
+		local all_demolishers = find_all_vulcanus_demolisher(vulcanus_surface)
+		
+		-- デモリッシャー配列から、検索でかからないデモリッシャーを削除
+		delete_unfound_demolishers(all_demolishers)
+		
+		-- すべてのデモリッシャーのうち、周辺50マスにデモリッシャー配列に属さないデモリッシャーが6体以上いる場合に寿命を付与
+		add_demolishers_life(all_demolishers)
+	end
 end)
 
 -- ----------------------------
@@ -89,14 +93,23 @@ function init()
 	if storage.my_demolishers == nil then
 		storage.my_demolishers = {}
 	end
-	-- vulcanusのデモリッシャー整理API実行用
-	if storage.demolisher_life_check == nil then
-		storage.demolisher_life_check = "false"
-	else
-		storage.demolisher_life_check = "false"
-	end
-	-- 卵管理
+
+	-- 卵管理(古いので初期化)
 	if storage.eggs == nil then
+		storage.eggs = {}
+	else
+		storage.eggs = {}
+	end
+	-- 卵管理(正式仕様)
+	if storage.my_wild_eggs == nil then
+		storage.eggs = {}
+	end
+	-- 卵管理(正式仕様)
+	if storage.my_new_spieces_eggs == nil then
+		storage.eggs = {}
+	end
+	-- 卵管理(正式仕様)
+	if storage.my_friend_eggs == nil then
 		storage.eggs = {}
 	end
 	-- 卵管理

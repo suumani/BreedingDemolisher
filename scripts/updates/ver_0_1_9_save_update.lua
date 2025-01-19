@@ -69,11 +69,11 @@ end
 -- 全てのデモリッシャーを検索（この方式で検索しないと、unit_numberが一定しない。たぶん、体節の関係じゃなかろうか）
 -- ----------------------------
 function find_all_vulcanus_demolisher(vulcanus_surface)
-	local all_demolishers_result = vulcanus_surface.find_entities_filtered{force = "enemy", {name = "small-demolisher", name = "medium-demolisher", name = "big-demolisher"}}
+	local all_demolishers_result = vulcanus_surface.find_entities_filtered{force = "enemy", {name = CONST_ENTITY_NAME.SMALL_DEMOLISHER, name = CONST_ENTITY_NAME.MIDIUM_DEMOLISHER, name = CONST_ENTITY_NAME.BIG_DEMOLISHER}}
 	local counter = 0
 	local all_demolishers = {}
 	for _, entity in pairs(all_demolishers_result) do
-		if entity.valid and (entity.name == "small-demolisher" or entity.name == "medium-demolisher" or entity.name == "big-demolisher") then
+		if entity.valid and (entity.name == CONST_ENTITY_NAME.SMALL_DEMOLISHER or entity.name == CONST_ENTITY_NAME.MIDIUM_DEMOLISHER or entity.name == CONST_ENTITY_NAME.BIG_DEMOLISHER) then
 			all_demolishers[counter] = entity
 			counter = counter + 1
 		end
@@ -82,7 +82,7 @@ function find_all_vulcanus_demolisher(vulcanus_surface)
 end
 
 -- ----------------------------
--- デモリッシャー配列から、検索でかからないデモリッシャーを削除
+-- [public] デモリッシャー配列から、検索でかからないデモリッシャーを削除
 -- ----------------------------
 function delete_unfound_demolishers(all_demolishers)
 	
