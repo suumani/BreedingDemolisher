@@ -18,6 +18,10 @@ function demolisher_rush(surface, evolution_factor)
 		end
 	end
 	
+	if counter == 0 then 
+		return
+	end
+	
 	-- デモリッシャーの開始順での並び替え
 	local all_demolishers = {}
 	local start = math.random(counter)

@@ -73,7 +73,15 @@ function wild_demolisher_frame(main_frame, entity)
 	-- 基本情報テーブル見出し
 	local basic_info_label = main_frame.add{type = "label", caption = "基本情報"}
 	basic_info_label.style.font = "default-bold"
-	local unknown_label = main_frame.add{type = "label", caption = "unknown"}
+
+	-- 追加デモリッシャーリストに居れば、追記
+	main_frame.add{type = "label", caption = "type: wild"}
+
+	if storage.additional_demolishers[entity.unit_number] ~= nil then
+		main_frame.add{type = "label", caption = "life: " .. math.floor((storage.additional_demolishers[entity.unit_number] - game.tick) / 3600).. "min"}
+	end
+
+	main_frame.add{type = "label", caption = "unknown"}
 end
 
 -- ----------------------------
