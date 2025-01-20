@@ -215,7 +215,8 @@ data:extend({
 				}
 			}
 		},
-	},
+	}
+	,
 	{
 		type = "recipe",
 		name = "new-spieces-demolisher-egg-recipe",
@@ -242,7 +243,8 @@ data:extend({
 				max = 600
 			}
 		},
-	},
+	}
+	,
 	{
 		type = "recipe",
 		name = "demolisher-egg-freeze-recipe",
@@ -317,7 +319,8 @@ data:extend({
 				max = 600
 			}
 		},
-	},
+	}
+	,
 	{
 		type = "recipe",
 		name = "demolisher-egg-unfreeze-recipe",
@@ -342,7 +345,8 @@ data:extend({
 				max = 600
 			}
 		},
-	},
+	}
+	,
 	{
 		type = "recipe",
 		name = "new-spieces-demolisher-egg-unfreeze-recipe",
@@ -367,7 +371,8 @@ data:extend({
 				max = 600
 			}
 		},
-	},
+	}
+	,
 	{
 		type = "recipe",
 		name = "friend-demolisher-egg-unfreeze-recipe",
@@ -392,7 +397,71 @@ data:extend({
 				max = 600
 			}
 		},
-	},
+	}
+	,
+	{
+		type = "recipe",
+		name = "demolisher-egg-dummy-recipe",
+		category = "crafting",
+		enabled = true,
+		energy_required = 60,
+		ingredients = {
+			{type = "item", name = "demolisher-egg", amount = 10}
+		},
+		results = {
+			{type = "item", name = "demolisher-egg", amount = 1}
+		},
+		surface_conditions = {
+			{
+				property = "pressure",
+				min = 100,
+				max = 600
+			}
+		},
+	}
+	,
+	{
+		type = "recipe",
+		name = "new-spieces-demolisher-egg-dummy-recipe",
+		category = "crafting",
+		enabled = true,
+		energy_required = 60,
+		ingredients = {
+			{type = "item", name = "new-spieces-demolisher-egg", amount = 10}
+		},
+		results = {
+			{type = "item", name = "new-spieces-demolisher-egg", amount = 1}
+		},
+		surface_conditions = {
+			{
+				property = "pressure",
+				min = 100,
+				max = 600
+			}
+		},
+	}
+	,
+	{
+		type = "recipe",
+		name = "friend-demolisher-egg-dummy-recipe",
+		category = "crafting",
+		enabled = true,
+		energy_required = 60,
+		ingredients = {
+			{type = "item", name = "friend-demolisher-egg", amount = 10}
+		},
+		results = {
+			{type = "item", name = "friend-demolisher-egg", amount = 1}
+		},
+		surface_conditions = {
+			{
+				property = "pressure",
+				min = 100,
+				max = 600
+			}
+		},
+	}
+	,
 	{
 		type = "technology",
 		name = "demolisher-egg-unlock",

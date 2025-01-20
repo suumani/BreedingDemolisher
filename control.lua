@@ -159,7 +159,9 @@ function is_before_save_data(old_version)
 		old_version == "0.1.5" or
 		old_version == "0.1.6" or
 		old_version == "0.1.7" or
-		old_version == "0.1.8" then
+		old_version == "0.1.8" or
+		old_version == "0.1.9" or
+		old_version == "0.2.0" then
 		return true
 	else
 		return false
