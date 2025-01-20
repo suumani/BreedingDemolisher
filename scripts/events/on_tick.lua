@@ -54,7 +54,7 @@ function my_demolisher_breeding()
 								elseif parent_entity.force == "demolishers" then
 									item_name = CONST_ITEM_NAME.NEW_SPIECES_DEMOLISHER_EGG
 								end
-								drop_item(parent_entity, item_name, drop_rate, customparam)
+								drop_item(parent_entity, item_name, drop_rate, customparam, customparam:get_quality())
 								return
 							end
 						end

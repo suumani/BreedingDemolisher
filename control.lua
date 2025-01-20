@@ -5,14 +5,16 @@ require("scripts.defines.constant_demolisher_parameters")
 require("scripts.defines.constant_demolisher_traits")
 require("scripts.defines.constant_entity_name")
 require("scripts.defines.constant_item_name")
+require("scripts.defines.constant_quality")
 
 require("scripts.common.customparam")
 require("scripts.common.choose_quality")
 require("scripts.common.demolisher_rush")
 
+require("scripts.events.on_entity_died")
+require("scripts.events.on_gui_opened")
 require("scripts.events.on_player_used_capsule")
 require("scripts.events.on_selected_entity_changed")
-require("scripts.events.on_entity_died")
 require("scripts.events.on_tick")
 
 require("scripts.gui.selected_demolisher_gui")
@@ -34,7 +36,7 @@ script.on_load(function()
     -- Customparamのmetatableを設定する関数
     local function restore_customparam_metatable(data_table)
         for _, item in pairs(data_table) do
-            if item and type(item) == "table" and getmetatable(item) == nil then
+            if item and type(item) == "table" then
 				if item.customparam and type(item.customparam) == "table" and getmetatable(item.customparam) == nil then
 	                setmetatable(item.customparam, Customparam)
 				end
@@ -46,6 +48,19 @@ script.on_load(function()
     if storage.my_demolishers then
         restore_customparam_metatable(storage.my_demolishers)
     end
+	
+	if storage.my_eggs then
+		for _, demolisher_quality_list in pairs (storage.my_eggs) do -- my_eggs はまず、各デモリッシャーサイズごとに、品質別リストが入っている
+			for _2, demolisher_egg_list in pairs (demolisher_quality_list) do -- 各品質別リストには、各卵が入っている
+				for _3, egg in pairs(demolisher_egg_list) do
+					if egg.customparam and type(egg.customparam) == "table" and getmetatable(egg.customparam) == nil then
+						setmetatable(egg.customparam, Customparam)
+					end
+				end
+			end
+		end
+	end
+
 end)
 
 -- ----------------------------
@@ -100,19 +115,29 @@ function init()
 	else
 		storage.eggs = {}
 	end
-	-- 卵管理(正式仕様)
-	if storage.my_wild_eggs == nil then
-		storage.eggs = {}
+	-- 卵管理(正式仕様:ペット分 - 3次元)
+	if storage.my_eggs == nil then
+		storage.my_eggs = {}
+		storage.my_eggs[CONST_ENTITY_NAME.SMALL_DEMOLISHER] = {}
+		storage.my_eggs[CONST_ENTITY_NAME.SMALL_DEMOLISHER][CONST_QUALITY.NORMAL] = {}
+		storage.my_eggs[CONST_ENTITY_NAME.SMALL_DEMOLISHER][CONST_QUALITY.UNCOMMON] = {}
+		storage.my_eggs[CONST_ENTITY_NAME.SMALL_DEMOLISHER][CONST_QUALITY.RARE] = {}
+		storage.my_eggs[CONST_ENTITY_NAME.SMALL_DEMOLISHER][CONST_QUALITY.EPIC] = {}
+		storage.my_eggs[CONST_ENTITY_NAME.SMALL_DEMOLISHER][CONST_QUALITY.LEGENDARY] = {}
+		storage.my_eggs[CONST_ENTITY_NAME.MIDIUM_DEMOLISHER] = {}
+		storage.my_eggs[CONST_ENTITY_NAME.MIDIUM_DEMOLISHER][CONST_QUALITY.NORMAL] = {}
+		storage.my_eggs[CONST_ENTITY_NAME.MIDIUM_DEMOLISHER][CONST_QUALITY.UNCOMMON] = {}
+		storage.my_eggs[CONST_ENTITY_NAME.MIDIUM_DEMOLISHER][CONST_QUALITY.RARE] = {}
+		storage.my_eggs[CONST_ENTITY_NAME.MIDIUM_DEMOLISHER][CONST_QUALITY.EPIC] = {}
+		storage.my_eggs[CONST_ENTITY_NAME.MIDIUM_DEMOLISHER][CONST_QUALITY.LEGENDARY] = {}
+		storage.my_eggs[CONST_ENTITY_NAME.BIG_DEMOLISHER] = {}
+		storage.my_eggs[CONST_ENTITY_NAME.BIG_DEMOLISHER][CONST_QUALITY.NORMAL] = {}
+		storage.my_eggs[CONST_ENTITY_NAME.BIG_DEMOLISHER][CONST_QUALITY.UNCOMMON] = {}
+		storage.my_eggs[CONST_ENTITY_NAME.BIG_DEMOLISHER][CONST_QUALITY.RARE] = {}
+		storage.my_eggs[CONST_ENTITY_NAME.BIG_DEMOLISHER][CONST_QUALITY.EPIC] = {}
+		storage.my_eggs[CONST_ENTITY_NAME.BIG_DEMOLISHER][CONST_QUALITY.LEGENDARY] = {}
 	end
-	-- 卵管理(正式仕様)
-	if storage.my_new_spieces_eggs == nil then
-		storage.eggs = {}
-	end
-	-- 卵管理(正式仕様)
-	if storage.my_friend_eggs == nil then
-		storage.eggs = {}
-	end
-	-- 卵管理
+	-- 遺伝管理テスト
 	if storage.genetic_data == nil then
 		storage.genetic_data = {
 			{id = 1, trait = "dammy"},{id = 2, trait = "dammy"},{id = 3, trait = "dammy"},{id = 4, trait = "dammy"}
@@ -167,74 +192,3 @@ function is_before_save_data(old_version)
 		return false
 	end
 end
-
-function create_genetic_analysis_ui(player, entity)
-	-- 既存のUIがあれば削除
-	if player.gui.relative["genetic_analysis_ui"] then
-		player.gui.relative["genetic_analysis_ui"].destroy()
-	end
-
-	-- カスタムUIを作成
-	local frame = player.gui.relative.add{
-		type = "frame",
-		name = "genetic_analysis_ui",
-		caption = "Genetic Analysis Machine",
-		direction = "vertical",
-		anchor = {
-			gui = defines.relative_gui_type.container_gui,
-			position = defines.relative_gui_position.right
-		}
-	}
-
-	-- 遺伝情報のリストを表示
-	frame.add{type = "label", caption = "Genetic Data List:"}
-	local scroll_pane = frame.add{
-		type = "scroll-pane",
-		name = "genetic_data_list",
-		vertical_scroll_policy = "auto",
-		horizontal_scroll_policy = "never"
-	}
-	scroll_pane.style.maximal_height = 340 -- 必要に応じて高さを調整
-
-	-- 遺伝情報を動的にリスト表示
-	for id, data in pairs(storage.genetic_data) do
-		local flow = scroll_pane.add{
-			type = "flow",
-			direction = "horizontal",
-			name = "genetic_data_" .. id
-		}
-		flow.add{type = "label", caption = "ID: " .. id .. " | Trait: " .. data.trait}
-		flow.add{
-			type = "button",
-			name = "delete_genetic_data_" .. id,
-			caption = "Delete"
-		}
-	end
-end
-
--- on_gui_openedイベント内でcreate_genetic_analysis_uiを呼び出す
-script.on_event(defines.events.on_gui_opened, function(event)
-	if event.entity and event.entity.name == "genetic-analysis-machine" then
-		local player = game.get_player(event.player_index)
-		create_genetic_analysis_ui(player, event.entity)
-	end
-end)
-
--- 削除ボタンのクリックイベント処理
-script.on_event(defines.events.on_gui_click, function(event)
-	local player = game.get_player(event.player_index)
-
-	-- 削除ボタンがクリックされた場合
-	if event.element.name:find("^delete_genetic_data_") then
-		local id = event.element.name:match("^delete_genetic_data_(%d+)")
-		id = tonumber(id)
-
-		if id and storage.genetic_data[id] then
-			-- 遺伝情報を削除
-			storage.genetic_data[id] = nil
-
-			-- UIを再生成して更新
-			create_genetic_analysis_ui(player, player.selected)
-		end
-	end
-end)

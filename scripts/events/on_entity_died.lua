@@ -116,8 +116,9 @@ function dead_my_demolisher(event, entity)
 					-- 新種の進化
 					egg_customparam = my_demolisher.customparam:mutate(CONST_ITEM_NAME.FRIEND_DEMOLISHER_EGG, nil)
 				end
+
 				-- アイテムドロップ
-				drop_item(entity, item, drop_rate, egg_customparam)
+				drop_item(entity, item, drop_rate, egg_customparam, egg_customparam:get_quality())
 			end
 			
 			-- 除去
@@ -189,7 +190,7 @@ end
 -- ----------------------------
 -- アイテムドロップ
 -- ----------------------------
-function drop_item(entity, item_name, drop_rate, customparam)
+function drop_item(entity, item_name, drop_rate, customparam, quality)
 	local surface = entity.surface
 	local position = entity.position
 	local drop_count = 1
@@ -197,27 +198,120 @@ function drop_item(entity, item_name, drop_rate, customparam)
 	local r = math.random()
 	if r < drop_rate then
 		
+		local str_quality = CONST_QUALITY.NORMAL
+		if quality ~= nil then
+			if quality >= 2 then
+				str_quality = CONST_QUALITY.UNCOMMON
+			elseif quality >= 3 then
+				str_quality = CONST_QUALITY.RARE
+			elseif quality >= 4 then
+				str_quality = CONST_QUALITY.EPIC
+			elseif quality >= 5 then
+				str_quality = CONST_QUALITY.LEGENDARY
+			end
+		end
 		-- アイテムをドロップ
 		surface.spill_item_stack{
 			position = position, -- ドロップする座標
-			stack = {name = item_name, count = 1}, -- ドロップするアイテム
+			stack = {name = item_name, count = 1, quality = str_quality}, -- ドロップするアイテム
 		}
 
 		if item_name == CONST_ITEM_NAME.DEMOLISHER_EGG then
-			if storage.my_wild_eggs == nil then
-				storage.my_wild_eggs = {}
+			if quality < 2 then
+				-- エディタモード対応
+				if storage.my_wild_eggs == nil then
+					storage.my_wild_eggs = {}
+				end
+				table.insert(storage.my_wild_eggs, {gametick = game.tick, customparam = customparam})
+			elseif quality < 3 then
+				-- エディタモード対応
+				if storage.my_wild_eggs2 == nil then
+					storage.my_wild_eggs2 = {}
+				end
+				table.insert(storage.my_wild_eggs2, {gametick = game.tick, customparam = customparam})
+			elseif quality < 4 then
+				-- エディタモード対応
+				if storage.my_wild_eggs3 == nil then
+					storage.my_wild_eggs3 = {}
+				end
+				table.insert(storage.my_wild_eggs3, {gametick = game.tick, customparam = customparam})
+			elseif quality < 5 then
+				-- エディタモード対応
+				if storage.my_wild_eggs4 == nil then
+					storage.my_wild_eggs4 = {}
+				end
+				table.insert(storage.my_wild_eggs4, {gametick = game.tick, customparam = customparam})
+			else
+				-- エディタモード対応
+				if storage.my_wild_eggs5 == nil then
+					storage.my_wild_eggs5 = {}
+				end
+				table.insert(storage.my_wild_eggs5, {gametick = game.tick, customparam = customparam})
 			end
-			table.insert(storage.my_wild_eggs, {gametick = game.tick, customparam = customparam})
 		elseif item_name == CONST_ITEM_NAME.NEW_SPIECES_DEMOLISHER_EGG then
-			if storage.my_new_spieces_eggs == nil then
-				storage.my_new_spieces_eggs = {}
+			if quality < 2 then
+				-- エディタモード対応
+				if storage.my_new_spieces_eggs == nil then
+					storage.my_new_spieces_eggs = {}
+				end
+				table.insert(storage.my_new_spieces_eggs, {gametick = game.tick, customparam = customparam})
+			elseif quality < 3 then
+				-- エディタモード対応
+				if storage.my_new_spieces_eggs2 == nil then
+					storage.my_new_spieces_eggs2 = {}
+				end
+				table.insert(storage.my_new_spieces_eggs2, {gametick = game.tick, customparam = customparam})
+			elseif quality < 4 then
+				-- エディタモード対応
+				if storage.my_new_spieces_eggs3 == nil then
+					storage.my_new_spieces_eggs3 = {}
+				end
+				table.insert(storage.my_new_spieces_eggs3, {gametick = game.tick, customparam = customparam})
+			elseif quality < 5 then
+				-- エディタモード対応
+				if storage.my_new_spieces_eggs4 == nil then
+					storage.my_new_spieces_eggs4 = {}
+				end
+				table.insert(storage.my_new_spieces_eggs4, {gametick = game.tick, customparam = customparam})
+			else
+				-- エディタモード対応
+				if storage.my_new_spieces_eggs5 == nil then
+					storage.my_new_spieces_eggs5 = {}
+				end
+				table.insert(storage.my_new_spieces_eggs5, {gametick = game.tick, customparam = customparam})
 			end
-			table.insert(storage.my_new_spieces_eggs, {gametick = game.tick, customparam = customparam})
 		else
-			if storage.my_friend_eggs == nil then
-				storage.my_friend_eggs = {}
+			if quality < 2 then
+				-- エディタモード対応
+				if storage.my_friend_eggs == nil then
+					storage.my_friend_eggs = {}
+				end
+				table.insert(storage.my_friend_eggs, {gametick = game.tick, customparam = customparam})
+			elseif quality < 3 then
+				-- エディタモード対応
+				if storage.my_friend_eggs2 == nil then
+					storage.my_friend_eggs2 = {}
+				end
+				table.insert(storage.my_friend_eggs2, {gametick = game.tick, customparam = customparam})
+			elseif quality < 4 then
+				-- エディタモード対応
+				if storage.my_friend_eggs3 == nil then
+					storage.my_friend_eggs3 = {}
+				end
+				table.insert(storage.my_friend_eggs3, {gametick = game.tick, customparam = customparam})
+			elseif quality < 5 then
+				-- エディタモード対応
+				if storage.my_friend_eggs4 == nil then
+					storage.my_friend_eggs4 = {}
+				end
+				table.insert(storage.my_friend_eggs4, {gametick = game.tick, customparam = customparam})
+			else
+				-- エディタモード対応
+				if storage.my_friend_eggs5 == nil then
+					storage.my_friend_eggs5 = {}
+				end
+				table.insert(storage.my_friend_eggs5, {gametick = game.tick, customparam = customparam})
 			end
-			table.insert(storage.my_friend_eggs, {gametick = game.tick, customparam = customparam})
 		end
 		
 		if customparam == nil then
