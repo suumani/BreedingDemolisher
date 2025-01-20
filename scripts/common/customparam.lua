@@ -27,7 +27,7 @@ function Customparam.new(
 	self.entity_name = entity_name or entity.name -- 種別名
 	self.name = name or (private_default_name(entity)) -- 個体名
 	self.size = size or math.random(100, 500) -- サイズ
-	self.quality = quality or 1 + math.random(1, 4) / 10  -- 品質 (0.0 - 1.0)
+	self.quality = quality or 2 + math.random(1, 4) / 10  -- 品質 (0.0 - 1.0)
 	self.speed = speed or 1 + math.random(1, 4) / 10 -- 移動速度 (0.1 - 1.0)
 	self.max_life = max_life or 180
 	self.life = max_life or 180

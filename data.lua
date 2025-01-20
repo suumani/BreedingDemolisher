@@ -11,10 +11,10 @@ data:extend({
 		name = "demolisher-egg",
 		localised_name = {"item-name.demolisher-egg"},
 		localised_description = {"item-description.demolisher-egg"},
-		icon = "__BreedingDemolisher__/graphics/icon_demolisher_egg.png",
+		icon = "__BreedingDemolisher__/graphics/icon/demolisher_egg.png",
 		icon_size = 64,
 		subgroup = "capsule",
-		order = "a[new-item]",
+		order = "a[_011_demolisher-egg]",
 		stack_size = 1,
 		spoil_ticks = 90000, -- 鮮度の維持時間（秒）
 		spoil_result = "spoilage", -- 腐敗後に変換されるアイテム
@@ -40,16 +40,17 @@ data:extend({
 				}
 			}
 		},
-	},
+	}
+	,
 	{
 		type = "capsule",
 		name = "demolisher-egg-frozen",
 		localised_name = {"item-name.demolisher-egg-frozen"},
 		localised_description = {"item-description.demolisher-egg-frozen"},
-		icon = "__BreedingDemolisher__/graphics/icon_demolisher_egg-frozen.png",
+		icon = "__BreedingDemolisher__/graphics/icon/demolisher_egg_frozen.png",
 		icon_size = 64,
 		subgroup = "capsule",
-		order = "a[new-item]",
+		order = "a[_111_demolisher-egg-frozen]",
 		stack_size = 1,
 		spoil_ticks = 1080000, -- 鮮度の維持時間（秒）
 		spoil_result = "demolisher-egg", -- 腐敗後に変換されるアイテム
@@ -75,16 +76,17 @@ data:extend({
 				}
 			}
 		},
-	},
+	}
+	,
 	{
 		type = "capsule",
 		name = "new-spieces-demolisher-egg",
 		localised_name = {"item-name.new-spieces-demolisher-egg"},
 		localised_description = {"item-description.new-spieces-demolisher-egg"},
-		icon = "__BreedingDemolisher__/graphics/icon_new_spieces_demolisher_egg.png",
+		icon = "__BreedingDemolisher__/graphics/icon/new_spieces_demolisher_egg.png",
 		icon_size = 64,
 		subgroup = "capsule",
-		order = "a[new-item]",
+		order = "a[_021_new-spieces-demolisher-egg]",
 		stack_size = 1,
 		spoil_ticks = 90000, -- 鮮度の維持時間（秒）
 		spoil_result = "spoilage", -- 腐敗後に変換されるアイテム
@@ -110,16 +112,17 @@ data:extend({
 				}
 			}
 		},
-	},
+	}
+	,
 	{
 		type = "capsule",
 		name = "new-spieces-demolisher-egg-frozen",
 		localised_name = {"item-name.new-spieces-demolisher-egg-frozen"},
 		localised_description = {"item-description.new-spieces-demolisher-egg-frozen"},
-		icon = "__BreedingDemolisher__/graphics/icon_new_spieces_demolisher_egg-frozen.png",
+		icon = "__BreedingDemolisher__/graphics/icon/new_spieces_demolisher_egg_frozen.png",
 		icon_size = 64,
 		subgroup = "capsule",
-		order = "a[new-item]",
+		order = "a[_121_new-spieces-demolisher-egg-frozen]",
 		stack_size = 1,
 		spoil_ticks = 1080000, -- 鮮度の維持時間（秒）
 		spoil_result = "new-spieces-demolisher-egg", -- 腐敗後に変換されるアイテム
@@ -145,16 +148,17 @@ data:extend({
 				}
 			}
 		},
-	},
+	}
+	,
 	{
 		type = "capsule",
 		name = "friend-demolisher-egg",
 		localised_name = {"item-name.friend-demolisher-egg"},
 		localised_description = {"item-description.friend-demolisher-egg"},
-		icon = "__BreedingDemolisher__/graphics/icon_friend_demolisher_egg.png",
+		icon = "__BreedingDemolisher__/graphics/icon/friend_demolisher_egg.png",
 		icon_size = 64,
 		subgroup = "capsule",
-		order = "a[new-item]",
+		order = "a[_031_friend-demolisher-egg]",
 		stack_size = 1,
 		spoil_ticks = 90000, -- 鮮度の維持時間（秒）
 		spoil_result = "spoilage", -- 腐敗後に変換されるアイテム
@@ -180,16 +184,17 @@ data:extend({
 				}
 			}
 		},
-	},
+	}
+	,
 	{
 		type = "capsule",
 		name = "friend-demolisher-egg-frozen",
 		localised_name = {"item-name.friend-demolisher-egg-frozen"},
 		localised_description = {"item-description.friend-demolisher-egg-frozen"},
-		icon = "__BreedingDemolisher__/graphics/icon_friend_demolisher_egg-frozen.png",
+		icon = "__BreedingDemolisher__/graphics/icon/friend_demolisher_egg_frozen.png",
 		icon_size = 64,
 		subgroup = "capsule",
-		order = "a[new-item]",
+		order = "a[_131_friend-demolisher-egg-frozen]",
 		stack_size = 1,
 		spoil_ticks = 1080000, -- 鮮度の維持時間（秒）
 		spoil_result = "friend-demolisher-egg", -- 腐敗後に変換されるアイテム
@@ -269,7 +274,8 @@ data:extend({
 				max = 600
 			}
 		},
-	},
+	}
+	,
 	{
 		type = "recipe",
 		name = "new-spieces-demolisher-egg-freeze-recipe",
@@ -294,7 +300,8 @@ data:extend({
 				max = 600
 			}
 		},
-	},
+	}
+	,
 	{
 		type = "recipe",
 		name = "friend-demolisher-egg-freeze-recipe",
@@ -401,15 +408,321 @@ data:extend({
 	,
 	{
 		type = "recipe",
-		name = "demolisher-egg-dummy-recipe",
-		category = "crafting",
-		enabled = true,
+		name = "demolisher-egg-grow-recipe",
+		category = "organic",
+		subgroup = "agriculture-products",
+		enabled = false,
 		energy_required = 60,
 		ingredients = {
-			{type = "item", name = "demolisher-egg", amount = 10}
+			{type = "item", name = "demolisher-egg", amount = 10},
+			{type = "item", name = "tungsten-ore", amount = 200},
+			{type = "item", name = "calcite", amount = 200},
+			{type = "item", name = "uranium-235", amount = 200},
+			{type = "fluid", name = "lava", amount = 500},
+			{type = "fluid", name = "sulfuric-acid", amount = 500},
+
 		},
 		results = {
-			{type = "item", name = "demolisher-egg", amount = 1}
+			{type = "item", name = "demolisher-egg-midium", amount = 1}
+		},
+		surface_conditions = {
+			{
+				property = "pressure",
+				min = 4000,
+				max = 4000
+			}
+		},
+		result_is_always_fresh = false,
+	}
+	,
+	{
+		type = "recipe",
+		name = "new-spieces-demolisher-egg-grow-recipe",
+		category = "organic",
+		subgroup = "agriculture-products",
+		enabled = false,
+		energy_required = 60,
+		ingredients = {
+			{type = "item", name = "new-spieces-demolisher-egg", amount = 10},
+			{type = "item", name = "tungsten-ore", amount = 200},
+			{type = "item", name = "calcite", amount = 200},
+			{type = "item", name = "uranium-235", amount = 200},
+			{type = "fluid", name = "lava", amount = 500},
+			{type = "fluid", name = "sulfuric-acid", amount = 500},
+		},
+		results = {
+			{type = "item", name = "new-spieces-demolisher-egg-midium", amount = 1}
+		},
+		surface_conditions = {
+			{
+				property = "pressure",
+				min = 4000,
+				max = 4000
+			}
+		},
+	}
+	,
+	{
+		type = "recipe",
+		name = "friend-demolisher-egg-grow-recipe",
+		category = "organic",
+		subgroup = "agriculture-products",
+		enabled = false,
+		energy_required = 60,
+		ingredients = {
+			{type = "item", name = "friend-demolisher-egg", amount = 10},
+			{type = "item", name = "tungsten-ore", amount = 200},
+			{type = "item", name = "calcite", amount = 200},
+			{type = "item", name = "uranium-235", amount = 200},
+			{type = "fluid", name = "lava", amount = 500},
+			{type = "fluid", name = "sulfuric-acid", amount = 500},
+		},
+		results = {
+			{type = "item", name = "friend-demolisher-egg-midium", amount = 1}
+		},
+		surface_conditions = {
+			{
+				property = "pressure",
+				min = 4000,
+				max = 4000
+			}
+		},
+	}
+	,
+	{
+		type = "capsule",
+		name = "demolisher-egg-midium",
+		localised_name = {"item-name.demolisher-egg-midium"},
+		localised_description = {"item-description.demolisher-egg-midium"},
+		icon = "__BreedingDemolisher__/graphics/icon/demolisher_egg_midium.png",
+		icon_size = 64,
+		subgroup = "capsule",
+		order = "a[_012_demolisher-egg-midium]",
+		stack_size = 1,
+		spoil_ticks = 90000, -- 鮮度の維持時間（秒）
+		spoil_result = "spoilage", -- 腐敗後に変換されるアイテム
+		weight = 1000000,
+		capsule_action = {
+			type = "throw",
+			attack_parameters = {
+				type = "projectile",
+				ammo_category = "capsule",
+				cooldown = 30, -- クールダウンタイム
+				range = 15, -- 投擲可能距離
+				ammo_type = {
+					category = "capsule",
+					target_type = "position",
+					action = {
+						{
+							type = "direct",
+							action_delivery = {
+								type = "instant"
+							}
+						}
+					}
+				}
+			}
+		},
+	}
+	,
+	{
+		type = "capsule",
+		name = "demolisher-egg-midium-frozen",
+		localised_name = {"item-name.demolisher-egg-midium-frozen"},
+		localised_description = {"item-description.demolisher-egg-midium-frozen"},
+		icon = "__BreedingDemolisher__/graphics/icon/demolisher_egg_midium_frozen.png",
+		icon_size = 64,
+		subgroup = "capsule",
+		order = "a[_112_demolisher-egg-midium-frozen]",
+		stack_size = 1,
+		spoil_ticks = 1080000, -- 鮮度の維持時間（秒）
+		spoil_result = "demolisher-egg-midium", -- 腐敗後に変換されるアイテム
+		weight = 1000000,
+		capsule_action = {
+			type = "throw",
+			attack_parameters = {
+				type = "projectile",
+				ammo_category = "capsule",
+				cooldown = 30, -- クールダウンタイム
+				range = 15, -- 投擲可能距離
+				ammo_type = {
+					category = "capsule",
+					target_type = "position",
+					action = {
+						{
+							type = "direct",
+							action_delivery = {
+								type = "instant"
+							}
+						}
+					}
+				}
+			}
+		},
+	}
+	,
+	{
+		type = "capsule",
+		name = "new-spieces-demolisher-egg-midium",
+		localised_name = {"item-name.new-spieces-demolisher-egg-midium"},
+		localised_description = {"item-description.new-spieces-demolisher-egg-midium"},
+		icon = "__BreedingDemolisher__/graphics/icon/new_spieces_demolisher_egg_midium.png",
+		icon_size = 64,
+		subgroup = "capsule",
+		order = "a[_022_new-spieces-demolisher-egg-midium]",
+		stack_size = 1,
+		spoil_ticks = 90000, -- 鮮度の維持時間（秒）
+		spoil_result = "spoilage", -- 腐敗後に変換されるアイテム
+		weight = 1000000,
+		capsule_action = {
+			type = "throw",
+			attack_parameters = {
+				type = "projectile",
+				ammo_category = "capsule",
+				cooldown = 30, -- クールダウンタイム
+				range = 15, -- 投擲可能距離
+				ammo_type = {
+					category = "capsule",
+					target_type = "position",
+					action = {
+						{
+							type = "direct",
+							action_delivery = {
+								type = "instant"
+							}
+						}
+					}
+				}
+			}
+		},
+	}
+	,
+	{
+		type = "capsule",
+		name = "new-spieces-demolisher-egg-midium-frozen",
+		localised_name = {"item-name.new-spieces-demolisher-egg-midium-frozen"},
+		localised_description = {"item-description.new-spieces-demolisher-egg-midium-frozen"},
+		icon = "__BreedingDemolisher__/graphics/icon/new_spieces_demolisher_egg_midium_frozen.png",
+		icon_size = 64,
+		subgroup = "capsule",
+		order = "a[_122_new-spieces-demolisher-egg-midium-frozen]",
+		stack_size = 1,
+		spoil_ticks = 1080000, -- 鮮度の維持時間（秒）
+		spoil_result = "new-spieces-demolisher-egg-midium", -- 腐敗後に変換されるアイテム
+		weight = 1000000,
+		capsule_action = {
+			type = "throw",
+			attack_parameters = {
+				type = "projectile",
+				ammo_category = "capsule",
+				cooldown = 30, -- クールダウンタイム
+				range = 15, -- 投擲可能距離
+				ammo_type = {
+					category = "capsule",
+					target_type = "position",
+					action = {
+						{
+							type = "direct",
+							action_delivery = {
+								type = "instant"
+							}
+						}
+					}
+				}
+			}
+		},
+	}
+	,
+	{
+		type = "capsule",
+		name = "friend-demolisher-egg-midium",
+		localised_name = {"item-name.friend-demolisher-egg-midium"},
+		localised_description = {"item-description.friend-demolisher-egg-midium"},
+		icon = "__BreedingDemolisher__/graphics/icon/friend_demolisher_egg_midium.png",
+		icon_size = 64,
+		subgroup = "capsule",
+		order = "a[_032_friend-demolisher-egg-midium]",
+		stack_size = 1,
+		spoil_ticks = 90000, -- 鮮度の維持時間（秒）
+		spoil_result = "spoilage", -- 腐敗後に変換されるアイテム
+		weight = 1000000,
+		capsule_action = {
+			type = "throw",
+			attack_parameters = {
+				type = "projectile",
+				ammo_category = "capsule",
+				cooldown = 30, -- クールダウンタイム
+				range = 15, -- 投擲可能距離
+				ammo_type = {
+					category = "capsule",
+					target_type = "position",
+					action = {
+						{
+							type = "direct",
+							action_delivery = {
+								type = "instant"
+							}
+						}
+					}
+				}
+			}
+		},
+	}
+	,
+	{
+		type = "capsule",
+		name = "friend-demolisher-egg-midium-frozen",
+		localised_name = {"item-name.friend-demolisher-egg-midium-frozen"},
+		localised_description = {"item-description.friend-demolisher-egg-midium-frozen"},
+		icon = "__BreedingDemolisher__/graphics/icon/friend_demolisher_egg_midium_frozen.png",
+		icon_size = 64,
+		subgroup = "capsule",
+		order = "a[_132_friend-demolisher-egg-midium-frozen]",
+		stack_size = 1,
+		spoil_ticks = 1080000, -- 鮮度の維持時間（秒）
+		spoil_result = "friend-demolisher-egg-midium", -- 腐敗後に変換されるアイテム
+		weight = 1000000,
+		capsule_action = {
+			type = "throw",
+			attack_parameters = {
+				type = "projectile",
+				ammo_category = "capsule",
+				cooldown = 30, -- クールダウンタイム
+				range = 15, -- 投擲可能距離
+				ammo_type = {
+					category = "capsule",
+					target_type = "position",
+					action = {
+						{
+							type = "direct",
+							action_delivery = {
+								type = "instant"
+							}
+						}
+					}
+				}
+			}
+		},
+	}
+	,
+	{
+		type = "recipe",
+		name = "new-spieces-demolisher-egg-midium-recipe",
+		category = "cryogenics",
+		enabled = false,
+		energy_required = 60,
+		ingredients = {
+			{type = "item", name = "demolisher-egg-midium", amount = 1},
+			{type = "item", name = "captive-biter-spawner", amount = 10},
+			{type = "item", name = "biochamber", amount = 20},
+			{type = "item", name = "pentapod-egg", amount = 200},
+			{type = "item", name = "biter-egg", amount = 200},
+			{type = "fluid", name = "sulfuric-acid", amount = 200},
+			{type = "fluid", name = "molten-iron", amount = 200},
+			{type = "fluid", name = "fluoroketone-hot", amount = 200}
+		},
+		results = {
+			{type = "item", name = "new-spieces-demolisher-egg-midium", amount = 1}
 		},
 		surface_conditions = {
 			{
@@ -422,15 +735,20 @@ data:extend({
 	,
 	{
 		type = "recipe",
-		name = "new-spieces-demolisher-egg-dummy-recipe",
-		category = "crafting",
-		enabled = true,
+		name = "demolisher-egg-midium-freeze-recipe",
+		category = "cryogenics",
+		enabled = false,
 		energy_required = 60,
 		ingredients = {
-			{type = "item", name = "new-spieces-demolisher-egg", amount = 10}
+			{type = "item", name = "demolisher-egg-midium", amount = 1},
+			{type = "item", name = "captive-biter-spawner", amount = 10},
+			{type = "item", name = "biochamber", amount = 20},
+			{type = "fluid", name = "sulfuric-acid", amount = 200},
+			{type = "fluid", name = "fluorine", amount = 200},
+			{type = "fluid", name = "fluoroketone-cold", amount = 200}
 		},
 		results = {
-			{type = "item", name = "new-spieces-demolisher-egg", amount = 1}
+			{type = "item", name = "demolisher-egg-midium-frozen", amount = 1}
 		},
 		surface_conditions = {
 			{
@@ -443,15 +761,605 @@ data:extend({
 	,
 	{
 		type = "recipe",
-		name = "friend-demolisher-egg-dummy-recipe",
-		category = "crafting",
-		enabled = true,
+		name = "new-spieces-demolisher-egg-midium-freeze-recipe",
+		category = "cryogenics",
+		enabled = false,
 		energy_required = 60,
 		ingredients = {
-			{type = "item", name = "friend-demolisher-egg", amount = 10}
+			{type = "item", name = "demolisher-egg-midium", amount = 1},
+			{type = "item", name = "captive-biter-spawner", amount = 10},
+			{type = "item", name = "biochamber", amount = 20},
+			{type = "fluid", name = "sulfuric-acid", amount = 200},
+			{type = "fluid", name = "fluorine", amount = 200},
+			{type = "fluid", name = "fluoroketone-cold", amount = 200}
 		},
 		results = {
-			{type = "item", name = "friend-demolisher-egg", amount = 1}
+			{type = "item", name = "new-spieces-demolisher-egg-midium-frozen", amount = 1}
+		},
+		surface_conditions = {
+			{
+				property = "pressure",
+				min = 100,
+				max = 600
+			}
+		},
+	}
+	,
+	{
+		type = "recipe",
+		name = "friend-demolisher-egg-midium-freeze-recipe",
+		category = "cryogenics",
+		enabled = false,
+		energy_required = 60,
+		ingredients = {
+			{type = "item", name = "demolisher-egg-midium", amount = 1},
+			{type = "item", name = "captive-biter-spawner", amount = 10},
+			{type = "item", name = "biochamber", amount = 20},
+			{type = "fluid", name = "sulfuric-acid", amount = 200},
+			{type = "fluid", name = "fluorine", amount = 200},
+			{type = "fluid", name = "fluoroketone-cold", amount = 200}
+		},
+		results = {
+			{type = "item", name = "friend-demolisher-egg-midium-frozen", amount = 1}
+		},
+		surface_conditions = {
+			{
+				property = "pressure",
+				min = 100,
+				max = 600
+			}
+		},
+	}
+	,
+	{
+		type = "recipe",
+		name = "demolisher-egg-midium-unfreeze-recipe",
+		category = "cryogenics",
+		enabled = false,
+		energy_required = 60,
+		ingredients = {
+			{type = "item", name = "demolisher-egg-midium-frozen", amount = 1},
+			{type = "item", name = "captive-biter-spawner", amount = 10},
+			{type = "item", name = "biochamber", amount = 20},
+			{type = "fluid", name = "sulfuric-acid", amount = 200},
+			{type = "fluid", name = "fluorine", amount = 200},
+			{type = "fluid", name = "fluoroketone-cold", amount = 200}
+		},
+		results = {
+			{type = "item", name = "demolisher-egg-midium", amount = 1}
+		},
+		surface_conditions = {
+			{
+				property = "pressure",
+				min = 100,
+				max = 600
+			}
+		},
+	}
+	,
+	{
+		type = "recipe",
+		name = "new-spieces-demolisher-egg-midium-unfreeze-recipe",
+		category = "cryogenics",
+		enabled = false,
+		energy_required = 60,
+		ingredients = {
+			{type = "item", name = "new-spieces-demolisher-egg-midium-frozen", amount = 1},
+			{type = "item", name = "captive-biter-spawner", amount = 10},
+			{type = "item", name = "biochamber", amount = 20},
+			{type = "fluid", name = "sulfuric-acid", amount = 200},
+			{type = "fluid", name = "fluorine", amount = 200},
+			{type = "fluid", name = "fluoroketone-cold", amount = 200}
+		},
+		results = {
+			{type = "item", name = "new-spieces-demolisher-egg-midium", amount = 1}
+		},
+		surface_conditions = {
+			{
+				property = "pressure",
+				min = 100,
+				max = 600
+			}
+		},
+	}
+	,
+	{
+		type = "recipe",
+		name = "friend-demolisher-egg-midium-unfreeze-recipe",
+		category = "cryogenics",
+		enabled = false,
+		energy_required = 60,
+		ingredients = {
+			{type = "item", name = "friend-demolisher-egg-midium-frozen", amount = 1},
+			{type = "item", name = "captive-biter-spawner", amount = 10},
+			{type = "item", name = "biochamber", amount = 20},
+			{type = "fluid", name = "sulfuric-acid", amount = 200},
+			{type = "fluid", name = "fluorine", amount = 200},
+			{type = "fluid", name = "fluoroketone-cold", amount = 200}
+		},
+		results = {
+			{type = "item", name = "friend-demolisher-egg-midium", amount = 1}
+		},
+		surface_conditions = {
+			{
+				property = "pressure",
+				min = 100,
+				max = 600
+			}
+		},
+	}
+	,
+	{
+		type = "recipe",
+		name = "demolisher-egg-midium-grow-recipe",
+		category = "organic",
+		subgroup = "agriculture-products",
+		enabled = false,
+		energy_required = 60,
+		ingredients = {
+			{type = "item", name = "demolisher-egg-midium", amount = 10},
+			{type = "item", name = "tungsten-ore", amount = 200},
+			{type = "item", name = "calcite", amount = 200},
+			{type = "item", name = "uranium-235", amount = 200},
+			{type = "fluid", name = "lava", amount = 500},
+			{type = "fluid", name = "sulfuric-acid", amount = 500},
+		},
+		results = {
+			{type = "item", name = "demolisher-egg-big", amount = 1}
+		},
+		surface_conditions = {
+			{
+				property = "pressure",
+				min = 4000,
+				max = 4000
+			}
+		},
+	}
+	,
+	{
+		type = "recipe",
+		name = "new-spieces-demolisher-egg-midium-grow-recipe",
+		category = "organic",
+		subgroup = "agriculture-products",
+		enabled = false,
+		energy_required = 60,
+		ingredients = {
+			{type = "item", name = "new-spieces-demolisher-egg-midium", amount = 10},
+			{type = "item", name = "tungsten-ore", amount = 200},
+			{type = "item", name = "calcite", amount = 200},
+			{type = "item", name = "uranium-235", amount = 200},
+			{type = "fluid", name = "lava", amount = 500},
+			{type = "fluid", name = "sulfuric-acid", amount = 500},
+		},
+		results = {
+			{type = "item", name = "new-spieces-demolisher-egg-big", amount = 1}
+		},
+		surface_conditions = {
+			{
+				property = "pressure",
+				min = 4000,
+				max = 4000
+			}
+		},
+	}
+	,
+	{
+		type = "recipe",
+		name = "friend-demolisher-egg-midium-grow-recipe",
+		category = "organic",
+		subgroup = "agriculture-products",
+		enabled = false,
+		energy_required = 60,
+		ingredients = {
+			{type = "item", name = "friend-demolisher-egg-midium", amount = 10},
+			{type = "item", name = "tungsten-ore", amount = 200},
+			{type = "item", name = "calcite", amount = 200},
+			{type = "item", name = "uranium-235", amount = 200},
+			{type = "fluid", name = "lava", amount = 500},
+			{type = "fluid", name = "sulfuric-acid", amount = 500},
+		},
+		results = {
+			{type = "item", name = "friend-demolisher-egg-big", amount = 1}
+		},
+		surface_conditions = {
+			{
+				property = "pressure",
+				min = 4000,
+				max = 4000
+			}
+		},
+	}
+	,
+	{
+		type = "capsule",
+		name = "demolisher-egg-big",
+		localised_name = {"item-name.demolisher-egg-big"},
+		localised_description = {"item-description.demolisher-egg-big"},
+		icon = "__BreedingDemolisher__/graphics/icon/demolisher_egg_big.png",
+		icon_size = 64,
+		subgroup = "capsule",
+		order = "a[_013_demolisher-egg-big]",
+		stack_size = 1,
+		spoil_ticks = 90000, -- 鮮度の維持時間（秒）
+		spoil_result = "spoilage", -- 腐敗後に変換されるアイテム
+		weight = 1000000,
+		capsule_action = {
+			type = "throw",
+			attack_parameters = {
+				type = "projectile",
+				ammo_category = "capsule",
+				cooldown = 30, -- クールダウンタイム
+				range = 15, -- 投擲可能距離
+				ammo_type = {
+					category = "capsule",
+					target_type = "position",
+					action = {
+						{
+							type = "direct",
+							action_delivery = {
+								type = "instant"
+							}
+						}
+					}
+				}
+			}
+		},
+	}
+	,
+	{
+		type = "capsule",
+		name = "demolisher-egg-big-frozen",
+		localised_name = {"item-name.demolisher-egg-big-frozen"},
+		localised_description = {"item-description.demolisher-egg-big-frozen"},
+		icon = "__BreedingDemolisher__/graphics/icon/demolisher_egg_big_frozen.png",
+		icon_size = 64,
+		subgroup = "capsule",
+		order = "a[_113_demolisher-egg-big-frozen]",
+		stack_size = 1,
+		spoil_ticks = 1080000, -- 鮮度の維持時間（秒）
+		spoil_result = "demolisher-egg-big", -- 腐敗後に変換されるアイテム
+		weight = 1000000,
+		capsule_action = {
+			type = "throw",
+			attack_parameters = {
+				type = "projectile",
+				ammo_category = "capsule",
+				cooldown = 30, -- クールダウンタイム
+				range = 15, -- 投擲可能距離
+				ammo_type = {
+					category = "capsule",
+					target_type = "position",
+					action = {
+						{
+							type = "direct",
+							action_delivery = {
+								type = "instant"
+							}
+						}
+					}
+				}
+			}
+		},
+	}
+	,
+	{
+		type = "capsule",
+		name = "new-spieces-demolisher-egg-big",
+		localised_name = {"item-name.new-spieces-demolisher-egg-big"},
+		localised_description = {"item-description.new-spieces-demolisher-egg-big"},
+		icon = "__BreedingDemolisher__/graphics/icon/new_spieces_demolisher_egg_big.png",
+		icon_size = 64,
+		subgroup = "capsule",
+		order = "a[_023_new-spieces-demolisher-egg-big]",
+		stack_size = 1,
+		spoil_ticks = 90000, -- 鮮度の維持時間（秒）
+		spoil_result = "spoilage", -- 腐敗後に変換されるアイテム
+		weight = 1000000,
+		capsule_action = {
+			type = "throw",
+			attack_parameters = {
+				type = "projectile",
+				ammo_category = "capsule",
+				cooldown = 30, -- クールダウンタイム
+				range = 15, -- 投擲可能距離
+				ammo_type = {
+					category = "capsule",
+					target_type = "position",
+					action = {
+						{
+							type = "direct",
+							action_delivery = {
+								type = "instant"
+							}
+						}
+					}
+				}
+			}
+		},
+	}
+	,
+	{
+		type = "capsule",
+		name = "new-spieces-demolisher-egg-big-frozen",
+		localised_name = {"item-name.new-spieces-demolisher-egg-big-frozen"},
+		localised_description = {"item-description.new-spieces-demolisher-egg-big-frozen"},
+		icon = "__BreedingDemolisher__/graphics/icon/new_spieces_demolisher_egg_big_frozen.png",
+		icon_size = 64,
+		subgroup = "capsule",
+		order = "a[_123_new-spieces-demolisher-egg-big-frozen]",
+		stack_size = 1,
+		spoil_ticks = 1080000, -- 鮮度の維持時間（秒）
+		spoil_result = "new-spieces-demolisher-egg-big", -- 腐敗後に変換されるアイテム
+		weight = 1000000,
+		capsule_action = {
+			type = "throw",
+			attack_parameters = {
+				type = "projectile",
+				ammo_category = "capsule",
+				cooldown = 30, -- クールダウンタイム
+				range = 15, -- 投擲可能距離
+				ammo_type = {
+					category = "capsule",
+					target_type = "position",
+					action = {
+						{
+							type = "direct",
+							action_delivery = {
+								type = "instant"
+							}
+						}
+					}
+				}
+			}
+		},
+	}
+	,
+	{
+		type = "capsule",
+		name = "friend-demolisher-egg-big",
+		localised_name = {"item-name.friend-demolisher-egg-big"},
+		localised_description = {"item-description.friend-demolisher-egg-big"},
+		icon = "__BreedingDemolisher__/graphics/icon/friend_demolisher_egg_big.png",
+		icon_size = 64,
+		subgroup = "capsule",
+		order = "a[_033_friend-demolisher-egg-big]",
+		stack_size = 1,
+		spoil_ticks = 90000, -- 鮮度の維持時間（秒）
+		spoil_result = "spoilage", -- 腐敗後に変換されるアイテム
+		weight = 1000000,
+		capsule_action = {
+			type = "throw",
+			attack_parameters = {
+				type = "projectile",
+				ammo_category = "capsule",
+				cooldown = 30, -- クールダウンタイム
+				range = 15, -- 投擲可能距離
+				ammo_type = {
+					category = "capsule",
+					target_type = "position",
+					action = {
+						{
+							type = "direct",
+							action_delivery = {
+								type = "instant"
+							}
+						}
+					}
+				}
+			}
+		},
+	}
+	,
+	{
+		type = "capsule",
+		name = "friend-demolisher-egg-big-frozen",
+		localised_name = {"item-name.friend-demolisher-egg-big-frozen"},
+		localised_description = {"item-description.friend-demolisher-egg-big-frozen"},
+		icon = "__BreedingDemolisher__/graphics/icon/friend_demolisher_egg_big_frozen.png",
+		icon_size = 64,
+		subgroup = "capsule",
+		order = "a[_133_friend-demolisher-egg-big-frozen]",
+		stack_size = 1,
+		spoil_ticks = 1080000, -- 鮮度の維持時間（秒）
+		spoil_result = "friend-demolisher-egg-big", -- 腐敗後に変換されるアイテム
+		weight = 1000000,
+		capsule_action = {
+			type = "throw",
+			attack_parameters = {
+				type = "projectile",
+				ammo_category = "capsule",
+				cooldown = 30, -- クールダウンタイム
+				range = 15, -- 投擲可能距離
+				ammo_type = {
+					category = "capsule",
+					target_type = "position",
+					action = {
+						{
+							type = "direct",
+							action_delivery = {
+								type = "instant"
+							}
+						}
+					}
+				}
+			}
+		},
+	}
+	,
+	{
+		type = "recipe",
+		name = "new-spieces-demolisher-egg-big-recipe",
+		category = "cryogenics",
+		enabled = false,
+		energy_required = 60,
+		ingredients = {
+			{type = "item", name = "demolisher-egg-big", amount = 1},
+			{type = "item", name = "captive-biter-spawner", amount = 10},
+			{type = "item", name = "biochamber", amount = 20},
+			{type = "item", name = "pentapod-egg", amount = 200},
+			{type = "item", name = "biter-egg", amount = 200},
+			{type = "fluid", name = "sulfuric-acid", amount = 200},
+			{type = "fluid", name = "molten-iron", amount = 200},
+			{type = "fluid", name = "fluoroketone-hot", amount = 200}
+		},
+		results = {
+			{type = "item", name = "new-spieces-demolisher-egg-big", amount = 1}
+		},
+		surface_conditions = {
+			{
+				property = "pressure",
+				min = 100,
+				max = 600
+			}
+		},
+	}
+	,
+	{
+		type = "recipe",
+		name = "demolisher-egg-big-freeze-recipe",
+		category = "cryogenics",
+		enabled = false,
+		energy_required = 60,
+		ingredients = {
+			{type = "item", name = "demolisher-egg-big", amount = 1},
+			{type = "item", name = "captive-biter-spawner", amount = 10},
+			{type = "item", name = "biochamber", amount = 20},
+			{type = "fluid", name = "sulfuric-acid", amount = 200},
+			{type = "fluid", name = "fluorine", amount = 200},
+			{type = "fluid", name = "fluoroketone-cold", amount = 200}
+		},
+		results = {
+			{type = "item", name = "demolisher-egg-big-frozen", amount = 1}
+		},
+		surface_conditions = {
+			{
+				property = "pressure",
+				min = 100,
+				max = 600
+			}
+		},
+	}
+	,
+	{
+		type = "recipe",
+		name = "new-spieces-demolisher-egg-big-freeze-recipe",
+		category = "cryogenics",
+		enabled = false,
+		energy_required = 60,
+		ingredients = {
+			{type = "item", name = "demolisher-egg-big", amount = 1},
+			{type = "item", name = "captive-biter-spawner", amount = 10},
+			{type = "item", name = "biochamber", amount = 20},
+			{type = "fluid", name = "sulfuric-acid", amount = 200},
+			{type = "fluid", name = "fluorine", amount = 200},
+			{type = "fluid", name = "fluoroketone-cold", amount = 200}
+		},
+		results = {
+			{type = "item", name = "new-spieces-demolisher-egg-big-frozen", amount = 1}
+		},
+		surface_conditions = {
+			{
+				property = "pressure",
+				min = 100,
+				max = 600
+			}
+		},
+	}
+	,
+	{
+		type = "recipe",
+		name = "friend-demolisher-egg-big-freeze-recipe",
+		category = "cryogenics",
+		enabled = false,
+		energy_required = 60,
+		ingredients = {
+			{type = "item", name = "demolisher-egg-big", amount = 1},
+			{type = "item", name = "captive-biter-spawner", amount = 10},
+			{type = "item", name = "biochamber", amount = 20},
+			{type = "fluid", name = "sulfuric-acid", amount = 200},
+			{type = "fluid", name = "fluorine", amount = 200},
+			{type = "fluid", name = "fluoroketone-cold", amount = 200}
+		},
+		results = {
+			{type = "item", name = "friend-demolisher-egg-big-frozen", amount = 1}
+		},
+		surface_conditions = {
+			{
+				property = "pressure",
+				min = 100,
+				max = 600
+			}
+		},
+	}
+	,
+	{
+		type = "recipe",
+		name = "demolisher-egg-big-unfreeze-recipe",
+		category = "cryogenics",
+		enabled = false,
+		energy_required = 60,
+		ingredients = {
+			{type = "item", name = "demolisher-egg-big-frozen", amount = 1},
+			{type = "item", name = "captive-biter-spawner", amount = 10},
+			{type = "item", name = "biochamber", amount = 20},
+			{type = "fluid", name = "sulfuric-acid", amount = 200},
+			{type = "fluid", name = "fluorine", amount = 200},
+			{type = "fluid", name = "fluoroketone-cold", amount = 200}
+		},
+		results = {
+			{type = "item", name = "demolisher-egg-big", amount = 1}
+		},
+		surface_conditions = {
+			{
+				property = "pressure",
+				min = 100,
+				max = 600
+			}
+		},
+	}
+	,
+	{
+		type = "recipe",
+		name = "new-spieces-demolisher-egg-big-unfreeze-recipe",
+		category = "cryogenics",
+		enabled = false,
+		energy_required = 60,
+		ingredients = {
+			{type = "item", name = "new-spieces-demolisher-egg-big-frozen", amount = 1},
+			{type = "item", name = "captive-biter-spawner", amount = 10},
+			{type = "item", name = "biochamber", amount = 20},
+			{type = "fluid", name = "sulfuric-acid", amount = 200},
+			{type = "fluid", name = "fluorine", amount = 200},
+			{type = "fluid", name = "fluoroketone-cold", amount = 200}
+		},
+		results = {
+			{type = "item", name = "new-spieces-demolisher-egg-big", amount = 1}
+		},
+		surface_conditions = {
+			{
+				property = "pressure",
+				min = 100,
+				max = 600
+			}
+		},
+	}
+	,
+	{
+		type = "recipe",
+		name = "friend-demolisher-egg-big-unfreeze-recipe",
+		category = "cryogenics",
+		enabled = false,
+		energy_required = 60,
+		ingredients = {
+			{type = "item", name = "friend-demolisher-egg-big-frozen", amount = 1},
+			{type = "item", name = "captive-biter-spawner", amount = 10},
+			{type = "item", name = "biochamber", amount = 20},
+			{type = "fluid", name = "sulfuric-acid", amount = 200},
+			{type = "fluid", name = "fluorine", amount = 200},
+			{type = "fluid", name = "fluoroketone-cold", amount = 200}
+		},
+		results = {
+			{type = "item", name = "friend-demolisher-egg-big", amount = 1}
 		},
 		surface_conditions = {
 			{
@@ -493,7 +1401,8 @@ data:extend({
 			}
 		},
 		order = "z"
-	},
+	}
+	,
 	{
 		type = "technology",
 		name = "demolisher-egg-freeze",
@@ -535,7 +1444,8 @@ data:extend({
 			},
 		},
 		order = "z"
-	},
+	}
+	,
 	{
 		type = "technology",
 		name = "demolisher-egg-unfreeze",
@@ -577,7 +1487,8 @@ data:extend({
 			},
 		},
 		order = "z"
-	},
+	}
+	,
 	{
 		type = "technology",
 		name = "infinite-demolisher-quality",
@@ -647,7 +1558,7 @@ data:extend({
 	{
 		type = "item",
 		name = "genetic-analysis-machine",
-		icon = "__BreedingDemolisher__/graphics/icons/genetic-analysis-machine.png",
+		icon = "__BreedingDemolisher__/graphics/icon/genetic-analysis-machine.png",
 		icon_size = 64,
 		subgroup = "production-machine",
 		order = "a[genetic-analysis-machine]",
@@ -658,7 +1569,7 @@ data:extend({
     {
         type = "container",
         name = "genetic-analysis-machine",
-        icon = "__BreedingDemolisher__/graphics/icons/genetic-analysis-machine.png",
+        icon = "__BreedingDemolisher__/graphics/icon/genetic-analysis-machine.png",
         icon_size = 64,
         flags = {"placeable-neutral", "placeable-player", "player-creation"},
         minable = {mining_time = 0.5, result = "genetic-analysis-machine"},
@@ -679,6 +1590,5 @@ data:extend({
 	{
 		type = "recipe-category",
 		name = "genetic-analysis"
-	},
-
+	}
 })
