@@ -326,7 +326,7 @@ data:extend({
 
 		},
 		results = {
-			{type = "item", name = "demolisher-egg-midium", amount = 1}
+			{type = "item", name = "demolisher-egg-medium", amount = 1}
 		},
 		surface_conditions = {
 			{
@@ -381,7 +381,7 @@ data:extend({
 			{type = "fluid", name = "sulfuric-acid", amount = 500},
 		},
 		results = {
-			{type = "item", name = "new-spieces-demolisher-egg-midium", amount = 1}
+			{type = "item", name = "new-spieces-demolisher-egg-medium", amount = 1}
 		},
 		surface_conditions = {
 			{
@@ -435,7 +435,7 @@ data:extend({
 			{type = "fluid", name = "sulfuric-acid", amount = 500},
 		},
 		results = {
-			{type = "item", name = "friend-demolisher-egg-midium", amount = 1}
+			{type = "item", name = "friend-demolisher-egg-medium", amount = 1}
 		},
 		surface_conditions = {
 			{
@@ -448,13 +448,13 @@ data:extend({
 	,
 	{
 		type = "item",
-		name = "demolisher-egg-midium",
-		localised_name = {"item-name.demolisher-egg-midium"},
-		localised_description = {"item-description.demolisher-egg-midium"},
-		icon = "__BreedingDemolisher__/graphics/icon/demolisher_egg_midium.png",
+		name = "demolisher-egg-medium",
+		localised_name = {"item-name.demolisher-egg-medium"},
+		localised_description = {"item-description.demolisher-egg-medium"},
+		icon = "__BreedingDemolisher__/graphics/icon/demolisher_egg_medium.png",
 		icon_size = 64,
 		subgroup = "raw-material",
-		order = "c[cryogenics]-a[_012-demolisher_egg_midium]",
+		order = "c[cryogenics]-a[_012-demolisher_egg_medium]",
 		stack_size = 1,
 		spoil_ticks = 90000, -- 鮮度の維持時間（秒）
 		spoil_result = "spoilage", -- 腐敗後に変換されるアイテム
@@ -463,28 +463,28 @@ data:extend({
 	,
 	{
 		type = "item",
-		name = "demolisher-egg-midium-frozen",
-		localised_name = {"item-name.demolisher-egg-midium-frozen"},
-		localised_description = {"item-description.demolisher-egg-midium-frozen"},
-		icon = "__BreedingDemolisher__/graphics/icon/demolisher_egg_midium_frozen.png",
+		name = "demolisher-egg-medium-frozen",
+		localised_name = {"item-name.demolisher-egg-medium-frozen"},
+		localised_description = {"item-description.demolisher-egg-medium-frozen"},
+		icon = "__BreedingDemolisher__/graphics/icon/demolisher_egg_medium_frozen.png",
 		icon_size = 64,
 		subgroup = "raw-material",
-		order = "c[cryogenics]-a[_112-demolisher_egg_midium_frozen]",
+		order = "c[cryogenics]-a[_112-demolisher_egg_medium_frozen]",
 		stack_size = 1,
 		spoil_ticks = 1080000, -- 鮮度の維持時間（秒）
-		spoil_result = "demolisher-egg-midium", -- 腐敗後に変換されるアイテム
+		spoil_result = "demolisher-egg-medium", -- 腐敗後に変換されるアイテム
 		weight = 1000000,
 	}
 	,
 	{
 		type = "item",
-		name = "new-spieces-demolisher-egg-midium",
-		localised_name = {"item-name.new-spieces-demolisher-egg-midium"},
-		localised_description = {"item-description.new-spieces-demolisher-egg-midium"},
-		icon = "__BreedingDemolisher__/graphics/icon/new_spieces_demolisher_egg_midium.png",
+		name = "new-spieces-demolisher-egg-medium",
+		localised_name = {"item-name.new-spieces-demolisher-egg-medium"},
+		localised_description = {"item-description.new-spieces-demolisher-egg-medium"},
+		icon = "__BreedingDemolisher__/graphics/icon/new_spieces_demolisher_egg_medium.png",
 		icon_size = 64,
 		subgroup = "raw-material",
-		order = "c[cryogenics]-a[_022-new_spieces_demolisher_egg_midium]",
+		order = "c[cryogenics]-a[_022-new_spieces_demolisher_egg_medium]",
 		stack_size = 1,
 		spoil_ticks = 90000, -- 鮮度の維持時間（秒）
 		spoil_result = "spoilage", -- 腐敗後に変換されるアイテム
@@ -493,28 +493,28 @@ data:extend({
 	,
 	{
 		type = "item",
-		name = "new-spieces-demolisher-egg-midium-frozen",
-		localised_name = {"item-name.new-spieces-demolisher-egg-midium-frozen"},
-		localised_description = {"item-description.new-spieces-demolisher-egg-midium-frozen"},
-		icon = "__BreedingDemolisher__/graphics/icon/new_spieces_demolisher_egg_midium_frozen.png",
+		name = "new-spieces-demolisher-egg-medium-frozen",
+		localised_name = {"item-name.new-spieces-demolisher-egg-medium-frozen"},
+		localised_description = {"item-description.new-spieces-demolisher-egg-medium-frozen"},
+		icon = "__BreedingDemolisher__/graphics/icon/new_spieces_demolisher_egg_medium_frozen.png",
 		icon_size = 64,
 		subgroup = "raw-material",
-		order = "c[cryogenics]-a[_122-new-spieces-demolisher-egg-midium-frozen]",
+		order = "c[cryogenics]-a[_122-new-spieces-demolisher-egg-medium-frozen]",
 		stack_size = 1,
 		spoil_ticks = 1080000, -- 鮮度の維持時間（秒）
-		spoil_result = "new-spieces-demolisher-egg-midium", -- 腐敗後に変換されるアイテム
+		spoil_result = "new-spieces-demolisher-egg-medium", -- 腐敗後に変換されるアイテム
 		weight = 1000000,
 	}
 	,
 	{
 		type = "item",
-		name = "friend-demolisher-egg-midium",
-		localised_name = {"item-name.friend-demolisher-egg-midium"},
-		localised_description = {"item-description.friend-demolisher-egg-midium"},
-		icon = "__BreedingDemolisher__/graphics/icon/friend_demolisher_egg_midium.png",
+		name = "friend-demolisher-egg-medium",
+		localised_name = {"item-name.friend-demolisher-egg-medium"},
+		localised_description = {"item-description.friend-demolisher-egg-medium"},
+		icon = "__BreedingDemolisher__/graphics/icon/friend_demolisher_egg_medium.png",
 		icon_size = 64,
 		subgroup = "raw-material",
-		order = "c[cryogenics]-a[_032-friend-demolisher-egg-midium]",
+		order = "c[cryogenics]-a[_032-friend-demolisher-egg-medium]",
 		stack_size = 1,
 		spoil_ticks = 90000, -- 鮮度の維持時間（秒）
 		spoil_result = "spoilage", -- 腐敗後に変換されるアイテム
@@ -523,27 +523,27 @@ data:extend({
 	,
 	{
 		type = "item",
-		name = "friend-demolisher-egg-midium-frozen",
-		localised_name = {"item-name.friend-demolisher-egg-midium-frozen"},
-		localised_description = {"item-description.friend-demolisher-egg-midium-frozen"},
-		icon = "__BreedingDemolisher__/graphics/icon/friend_demolisher_egg_midium_frozen.png",
+		name = "friend-demolisher-egg-medium-frozen",
+		localised_name = {"item-name.friend-demolisher-egg-medium-frozen"},
+		localised_description = {"item-description.friend-demolisher-egg-medium-frozen"},
+		icon = "__BreedingDemolisher__/graphics/icon/friend_demolisher_egg_medium_frozen.png",
 		icon_size = 64,
 		subgroup = "raw-material",
-		order = "c[cryogenics]-a[_132_friend-demolisher-egg-midium-frozen]",
+		order = "c[cryogenics]-a[_132_friend-demolisher-egg-medium-frozen]",
 		stack_size = 1,
 		spoil_ticks = 1080000, -- 鮮度の維持時間（秒）
-		spoil_result = "friend-demolisher-egg-midium", -- 腐敗後に変換されるアイテム
+		spoil_result = "friend-demolisher-egg-medium", -- 腐敗後に変換されるアイテム
 		weight = 1000000,
 	}
 	,
 	{
 		type = "recipe",
-		name = "new-spieces-demolisher-egg-midium-recipe",
+		name = "new-spieces-demolisher-egg-medium-recipe",
 		category = "cryogenics",
 		enabled = false,
 		energy_required = 60,
 		ingredients = {
-			{type = "item", name = "demolisher-egg-midium", amount = 1},
+			{type = "item", name = "demolisher-egg-medium", amount = 1},
 			{type = "item", name = "captive-biter-spawner", amount = 10},
 			{type = "item", name = "biochamber", amount = 20},
 			{type = "item", name = "pentapod-egg", amount = 200},
@@ -553,7 +553,7 @@ data:extend({
 			{type = "fluid", name = "fluoroketone-hot", amount = 200}
 		},
 		results = {
-			{type = "item", name = "new-spieces-demolisher-egg-midium", amount = 1}
+			{type = "item", name = "new-spieces-demolisher-egg-medium", amount = 1}
 		},
 		surface_conditions = {
 			{
@@ -566,12 +566,12 @@ data:extend({
 	,
 	{
 		type = "recipe",
-		name = "demolisher-egg-midium-freeze-recipe",
+		name = "demolisher-egg-medium-freeze-recipe",
 		category = "cryogenics",
 		enabled = false,
 		energy_required = 60,
 		ingredients = {
-			{type = "item", name = "demolisher-egg-midium", amount = 1},
+			{type = "item", name = "demolisher-egg-medium", amount = 1},
 			{type = "item", name = "captive-biter-spawner", amount = 10},
 			{type = "item", name = "biochamber", amount = 20},
 			{type = "fluid", name = "sulfuric-acid", amount = 200},
@@ -579,7 +579,7 @@ data:extend({
 			{type = "fluid", name = "fluoroketone-cold", amount = 200}
 		},
 		results = {
-			{type = "item", name = "demolisher-egg-midium-frozen", amount = 1}
+			{type = "item", name = "demolisher-egg-medium-frozen", amount = 1}
 		},
 		surface_conditions = {
 			{
@@ -592,12 +592,12 @@ data:extend({
 	,
 	{
 		type = "recipe",
-		name = "new-spieces-demolisher-egg-midium-freeze-recipe",
+		name = "new-spieces-demolisher-egg-medium-freeze-recipe",
 		category = "cryogenics",
 		enabled = false,
 		energy_required = 60,
 		ingredients = {
-			{type = "item", name = "demolisher-egg-midium", amount = 1},
+			{type = "item", name = "demolisher-egg-medium", amount = 1},
 			{type = "item", name = "captive-biter-spawner", amount = 10},
 			{type = "item", name = "biochamber", amount = 20},
 			{type = "fluid", name = "sulfuric-acid", amount = 200},
@@ -605,7 +605,7 @@ data:extend({
 			{type = "fluid", name = "fluoroketone-cold", amount = 200}
 		},
 		results = {
-			{type = "item", name = "new-spieces-demolisher-egg-midium-frozen", amount = 1}
+			{type = "item", name = "new-spieces-demolisher-egg-medium-frozen", amount = 1}
 		},
 		surface_conditions = {
 			{
@@ -618,12 +618,12 @@ data:extend({
 	,
 	{
 		type = "recipe",
-		name = "friend-demolisher-egg-midium-freeze-recipe",
+		name = "friend-demolisher-egg-medium-freeze-recipe",
 		category = "cryogenics",
 		enabled = false,
 		energy_required = 60,
 		ingredients = {
-			{type = "item", name = "demolisher-egg-midium", amount = 1},
+			{type = "item", name = "demolisher-egg-medium", amount = 1},
 			{type = "item", name = "captive-biter-spawner", amount = 10},
 			{type = "item", name = "biochamber", amount = 20},
 			{type = "fluid", name = "sulfuric-acid", amount = 200},
@@ -631,7 +631,7 @@ data:extend({
 			{type = "fluid", name = "fluoroketone-cold", amount = 200}
 		},
 		results = {
-			{type = "item", name = "friend-demolisher-egg-midium-frozen", amount = 1}
+			{type = "item", name = "friend-demolisher-egg-medium-frozen", amount = 1}
 		},
 		surface_conditions = {
 			{
@@ -644,12 +644,12 @@ data:extend({
 	,
 	{
 		type = "recipe",
-		name = "demolisher-egg-midium-unfreeze-recipe",
+		name = "demolisher-egg-medium-unfreeze-recipe",
 		category = "cryogenics",
 		enabled = false,
 		energy_required = 60,
 		ingredients = {
-			{type = "item", name = "demolisher-egg-midium-frozen", amount = 1},
+			{type = "item", name = "demolisher-egg-medium-frozen", amount = 1},
 			{type = "item", name = "captive-biter-spawner", amount = 10},
 			{type = "item", name = "biochamber", amount = 20},
 			{type = "fluid", name = "sulfuric-acid", amount = 200},
@@ -657,7 +657,7 @@ data:extend({
 			{type = "fluid", name = "fluoroketone-cold", amount = 200}
 		},
 		results = {
-			{type = "item", name = "demolisher-egg-midium", amount = 1}
+			{type = "item", name = "demolisher-egg-medium", amount = 1}
 		},
 		surface_conditions = {
 			{
@@ -670,12 +670,12 @@ data:extend({
 	,
 	{
 		type = "recipe",
-		name = "new-spieces-demolisher-egg-midium-unfreeze-recipe",
+		name = "new-spieces-demolisher-egg-medium-unfreeze-recipe",
 		category = "cryogenics",
 		enabled = false,
 		energy_required = 60,
 		ingredients = {
-			{type = "item", name = "new-spieces-demolisher-egg-midium-frozen", amount = 1},
+			{type = "item", name = "new-spieces-demolisher-egg-medium-frozen", amount = 1},
 			{type = "item", name = "captive-biter-spawner", amount = 10},
 			{type = "item", name = "biochamber", amount = 20},
 			{type = "fluid", name = "sulfuric-acid", amount = 200},
@@ -683,7 +683,7 @@ data:extend({
 			{type = "fluid", name = "fluoroketone-cold", amount = 200}
 		},
 		results = {
-			{type = "item", name = "new-spieces-demolisher-egg-midium", amount = 1}
+			{type = "item", name = "new-spieces-demolisher-egg-medium", amount = 1}
 		},
 		surface_conditions = {
 			{
@@ -696,12 +696,12 @@ data:extend({
 	,
 	{
 		type = "recipe",
-		name = "friend-demolisher-egg-midium-unfreeze-recipe",
+		name = "friend-demolisher-egg-medium-unfreeze-recipe",
 		category = "cryogenics",
 		enabled = false,
 		energy_required = 60,
 		ingredients = {
-			{type = "item", name = "friend-demolisher-egg-midium-frozen", amount = 1},
+			{type = "item", name = "friend-demolisher-egg-medium-frozen", amount = 1},
 			{type = "item", name = "captive-biter-spawner", amount = 10},
 			{type = "item", name = "biochamber", amount = 20},
 			{type = "fluid", name = "sulfuric-acid", amount = 200},
@@ -709,7 +709,7 @@ data:extend({
 			{type = "fluid", name = "fluoroketone-cold", amount = 200}
 		},
 		results = {
-			{type = "item", name = "friend-demolisher-egg-midium", amount = 1}
+			{type = "item", name = "friend-demolisher-egg-medium", amount = 1}
 		},
 		surface_conditions = {
 			{
@@ -722,13 +722,13 @@ data:extend({
 	,
 	{
 		type = "recipe",
-		name = "demolisher-egg-midium-grow-recipe",
+		name = "demolisher-egg-medium-grow-recipe",
 		category = "organic",
 		subgroup = "agriculture-products",
 		enabled = false,
 		energy_required = 60,
 		ingredients = {
-			{type = "item", name = "demolisher-egg-midium", amount = 10},
+			{type = "item", name = "demolisher-egg-medium", amount = 10},
 			{type = "item", name = "tungsten-ore", amount = 200},
 			{type = "item", name = "calcite", amount = 200},
 			{type = "item", name = "uranium-235", amount = 200},
@@ -749,13 +749,13 @@ data:extend({
 	,
 	{
 		type = "recipe",
-		name = "new-spieces-demolisher-egg-midium-grow-recipe",
+		name = "new-spieces-demolisher-egg-medium-grow-recipe",
 		category = "organic",
 		subgroup = "agriculture-products",
 		enabled = false,
 		energy_required = 60,
 		ingredients = {
-			{type = "item", name = "new-spieces-demolisher-egg-midium", amount = 10},
+			{type = "item", name = "new-spieces-demolisher-egg-medium", amount = 10},
 			{type = "item", name = "tungsten-ore", amount = 200},
 			{type = "item", name = "calcite", amount = 200},
 			{type = "item", name = "uranium-235", amount = 200},
@@ -776,13 +776,13 @@ data:extend({
 	,
 	{
 		type = "recipe",
-		name = "friend-demolisher-egg-midium-grow-recipe",
+		name = "friend-demolisher-egg-medium-grow-recipe",
 		category = "organic",
 		subgroup = "agriculture-products",
 		enabled = false,
 		energy_required = 60,
 		ingredients = {
-			{type = "item", name = "friend-demolisher-egg-midium", amount = 10},
+			{type = "item", name = "friend-demolisher-egg-medium", amount = 10},
 			{type = "item", name = "tungsten-ore", amount = 200},
 			{type = "item", name = "calcite", amount = 200},
 			{type = "item", name = "uranium-235", amount = 200},
