@@ -1078,7 +1078,7 @@ data:extend({
 	{
 		type = "technology",
 		name = "demolisher-egg-unlock",
-		icon_size = 256,
+		icon_size = 64,
 		icon = "__BreedingDemolisher__/graphics/technology/demolisher-egg-tech.png",
 		prerequisites = {"captive-biter-spawner"},
 		unit = {
@@ -1230,7 +1230,7 @@ data:extend({
 	{
 		type = "technology",
 		name = "infinite-demolisher-life",
-		icon_size = 256,
+		icon_size = 64,
 		icon = "__BreedingDemolisher__/graphics/technology/infinite-demolisher-life.png",
 		prerequisites = {"demolisher-egg-unlock"},	-- Previous research as a prerequisite
 		unit = {
