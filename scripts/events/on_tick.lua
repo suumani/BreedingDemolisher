@@ -27,6 +27,7 @@ function my_demolisher_breeding()
 	if #storage.my_demolishers == 0 then
 		return
 	end
+	game.print("my_demolisher_breeding")
 	
 	for _, parent_value in pairs(storage.my_demolishers) do
 		if parent_value.customparam:get_entity().valid then

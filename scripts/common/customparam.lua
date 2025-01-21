@@ -27,7 +27,7 @@ function Customparam.new(
 	self.entity_name = entity_name or entity.name -- 種別名
 	self.name = name or (private_default_name(entity)) -- 個体名
 	self.size = size or math.random(100, 500) -- サイズ
-	self.quality = quality or 2 + math.random(1, 4) / 10  -- 品質 (0.0 - 1.0)
+	self.quality = quality or 1 + math.random(1, 4) / 10  -- 品質 (0.0 - 1.0)
 	self.speed = speed or 1 + math.random(1, 4) / 10 -- 移動速度 (0.1 - 1.0)
 	self.max_life = max_life or 180
 	self.life = max_life or 180
@@ -37,12 +37,23 @@ function Customparam.new(
 	self.satiety = max_satiety
 	self.lv = 1
 
+	game.print("self.quality1 = " .. self.quality)
 	-- 遺伝的特徴: 特性リスト
 	self.traits = traits or {
 		[CONST_DEMOLISHER_TRAIT.SHORT_WARP] = 1+math.random(0, 4) / 10, -- 近距離ワープ
 		[CONST_DEMOLISHER_TRAIT.EMERGENCY_FOOD] = 1+math.random(0, 4) / 10, -- 緊急食
 		[CONST_DEMOLISHER_TRAIT.BONUS_GROWTH] = 1+math.random(0, 4) / 10 -- 成長ボーナス
 	}
+
+	if self.name == "unknown" then
+		self.name = "egg: size, quality, speed, max_life, max_satiety, max_growth = "
+			.. self.size
+			.. ", " .. self.quality
+			.. ", " .. self.speed
+			.. ", " .. self.max_life
+			.. ", " .. self.max_satiety
+			.. ", " .. self.max_growth
+	end
 
 	return self
 end
@@ -51,6 +62,7 @@ end
 -- 進化: ランダム変異
 -- ----------------------------
 function Customparam:mutate(type, partnerparam)
+	game.print("self.quality2 = " .. self.quality)
 
 	-- 親の数を指定
 	local parent_num = 1
@@ -267,6 +279,9 @@ function Customparam:get_max_satiety()
 	return self.satiety
 end
 function Customparam:get_max_growth()
+	return self.growth
+end
+function Customparam:get_max_life()
 	return self.growth
 end
 
