@@ -118,24 +118,28 @@ function init()
 	-- 卵管理(正式仕様:ペット分 - 3次元)
 	if storage.my_eggs == nil then
 		storage.my_eggs = {}
-		storage.my_eggs[CONST_ENTITY_NAME.SMALL_DEMOLISHER] = {}
-		storage.my_eggs[CONST_ENTITY_NAME.SMALL_DEMOLISHER][CONST_QUALITY.NORMAL] = {}
-		storage.my_eggs[CONST_ENTITY_NAME.SMALL_DEMOLISHER][CONST_QUALITY.UNCOMMON] = {}
-		storage.my_eggs[CONST_ENTITY_NAME.SMALL_DEMOLISHER][CONST_QUALITY.RARE] = {}
-		storage.my_eggs[CONST_ENTITY_NAME.SMALL_DEMOLISHER][CONST_QUALITY.EPIC] = {}
-		storage.my_eggs[CONST_ENTITY_NAME.SMALL_DEMOLISHER][CONST_QUALITY.LEGENDARY] = {}
-		storage.my_eggs[CONST_ENTITY_NAME.MIDIUM_DEMOLISHER] = {}
-		storage.my_eggs[CONST_ENTITY_NAME.MIDIUM_DEMOLISHER][CONST_QUALITY.NORMAL] = {}
-		storage.my_eggs[CONST_ENTITY_NAME.MIDIUM_DEMOLISHER][CONST_QUALITY.UNCOMMON] = {}
-		storage.my_eggs[CONST_ENTITY_NAME.MIDIUM_DEMOLISHER][CONST_QUALITY.RARE] = {}
-		storage.my_eggs[CONST_ENTITY_NAME.MIDIUM_DEMOLISHER][CONST_QUALITY.EPIC] = {}
-		storage.my_eggs[CONST_ENTITY_NAME.MIDIUM_DEMOLISHER][CONST_QUALITY.LEGENDARY] = {}
-		storage.my_eggs[CONST_ENTITY_NAME.BIG_DEMOLISHER] = {}
-		storage.my_eggs[CONST_ENTITY_NAME.BIG_DEMOLISHER][CONST_QUALITY.NORMAL] = {}
-		storage.my_eggs[CONST_ENTITY_NAME.BIG_DEMOLISHER][CONST_QUALITY.UNCOMMON] = {}
-		storage.my_eggs[CONST_ENTITY_NAME.BIG_DEMOLISHER][CONST_QUALITY.RARE] = {}
-		storage.my_eggs[CONST_ENTITY_NAME.BIG_DEMOLISHER][CONST_QUALITY.EPIC] = {}
-		storage.my_eggs[CONST_ENTITY_NAME.BIG_DEMOLISHER][CONST_QUALITY.LEGENDARY] = {}
+
+		storage.my_eggs[CONST_ITEM_NAME.DEMOLISHER_EGG] = {}
+		storage.my_eggs[CONST_ITEM_NAME.NEW_SPIECES_DEMOLISHER_EGG] = {}
+		storage.my_eggs[CONST_ITEM_NAME.FRIEND_DEMOLISHER_EGG] = {}
+
+		storage.my_eggs[CONST_ITEM_NAME.DEMOLISHER_EGG_MIDDLE] = {}
+		storage.my_eggs[CONST_ITEM_NAME.NEW_SPIECES_DEMOLISHER_EGG_MIDDLE] = {}
+		storage.my_eggs[CONST_ITEM_NAME.FRIEND_DEMOLISHER_EGG_MIDDLE] = {}
+		
+		storage.my_eggs[CONST_ITEM_NAME.DEMOLISHER_EGG_BIG] = {}
+		storage.my_eggs[CONST_ITEM_NAME.NEW_SPIECES_DEMOLISHER_EGG_BIG] = {}
+		storage.my_eggs[CONST_ITEM_NAME.FRIEND_DEMOLISHER_EGG_BIG] = {}
+
+		for _, value in pairs(storage.my_eggs) do
+			value[CONST_QUALITY.NORMAL] = {}
+			value[CONST_QUALITY.UNCOMMON] = {}
+			value[CONST_QUALITY.RARE] = {}
+			value[CONST_QUALITY.EPIC] = {}
+			value[CONST_QUALITY.LEGENDARY] = {}
+		end
+
+		game.print("type = " .. type(storage.my_eggs["demolisher-egg"]["normal"]))
 	end
 	-- 遺伝管理テスト
 	if storage.genetic_data == nil then
