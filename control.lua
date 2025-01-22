@@ -139,7 +139,7 @@ function init()
 			value[CONST_QUALITY.LEGENDARY] = {}
 		end
 
-		game.print("type = " .. type(storage.my_eggs["demolisher-egg"]["normal"]))
+		-- game.print("type = " .. type(storage.my_eggs["demolisher-egg"]["normal"]))
 	end
 	-- à‚ì`ä«óùÉeÉXÉg
 	if storage.genetic_data == nil then
