@@ -87,9 +87,28 @@ function spawn_wild_demolishers()
 		local queued = storage.respawn_queue[i]
 		if game.tick >= queued.respawn_tick then
 			-- game.print("!!!demolisher egg hatched at x = "..queued.position.x ..", y = "..queued.position.y..", name = "..queued.entity_name..", force = "..queued.force.name)
+			-- home に近すぎるpositionを上書き
+			position = queued.position
+			l2 = position.x * position.x + position.y * position.y
+			if l2 < 40000 then -- 200 m 以内判定
+				if position.x * position.x < position.y * position.y then -- xの絶対値の方が小さい
+					if position.y < 0 then
+						position.y = position.y - 200
+					else
+						position.y = position.y + 200
+					end
+				else
+					if position.x < 0 then
+						position.x = position.x - 200
+					else
+						position.x = position.x + 200
+					end
+				end
+			end
+			
 			local new_entity = queued.surface.create_entity{
 				name = queued.entity_name,
-				position = queued.position,
+				position = position,
 				force = queued.force,
 				quality = choose_quality(queued.evolution_factor)
 			}
