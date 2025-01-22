@@ -99,6 +99,7 @@ data:extend({
 	{
 		type = "recipe",
 		name = "new-spieces-demolisher-egg-recipe",
+		result_is_always_fresh = true,
 		category = "cryogenics",
 		enabled = false,
 		energy_required = 60,
@@ -127,6 +128,7 @@ data:extend({
 	{
 		type = "recipe",
 		name = "demolisher-egg-freeze-recipe",
+		result_is_always_fresh = true,
 		category = "cryogenics",
 		enabled = false,
 		energy_required = 60,
@@ -153,6 +155,7 @@ data:extend({
 	{
 		type = "recipe",
 		name = "new-spieces-demolisher-egg-freeze-recipe",
+		result_is_always_fresh = true,
 		category = "cryogenics",
 		enabled = false,
 		energy_required = 60,
@@ -179,6 +182,7 @@ data:extend({
 	{
 		type = "recipe",
 		name = "friend-demolisher-egg-freeze-recipe",
+		result_is_always_fresh = true,
 		category = "cryogenics",
 		enabled = false,
 		energy_required = 60,
@@ -205,6 +209,7 @@ data:extend({
 	{
 		type = "recipe",
 		name = "demolisher-egg-unfreeze-recipe",
+		result_is_always_fresh = true,
 		category = "cryogenics",
 		enabled = false,
 		energy_required = 60,
@@ -231,6 +236,7 @@ data:extend({
 	{
 		type = "recipe",
 		name = "new-spieces-demolisher-egg-unfreeze-recipe",
+		result_is_always_fresh = true,
 		category = "cryogenics",
 		enabled = false,
 		energy_required = 60,
@@ -257,6 +263,7 @@ data:extend({
 	{
 		type = "recipe",
 		name = "friend-demolisher-egg-unfreeze-recipe",
+		result_is_always_fresh = true,
 		category = "cryogenics",
 		enabled = false,
 		energy_required = 60,
@@ -283,6 +290,7 @@ data:extend({
 	{
 		type = "recipe",
 		name = "demolisher-egg-dummy-recipe",
+		result_is_always_fresh = true,
 		category = "organic",
 		subgroup = "agriculture-products",
 		enabled = false,
@@ -312,6 +320,7 @@ data:extend({
 	{
 		type = "recipe",
 		name = "demolisher-egg-grow-recipe",
+		result_is_always_fresh = true,
 		category = "organic",
 		subgroup = "agriculture-products",
 		enabled = false,
@@ -341,6 +350,7 @@ data:extend({
 	{
 		type = "recipe",
 		name = "new-spieces-demolisher-egg-dummy-recipe",
+		result_is_always_fresh = true,
 		category = "organic",
 		subgroup = "agriculture-products",
 		enabled = false,
@@ -368,6 +378,7 @@ data:extend({
 	{
 		type = "recipe",
 		name = "new-spieces-demolisher-egg-grow-recipe",
+		result_is_always_fresh = true,
 		category = "organic",
 		subgroup = "agriculture-products",
 		enabled = false,
@@ -395,6 +406,7 @@ data:extend({
 	{
 		type = "recipe",
 		name = "friend-demolisher-egg-dummy-recipe",
+		result_is_always_fresh = true,
 		category = "organic",
 		subgroup = "agriculture-products",
 		enabled = false,
@@ -422,6 +434,7 @@ data:extend({
 	{
 		type = "recipe",
 		name = "friend-demolisher-egg-grow-recipe",
+		result_is_always_fresh = true,
 		category = "organic",
 		subgroup = "agriculture-products",
 		enabled = false,
@@ -539,6 +552,7 @@ data:extend({
 	{
 		type = "recipe",
 		name = "new-spieces-demolisher-egg-medium-recipe",
+		result_is_always_fresh = true,
 		category = "cryogenics",
 		enabled = false,
 		energy_required = 60,
@@ -567,6 +581,7 @@ data:extend({
 	{
 		type = "recipe",
 		name = "demolisher-egg-medium-freeze-recipe",
+		result_is_always_fresh = true,
 		category = "cryogenics",
 		enabled = false,
 		energy_required = 60,
@@ -593,6 +608,7 @@ data:extend({
 	{
 		type = "recipe",
 		name = "new-spieces-demolisher-egg-medium-freeze-recipe",
+		result_is_always_fresh = true,
 		category = "cryogenics",
 		enabled = false,
 		energy_required = 60,
@@ -619,6 +635,7 @@ data:extend({
 	{
 		type = "recipe",
 		name = "friend-demolisher-egg-medium-freeze-recipe",
+		result_is_always_fresh = true,
 		category = "cryogenics",
 		enabled = false,
 		energy_required = 60,
@@ -645,6 +662,7 @@ data:extend({
 	{
 		type = "recipe",
 		name = "demolisher-egg-medium-unfreeze-recipe",
+		result_is_always_fresh = true,
 		category = "cryogenics",
 		enabled = false,
 		energy_required = 60,
@@ -671,6 +689,7 @@ data:extend({
 	{
 		type = "recipe",
 		name = "new-spieces-demolisher-egg-medium-unfreeze-recipe",
+		result_is_always_fresh = true,
 		category = "cryogenics",
 		enabled = false,
 		energy_required = 60,
@@ -697,6 +716,7 @@ data:extend({
 	{
 		type = "recipe",
 		name = "friend-demolisher-egg-medium-unfreeze-recipe",
+		result_is_always_fresh = true,
 		category = "cryogenics",
 		enabled = false,
 		energy_required = 60,
@@ -723,6 +743,7 @@ data:extend({
 	{
 		type = "recipe",
 		name = "demolisher-egg-medium-grow-recipe",
+		result_is_always_fresh = true,
 		category = "organic",
 		subgroup = "agriculture-products",
 		enabled = false,
@@ -750,6 +771,7 @@ data:extend({
 	{
 		type = "recipe",
 		name = "new-spieces-demolisher-egg-medium-grow-recipe",
+		result_is_always_fresh = true,
 		category = "organic",
 		subgroup = "agriculture-products",
 		enabled = false,
@@ -777,6 +799,7 @@ data:extend({
 	{
 		type = "recipe",
 		name = "friend-demolisher-egg-medium-grow-recipe",
+		result_is_always_fresh = true,
 		category = "organic",
 		subgroup = "agriculture-products",
 		enabled = false,
@@ -894,6 +917,7 @@ data:extend({
 	{
 		type = "recipe",
 		name = "new-spieces-demolisher-egg-big-recipe",
+		result_is_always_fresh = true,
 		category = "cryogenics",
 		enabled = false,
 		energy_required = 60,
@@ -922,6 +946,7 @@ data:extend({
 	{
 		type = "recipe",
 		name = "demolisher-egg-big-freeze-recipe",
+		result_is_always_fresh = true,
 		category = "cryogenics",
 		enabled = false,
 		energy_required = 60,
@@ -948,6 +973,7 @@ data:extend({
 	{
 		type = "recipe",
 		name = "new-spieces-demolisher-egg-big-freeze-recipe",
+		result_is_always_fresh = true,
 		category = "cryogenics",
 		enabled = false,
 		energy_required = 60,
@@ -974,6 +1000,7 @@ data:extend({
 	{
 		type = "recipe",
 		name = "friend-demolisher-egg-big-freeze-recipe",
+		result_is_always_fresh = true,
 		category = "cryogenics",
 		enabled = false,
 		energy_required = 60,
@@ -1000,6 +1027,7 @@ data:extend({
 	{
 		type = "recipe",
 		name = "demolisher-egg-big-unfreeze-recipe",
+		result_is_always_fresh = true,
 		category = "cryogenics",
 		enabled = false,
 		energy_required = 60,
@@ -1026,6 +1054,7 @@ data:extend({
 	{
 		type = "recipe",
 		name = "new-spieces-demolisher-egg-big-unfreeze-recipe",
+		result_is_always_fresh = true,
 		category = "cryogenics",
 		enabled = false,
 		energy_required = 60,
@@ -1052,6 +1081,7 @@ data:extend({
 	{
 		type = "recipe",
 		name = "friend-demolisher-egg-big-unfreeze-recipe",
+		result_is_always_fresh = true,
 		category = "cryogenics",
 		enabled = false,
 		energy_required = 60,
