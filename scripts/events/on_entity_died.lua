@@ -61,7 +61,7 @@ function on_entity_dead_local.enemy_except_demolisher_dead(event, entity)
 		end
 	end
 	
-	game.print("enemy_except_demolisher_dead error")
+	demolisher_print("enemy_except_demolisher_dead error")
 end
 
 -- ----------------------------
@@ -73,9 +73,7 @@ function dead_my_demolisher(event, entity)
 		return
 	end
 	
-	-- game.print("test1")
 	for i = #storage.my_demolishers, 1, -1 do
-		-- game.print("test2")
 		local my_demolisher = storage.my_demolishers[i]
 		if entity.unit_number == my_demolisher.unit_number then
 		
@@ -95,7 +93,6 @@ function dead_my_demolisher(event, entity)
 					
 				-- 新種の場合、卵ドロップは70％、種類はランダム
 				elseif entity.force.name == "demolishers" then
-					-- game.print("test3")
 					drop_rate = 0.7
 					if r2 < 0.2 then 
 						item = CONST_ITEM_NAME.FRIEND_DEMOLISHER_EGG
@@ -161,7 +158,7 @@ function on_entity_dead_local.demolisher_dead_event(event, entity)
 	if((r < evolution_factor/2) or (evolution_factor < 0.3 and r < 0.15)) then
 		local spawn_position = getSpawnPosition(entity.surface, evolution_factor, entity.position)
 		if spawn_position ~= nil then
-			game.print("["..entity.surface.name.."]".."demolisher defeated, but egg is missing... would hatch within 10 minutes...")
+			demolisher_print("["..entity.surface.name.."]".."demolisher defeated, but egg is missing... would hatch within 10 minutes...")
 			table.insert(
 				storage.respawn_queue
 				, {
@@ -173,10 +170,10 @@ function on_entity_dead_local.demolisher_dead_event(event, entity)
 					, respawn_tick = game.tick + 18000 + 18000*r2} -- 60=1秒, 3600=1分, 18000=5分, 5～10分で孵化
 			)
 		else
-			game.print("["..entity.surface.name.."]".."demolisher defeated, egg was rotten...")
+			demolisher_print("["..entity.surface.name.."]".."demolisher defeated, egg was rotten...")
 		end
 	else
-		game.print("["..entity.surface.name.."]".."demolisher defeated, egg destroyed.")
+		demolisher_print("["..entity.surface.name.."]".."demolisher defeated, egg destroyed.")
 	end
 	
 	-- 追加デモリッシャーリストから削除
@@ -223,10 +220,10 @@ function drop_item(entity, item_name, drop_rate, customparam, quality)
 
 		
 		if customparam == nil then
-			game.print("["..entity.surface.name.."]".."demolisher defeated, you can find egg somewhere!")
+			demolisher_print("["..entity.surface.name.."]".."demolisher defeated, you can find egg somewhere!")
 		else
 		
-			game.print("item_name, str_quality = " .. item_name .. ", " .. str_quality)
+			demolisher_print("item_name, str_quality = " .. item_name .. ", " .. str_quality)
 			-- ドロップした卵のステータスを保存
 			if storage.my_eggs[item_name] == nil then
 				storage.my_eggs[item_name] = {}
@@ -236,7 +233,7 @@ function drop_item(entity, item_name, drop_rate, customparam, quality)
 			end
 			table.insert(storage.my_eggs[item_name][str_quality], {gametick = game.tick, customparam = customparam})
 			
-			game.print("["..entity.surface.name.."]".."demolisher lay eggs, you can find egg somewhere!")
+			demolisher_print("["..entity.surface.name.."]".."demolisher lay eggs, you can find egg somewhere!")
 		end
 
 		return true
