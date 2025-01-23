@@ -10,6 +10,7 @@ require("scripts.defines.constant_quality")
 require("scripts.common.customparam")
 require("scripts.common.choose_quality")
 require("scripts.common.demolisher_rush")
+require("scripts.common.game_print")
 
 require("scripts.events.on_entity_died")
 require("scripts.events.on_gui_opened")
@@ -139,7 +140,7 @@ function init()
 			value[CONST_QUALITY.LEGENDARY] = {}
 		end
 
-		-- game.print("type = " .. type(storage.my_eggs["demolisher-egg"]["normal"]))
+		-- debug_print("type = " .. type(storage.my_eggs["demolisher-egg"]["normal"]))
 	end
 	-- 遺伝管理テスト
 	if storage.genetic_data == nil then
@@ -158,7 +159,7 @@ function init()
 		new_force.set_cease_fire("player", false) -- プレイヤーと敵対
 		new_force.set_cease_fire("enemy", false) -- バイターと敵対
 		new_force.set_cease_fire("neutral", true) -- 中立と停戦
-		game.print("[mod:BreedingDemolisher] initialize forces")
+		demolisher_print.print("[mod:BreedingDemolisher] initialize forces")
 	end
 	
 	-- セーブデータ対応(ver.0.1.9)

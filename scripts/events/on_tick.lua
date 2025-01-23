@@ -27,7 +27,7 @@ function my_demolisher_breeding()
 	if #storage.my_demolishers == 0 then
 		return
 	end
-	game.print("my_demolisher_breeding")
+	demolisher_print("[BreedingDemolisher] my_demolisher_breeding")
 	
 	for _, parent_value in pairs(storage.my_demolishers) do
 		if parent_value.customparam:get_entity().valid then
@@ -86,7 +86,7 @@ function spawn_wild_demolishers()
 	for i = #storage.respawn_queue, 1, -1 do
 		local queued = storage.respawn_queue[i]
 		if game.tick >= queued.respawn_tick then
-			-- game.print("!!!demolisher egg hatched at x = "..queued.position.x ..", y = "..queued.position.y..", name = "..queued.entity_name..", force = "..queued.force.name)
+			-- debug_print("!!!demolisher egg hatched at x = "..queued.position.x ..", y = "..queued.position.y..", name = "..queued.entity_name..", force = "..queued.force.name)
 			-- home に近すぎるpositionを上書き
 			position = queued.position
 			l2 = position.x * position.x + position.y * position.y
@@ -118,7 +118,7 @@ function spawn_wild_demolishers()
 			if(queued.surface.name == "vulcanus") then
 				storage.additional_demolishers[new_entity.unit_number] = game.tick
 				storage.additional_demolishers["count"] = storage.additional_demolishers["count"] + 1
-				-- game.print("new_entity.unit_number = " ..new_entity.unit_number)
+				-- debug_print("new_entity.unit_number = " ..new_entity.unit_number)
 			elseif (queued.surface.name == "fulgora") then
 				storage.fulgora_demolishers[new_entity.unit_number] = game.tick
 				storage.fulgora_demolishers["count"] = storage.additional_demolishers["count"] + 1
@@ -140,9 +140,9 @@ function die_wild_demolishers()
 		for _, entity in pairs(all_demolishers) do
 			if entity.valid and (entity.name == CONST_ENTITY_NAME.SMALL_DEMOLISHER or entity.name == CONST_ENTITY_NAME.MIDIUM_DEMOLISHER or entity.name == CONST_ENTITY_NAME.BIG_DEMOLISHER) then
 				if(storage.additional_demolishers[entity.unit_number] ~= nil) then
-					-- game.print("demolisher remove try storage.additional_demolishers[entity.unit_number] = "..storage.additional_demolishers[entity.unit_number])
+					-- debug_print("demolisher remove try storage.additional_demolishers[entity.unit_number] = "..storage.additional_demolishers[entity.unit_number])
 					if((storage.additional_demolishers[entity.unit_number] + 648000) < game.tick) then -- 648000は3時間
-						-- game.print("demolisher despawned")
+						-- debug_print("demolisher despawned")
 						storage.additional_demolishers[entity.unit_number] = nil
 						storage.additional_demolishers["count"] = storage.additional_demolishers["count"] - 1
 						entity.destroy()
@@ -159,7 +159,7 @@ end
 -- ----------------------------
 function my_demolisher_getting_hangry()
 
-	-- game.print("my_demolisher_getting_hangry")
+	-- debug_print("my_demolisher_getting_hangry")
 	-- ペットが居なければ終了
 	if #storage.my_demolishers == 0 then
 		return

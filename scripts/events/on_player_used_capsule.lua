@@ -7,12 +7,12 @@ script.on_event("on_breeding_demolisher_mouse_button_2", function(event)
 	local quality = nil
     if cursor_stack then
 		if cursor_stack.valid_for_read then
-			-- game.print("cursor_stack.name = " .. cursor_stack.name)
+			-- debug_print("cursor_stack.name = " .. cursor_stack.name)
 			if cursor_stack.name:find("demolisher%-egg") then
 				quality = cursor_stack.quality.name or "Normal" -- Quality取得
 				-- 氷なら砕けておしまい。遺伝子はロストしない（ロストすべきかも）
 				if cursor_stack.name:find("frozen") then
-					game.print("shattered...")
+					demolisher_print("shattered...")
 					-- 手にもっているアイテムを削除
 					cursor_stack.clear()
 					return
