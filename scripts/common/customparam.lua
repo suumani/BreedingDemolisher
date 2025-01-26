@@ -32,7 +32,7 @@ function Customparam.new(
 	self.max_life = max_life or 180
 	self.life = max_life or 180
 	self.max_growth = max_growth
-	self.growth = 40 --40
+	self.growth = 0 --40
 	self.max_satiety = max_satiety
 	self.satiety = max_satiety
 	self.lv = 1
