@@ -140,7 +140,7 @@ function on_entity_dead_local.demolisher_dead_event(event, entity)
 	end
 
 	-- 野良デモリッシャー
-	local drop_rate = 1.05
+	local drop_rate = 0.05
 	local item = CONST_ITEM_NAME.DEMOLISHER_EGG
 	local drop = drop_item(event.entity, item, drop_rate)
 	
