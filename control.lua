@@ -159,7 +159,7 @@ function init()
 		new_force.set_cease_fire("player", false) -- プレイヤーと敵対
 		new_force.set_cease_fire("enemy", false) -- バイターと敵対
 		new_force.set_cease_fire("neutral", true) -- 中立と停戦
-		demolisher_print.print("[mod:BreedingDemolisher] initialize forces")
+		demolisher_print("[mod:BreedingDemolisher] initialize forces")
 	end
 	
 	-- セーブデータ対応(ver.0.1.9)

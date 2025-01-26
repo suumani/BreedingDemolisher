@@ -32,7 +32,7 @@ function Customparam.new(
 	self.max_life = max_life or 180
 	self.life = max_life or 180
 	self.max_growth = max_growth
-	self.growth = 40
+	self.growth = 40 --40
 	self.max_satiety = max_satiety
 	self.satiety = max_satiety
 	self.lv = 1
@@ -146,7 +146,7 @@ function Customparam:mutate(type, partnerparam)
 	end
 
 	-- 大きさの変動
-	size = size + math.random(-2000, 2000 * max_rate) -- サイズ変動 (small 30000, midium 100000, big 300000 )
+	size = size + math.random(-2000, 2000 * max_rate) -- サイズ変動 (small 30000, medium 100000, big 300000 )
 	-- 大きさ制限処理は、進化依存
 
 	-- 品質の変動
@@ -220,14 +220,14 @@ function Customparam:mutate(type, partnerparam)
 		end
 	end
 
-	-- 進化処理：small demolisher <-> midium demolisher <-> big demolisher
+	-- 進化処理：small demolisher <-> medium demolisher <-> big demolisher
 	if entity_name == CONST_ENTITY_NAME.SMALL_DEMOLISHER then
 		if size > 100000 then
-			entity_name = CONST_ENTITY_NAME.MIDIUM_DEMOLISHER
+			entity_name = CONST_ENTITY_NAME.MEDIUM_DEMOLISHER
 		elseif size < 15000 then
 			size = 15000
 		end
-	elseif entity_name == CONST_ENTITY_NAME.MIDIUM_DEMOLISHER then
+	elseif entity_name == CONST_ENTITY_NAME.MEDIUM_DEMOLISHER then
 		if size > 300000 then
 			entity_name = CONST_ENTITY_NAME.BIG_DEMOLISHER
 		elseif size < 30000 then
@@ -235,7 +235,7 @@ function Customparam:mutate(type, partnerparam)
 		end
 	else
 		if size < 300000 then
-			entity_name = CONST_ENTITY_NAME.MIDIUM_DEMOLISHER
+			entity_name = CONST_ENTITY_NAME.MEDIUM_DEMOLISHER
 		end
 	end
 
@@ -326,7 +326,7 @@ function Customparam:get_dafault_name_size()
 	-- ユニットタイプ
 	if self.entity.name == CONST_ENTITY_NAME.BIG_DEMOLISHER then
 		return  "S"
-	elseif  self.entity.name == CONST_ENTITY_NAME.MIDIUM_DEMOLISHER then
+	elseif  self.entity.name == CONST_ENTITY_NAME.MEDIUM_DEMOLISHER then
 		return  "A"
 	elseif  self.entity.name == CONST_ENTITY_NAME.SMALL_DEMOLISHER then
 		return  "B"
@@ -377,7 +377,7 @@ function private_default_name(entity)
 	-- ユニットタイプ
 	if entity.name == CONST_ENTITY_NAME.BIG_DEMOLISHER then
 		name = name .. "_" .. "S"
-	elseif  entity.name == CONST_ENTITY_NAME.MIDIUM_DEMOLISHER then
+	elseif  entity.name == CONST_ENTITY_NAME.MEDIUM_DEMOLISHER then
 		name = name .. "_" .. "A"
 	elseif  entity.name == CONST_ENTITY_NAME.SMALL_DEMOLISHER then
 		name = name .. "_" .. "B"
