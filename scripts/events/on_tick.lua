@@ -27,7 +27,7 @@ function my_demolisher_breeding()
 	if #storage.my_demolishers == 0 then
 		return
 	end
-	demolisher_print("[BreedingDemolisher] my_demolisher_breeding")
+	debug_print("[BreedingDemolisher] my_demolisher_breeding function")
 	
 	for _, parent_value in pairs(storage.my_demolishers) do
 		if parent_value.customparam:get_entity().valid then
@@ -55,6 +55,7 @@ function my_demolisher_breeding()
 								elseif parent_entity.force == "demolishers" then
 									item_name = CONST_ITEM_NAME.NEW_SPIECES_DEMOLISHER_EGG
 								end
+								debug_print("[BreedingDemolisher] my_demolisher_breeding neer (x, y) = (" .. parent_entity.position.x .. ", " .. parent_entity.position.y ..")" )
 								drop_item(parent_entity, item_name, drop_rate, customparam, customparam:get_quality())
 								return
 							end
@@ -136,9 +137,9 @@ function die_wild_demolishers()
 	-- デモリッシャ削除イベント
 	local vulcanus_surface = game.surfaces["vulcanus"]
 	if vulcanus_surface ~= nil then
-		local all_demolishers = vulcanus_surface.find_entities_filtered{force = "enemy", {name = CONST_ENTITY_NAME.SMALL_DEMOLISHER, name = CONST_ENTITY_NAME.MIDIUM_DEMOLISHER, name = CONST_ENTITY_NAME.BIG_DEMOLISHER}}
+		local all_demolishers = vulcanus_surface.find_entities_filtered{force = "enemy", {name = CONST_ENTITY_NAME.SMALL_DEMOLISHER, name = CONST_ENTITY_NAME.MEDIUM_DEMOLISHER, name = CONST_ENTITY_NAME.BIG_DEMOLISHER}}
 		for _, entity in pairs(all_demolishers) do
-			if entity.valid and (entity.name == CONST_ENTITY_NAME.SMALL_DEMOLISHER or entity.name == CONST_ENTITY_NAME.MIDIUM_DEMOLISHER or entity.name == CONST_ENTITY_NAME.BIG_DEMOLISHER) then
+			if entity.valid and (entity.name == CONST_ENTITY_NAME.SMALL_DEMOLISHER or entity.name == CONST_ENTITY_NAME.MEDIUM_DEMOLISHER or entity.name == CONST_ENTITY_NAME.BIG_DEMOLISHER) then
 				if(storage.additional_demolishers[entity.unit_number] ~= nil) then
 					-- debug_print("demolisher remove try storage.additional_demolishers[entity.unit_number] = "..storage.additional_demolishers[entity.unit_number])
 					if((storage.additional_demolishers[entity.unit_number] + 648000) < game.tick) then -- 648000は3時間

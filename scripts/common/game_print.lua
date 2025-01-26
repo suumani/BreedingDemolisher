@@ -2,7 +2,7 @@
 -- debug文の表示
 -- ----------------------------
 function debug_print(str)
-	game.print(str)
+	-- game.print(str)
 end
 
 -- ----------------------------
