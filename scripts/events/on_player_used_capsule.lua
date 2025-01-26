@@ -68,7 +68,14 @@ script.on_event("on_breeding_demolisher_mouse_button_2", function(event)
 	end
 
 	local surface = player.surface
-	spawn_my_demolisher(surface, spawn_position, force, customparam, quality)
+	local name = CONST_ENTITY_NAME.SMALL_DEMOLISHER
+	if cursor_stack.name:find("medium") then
+		name = CONST_ENTITY_NAME.MEDIUM_DEMOLISHER
+	elseif cursor_stack.name:find("big") then
+		name = CONST_ENTITY_NAME.BIG_DEMOLISHER
+	end
+
+	spawn_my_demolisher(surface, name, spawn_position, force, customparam, quality)
 
 	-- 手にもっているアイテムを削除
 	cursor_stack.clear()
@@ -79,9 +86,9 @@ end)
 -- ----------------------------
 -- ペットデモリッシャーの生成
 -- ----------------------------
-function spawn_my_demolisher(surface, position, force, customparam, strquality)
+function spawn_my_demolisher(surface, name, position, force, customparam, strquality)
 	local entity = surface.create_entity({
-		name = CONST_ENTITY_NAME.SMALL_DEMOLISHER,
+		name = name,
 		position = position,
 		force = force,
 		quality = strquality

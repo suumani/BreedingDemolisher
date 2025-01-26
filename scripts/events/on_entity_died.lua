@@ -8,7 +8,7 @@ script.on_event(defines.events.on_entity_died, function(event)
 
 	local entity = event.entity
 
-	if (entity.name == CONST_ENTITY_NAME.SMALL_DEMOLISHER or entity.name == CONST_ENTITY_NAME.MIDIUM_DEMOLISHER or entity.name == CONST_ENTITY_NAME.BIG_DEMOLISHER) then
+	if (entity.name == CONST_ENTITY_NAME.SMALL_DEMOLISHER or entity.name == CONST_ENTITY_NAME.MEDIUM_DEMOLISHER or entity.name == CONST_ENTITY_NAME.BIG_DEMOLISHER) then
 		-- デモリッシャー死亡イベント
 		on_entity_dead_local.demolisher_dead_event(event, entity)
 	else
@@ -223,7 +223,7 @@ function drop_item(entity, item_name, drop_rate, customparam, quality)
 			demolisher_print("["..entity.surface.name.."]".."demolisher defeated, you can find egg somewhere!")
 		else
 		
-			demolisher_print("item_name, str_quality = " .. item_name .. ", " .. str_quality)
+			debug_print("item_name, str_quality = " .. item_name .. ", " .. str_quality)
 			-- ドロップした卵のステータスを保存
 			if storage.my_eggs[item_name] == nil then
 				storage.my_eggs[item_name] = {}
