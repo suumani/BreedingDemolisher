@@ -8,8 +8,7 @@ function demolisher_rush(surface, evolution_factor)
 	local counter = 0
 	local all_demolishers_a = {}
 
-	-- このように検索にしないと、unit_numberが一意とならない（この検索ロジックは変更不可）
-	local all_demolishers_result = surface.find_entities_filtered{force = "enemy", {name = CONST_ENTITY_NAME.SMALL_DEMOLISHER, name = CONST_ENTITY_NAME.MEDIUM_DEMOLISHER, CONST_ENTITY_NAME.BIG_DEMOLISHER}}
+	local all_demolishers_result = surface.find_entities_filtered{force = "enemy", name = {CONST_ENTITY_NAME.SMALL_DEMOLISHER, CONST_ENTITY_NAME.MEDIUM_DEMOLISHER, CONST_ENTITY_NAME.BIG_DEMOLISHER}}
 	for _, entity in pairs(all_demolishers_result) do
 		
 		if entity.valid and (entity.name == CONST_ENTITY_NAME.SMALL_DEMOLISHER or entity.name == CONST_ENTITY_NAME.MEDIUM_DEMOLISHER or entity.name == CONST_ENTITY_NAME.BIG_DEMOLISHER) then

@@ -137,7 +137,7 @@ function die_wild_demolishers()
 	-- デモリッシャ削除イベント
 	local vulcanus_surface = game.surfaces["vulcanus"]
 	if vulcanus_surface ~= nil then
-		local all_demolishers = vulcanus_surface.find_entities_filtered{force = "enemy", {name = CONST_ENTITY_NAME.SMALL_DEMOLISHER, name = CONST_ENTITY_NAME.MEDIUM_DEMOLISHER, name = CONST_ENTITY_NAME.BIG_DEMOLISHER}}
+		local all_demolishers = vulcanus_surface.find_entities_filtered{force = "enemy", name = {CONST_ENTITY_NAME.SMALL_DEMOLISHER, CONST_ENTITY_NAME.MEDIUM_DEMOLISHER, CONST_ENTITY_NAME.BIG_DEMOLISHER}}
 		for _, entity in pairs(all_demolishers) do
 			if entity.valid and (entity.name == CONST_ENTITY_NAME.SMALL_DEMOLISHER or entity.name == CONST_ENTITY_NAME.MEDIUM_DEMOLISHER or entity.name == CONST_ENTITY_NAME.BIG_DEMOLISHER) then
 				if(storage.additional_demolishers[entity.unit_number] ~= nil) then
