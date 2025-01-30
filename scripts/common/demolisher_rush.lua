@@ -39,9 +39,10 @@ function demolisher_rush(surface, evolution_factor)
 		
 		local c = 0
 		for _, entity in pairs(all_demolishers) do
-			for i = 0, (0 + 5*evolution_factor*math.random()), 1 do -- 進化度の5倍を上限に生成
-				-- 1度のラッシュの最大の生成数は100体
-				if c > 100 then
+			local egg_max = math.random(0,  1 + math.floor(5 * evolution_factor))
+			for i = 0, egg_max, 1 do -- 進化度の5倍を上限に生成
+				-- 1度のラッシュの最大の生成数は 100 * evolution_factor / 2 体
+				if c >  100 * evolution_factor then
 					break
 				end
 				
@@ -54,11 +55,6 @@ function demolisher_rush(surface, evolution_factor)
 				if not(entity.name == CONST_ENTITY_NAME.SMALL_DEMOLISHER or entity.name == CONST_ENTITY_NAME.MEDIUM_DEMOLISHER or entity.name == CONST_ENTITY_NAME.BIG_DEMOLISHER) then
 					break
 				end
-				
-				-- 複製個体は複製を発生させない
-				-- if (storage.additional_demolishers[entity.unit_number] ~= nil) then
-				--	break
-				-- end
 				
 				local demolisher_position = entity.position
 				local spawn_position = getSpawnPosition(surface, evolution_factor, demolisher_position)
@@ -79,7 +75,7 @@ function demolisher_rush(surface, evolution_factor)
 			end
 		end
 		if c ~= 0 then
-			demolisher_print("[vulcanus]demolishers are multiplying... more than ".. c.." eggs are missing...")
+			demolisher_print("[vulcanus]demolishers are multiplying... more than ".. c.." eggs are missing... evo = " .. math.floor(100 * evolution_factor) / 100)
 		else
 			demolisher_print("[vulcanus]demolishers are multiplying... but nothing happen...")
 		end
