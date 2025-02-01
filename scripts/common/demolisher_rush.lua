@@ -34,7 +34,7 @@ function demolisher_rush(surface, evolution_factor)
 	
 	-- 追加200体未満であれば発動
 	if(storage.additional_demolishers["count"] > 200) then
-		demolisher_print("[vulcanus]demolishers abound...")
+		game_print.message("[vulcanus]demolishers abound...")
 	else
 		
 		local c = 0
@@ -75,9 +75,9 @@ function demolisher_rush(surface, evolution_factor)
 			end
 		end
 		if c ~= 0 then
-			demolisher_print("[vulcanus]demolishers are multiplying... more than ".. c.." eggs are missing... evo = " .. math.floor(100 * evolution_factor) / 100)
+			game_print.message("[vulcanus]demolishers are multiplying... more than ".. c.." eggs are missing... evo = " .. math.floor(100 * evolution_factor) / 100)
 		else
-			demolisher_print("[vulcanus]demolishers are multiplying... but nothing happen...")
+			game_print.message("[vulcanus]demolishers are multiplying... but nothing happen...")
 		end
 	end
 end
