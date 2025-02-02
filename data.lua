@@ -9,11 +9,4 @@ data:extend({
         key_sequence = "mouse-button-2", -- 右クリック
 		consuming = "none" -- イベントを消費しない
     }
-	,
-    {
-        type = "custom-input",
-        name = "on_insert_ammo_to_turrets",
-        key_sequence = "I",
-        consuming = "none" -- イベントを消費しない
-    }
 })

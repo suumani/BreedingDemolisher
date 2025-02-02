@@ -13,7 +13,6 @@ require("scripts.common.demolisher_rush")
 require("scripts.common.game_print")
 
 require("scripts.events.on_breeding_demolisher_mouse_button_2")
-require("scripts.events.on_insert_ammo_to_turrets")
 
 require("scripts.events.on_entity_died")
 require("scripts.events.on_gui_opened")
