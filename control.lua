@@ -12,9 +12,11 @@ require("scripts.common.choose_quality")
 require("scripts.common.demolisher_rush")
 require("scripts.common.game_print")
 
+require("scripts.events.on_breeding_demolisher_mouse_button_2")
+require("scripts.events.on_insert_ammo_to_turrets")
+
 require("scripts.events.on_entity_died")
 require("scripts.events.on_gui_opened")
-require("scripts.events.on_player_used_capsule")
 require("scripts.events.on_selected_entity_changed")
 require("scripts.events.on_nth_tick_1min")
 require("scripts.events.on_nth_tick_30min")

@@ -4,7 +4,7 @@ game_print = {}
 -- debug文の表示
 -- ----------------------------
 local function debug_print(str)
-	-- game.print(str)
+	game.print(str)
 end
 
 -- ----------------------------

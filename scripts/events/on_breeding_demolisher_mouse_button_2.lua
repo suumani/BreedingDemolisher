@@ -1,7 +1,8 @@
-
 script.on_event("on_breeding_demolisher_mouse_button_2", function(event)
 	
     local player = game.get_player(event.player_index)
+    if not player or not player.character then return end
+
     local cursor_stack = player.cursor_stack -- 手に持っているアイテム
 
 	local quality = nil
