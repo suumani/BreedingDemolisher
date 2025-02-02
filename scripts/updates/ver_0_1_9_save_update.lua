@@ -100,10 +100,10 @@ function add_high_quality_demolisher_life(entity)
 end
 
 -- ----------------------------
--- 全てのデモリッシャーを検索（この方式で検索しないと、unit_numberが一定しない。たぶん、体節の関係じゃなかろうか）
+-- 全てのデモリッシャーを検索
 -- ----------------------------
 function find_all_vulcanus_demolisher(vulcanus_surface)
-	local all_demolishers_result = vulcanus_surface.find_entities_filtered{force = "enemy", {name = CONST_ENTITY_NAME.SMALL_DEMOLISHER, name = CONST_ENTITY_NAME.MEDIUM_DEMOLISHER, name = CONST_ENTITY_NAME.BIG_DEMOLISHER}}
+	local all_demolishers_result = vulcanus_surface.find_entities_filtered{force = "enemy", name = {CONST_ENTITY_NAME.SMALL_DEMOLISHER, CONST_ENTITY_NAME.MEDIUM_DEMOLISHER, CONST_ENTITY_NAME.BIG_DEMOLISHER}}
 	local counter = 0
 	local all_demolishers = {}
 	for _, entity in pairs(all_demolishers_result) do

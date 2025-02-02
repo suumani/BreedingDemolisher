@@ -12,11 +12,14 @@ require("scripts.common.choose_quality")
 require("scripts.common.demolisher_rush")
 require("scripts.common.game_print")
 
+require("scripts.events.on_breeding_demolisher_mouse_button_2")
+require("scripts.events.on_insert_ammo_to_turrets")
+
 require("scripts.events.on_entity_died")
 require("scripts.events.on_gui_opened")
-require("scripts.events.on_player_used_capsule")
 require("scripts.events.on_selected_entity_changed")
-require("scripts.events.on_tick")
+require("scripts.events.on_nth_tick_1min")
+require("scripts.events.on_nth_tick_30min")
 
 require("scripts.gui.selected_demolisher_gui")
 require("scripts.updates.ver_0_1_9_save_update")
@@ -159,7 +162,7 @@ function init()
 		new_force.set_cease_fire("player", false) -- プレイヤーと敵対
 		new_force.set_cease_fire("enemy", false) -- バイターと敵対
 		new_force.set_cease_fire("neutral", true) -- 中立と停戦
-		demolisher_print("[mod:BreedingDemolisher] initialize forces")
+		game_print.message("[mod:BreedingDemolisher] initialize forces")
 	end
 	
 	-- セーブデータ対応(ver.0.1.9)
