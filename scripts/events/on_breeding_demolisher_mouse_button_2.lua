@@ -1,7 +1,8 @@
-
 script.on_event("on_breeding_demolisher_mouse_button_2", function(event)
 	
     local player = game.get_player(event.player_index)
+    if not player or not player.character then return end
+
     local cursor_stack = player.cursor_stack -- 手に持っているアイテム
 
 	local quality = nil
@@ -12,7 +13,7 @@ script.on_event("on_breeding_demolisher_mouse_button_2", function(event)
 				quality = cursor_stack.quality.name or "Normal" -- Quality取得
 				-- 氷なら砕けておしまい。遺伝子はロストしない（ロストすべきかも）
 				if cursor_stack.name:find("frozen") then
-					demolisher_print("shattered...")
+					game_print.message("shattered...")
 					-- 手にもっているアイテムを削除
 					cursor_stack.clear()
 					return
