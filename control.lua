@@ -11,6 +11,8 @@ require("scripts.common.customparam")
 require("scripts.common.choose_quality")
 require("scripts.common.demolisher_rush")
 require("scripts.common.game_print")
+require("scripts.common.wild_demolisher")
+require("scripts.common.util")
 
 require("scripts.events.on_breeding_demolisher_mouse_button_2")
 
@@ -66,22 +68,120 @@ script.on_load(function()
 
 end)
 
+local function find_demolisher_entity(all_demolishers, unit_number)
+	for _, value in pairs(all_demolishers) do
+		if value.unit_number == unit_number then
+			return value
+		end
+	end
+	return nil
+end
+
+local function is_old_data_0_3_2(old_version)
+	if old_version == "0.0.1" or
+		old_version == "0.0.2" or
+		old_version == "0.0.3" or
+		old_version == "0.0.4" or
+		old_version == "0.0.5" or
+		old_version == "0.0.6" or
+		old_version == "0.0.7" or
+		old_version == "0.0.8" or
+		old_version == "0.0.9" or
+		old_version == "0.1.0" or
+		old_version == "0.1.1" or
+		old_version == "0.1.2" or
+		old_version == "0.1.3" or
+		old_version == "0.1.4" or
+		old_version == "0.1.5" or
+		old_version == "0.1.6" or
+		old_version == "0.1.7" or
+		old_version == "0.1.8" or
+		old_version == "0.1.9" or
+		old_version == "0.2.0" or
+		old_version == "0.2.1" or
+		old_version == "0.2.2" or
+		old_version == "0.2.3" or
+		old_version == "0.2.4" or
+		old_version == "0.2.5" or
+		old_version == "0.2.6" or
+		old_version == "0.2.7" or
+		old_version == "0.2.8" or
+		old_version == "0.2.9" or
+		old_version == "0.3.0" or
+		old_version == "0.3.1" or
+		old_version == "0.3.2" then
+		return true
+	else
+		return false
+	end
+end
+
 -- ----------------------------
 -- 構成変更
 -- ----------------------------
 script.on_configuration_changed(function(event)
 	init()
 	local vulcanus_surface = game.surfaces["vulcanus"]
+	
+	-- vulcanus 無ければ対処なし
+	if vulcanus_surface == nil then return end
+
+	-- vulcanusのデモリッシャーを検索
+	local all_demolishers = find_all_demolishers(vulcanus_surface)
+	
+	-- デモリッシャー配列から、検索でかからないデモリッシャーを削除
+	delete_unfound_demolishers(all_demolishers)
+	
+	-- すべてのデモリッシャーのうち、周辺50マスにデモリッシャー配列に属さないデモリッシャーが6体以上いる場合に寿命を付与
+	-- if is_old_data_0_3_2(old_version) then add_demolishers_life(all_demolishers) end
+	-- 常に
+	add_demolishers_life(all_demolishers)
+		
+	-- vulcanusのデモリッシャー追加枠(old)
+	if storage.additional_demolishers == nil then
+		storage.additional_demolishers = {}
+	end
+	
+	-- vulcanus 無ければ対処なし
 	if vulcanus_surface ~= nil then
 		-- vulcanusのデモリッシャーを検索
-		local all_demolishers = find_all_vulcanus_demolisher(vulcanus_surface)
-		
-		-- デモリッシャー配列から、検索でかからないデモリッシャーを削除
-		delete_unfound_demolishers(all_demolishers)
-		
-		-- すべてのデモリッシャーのうち、周辺50マスにデモリッシャー配列に属さないデモリッシャーが6体以上いる場合に寿命を付与
-		add_demolishers_life(all_demolishers)
+		local all_demolishers = find_all_demolishers(vulcanus_surface)
+		-- vulcanusのデモリッシャー追加枠への移行(new)
+		if storage.additional_demolishers ~= nil then
+
+			storage.new_vulcanus_demolishers = storage.new_vulcanus_demolishers or {}
+			for key, value in pairs(storage.additional_demolishers) do
+				if key ~= "count" then
+					local entity = find_demolisher_entity(all_demolishers, key)
+					if entity ~= nil then
+						add_new_wild_demolisher(storage.new_vulcanus_demolishers, entity, value + 180 * 3600)
+					end
+				end
+			end
+			storage.additional_demolishers = {}
+		end
 	end
+
+	local fulgora_surface = game.surfaces["fulgora"]
+	-- fulgora 無ければ対処なし
+	if fulgora_surface ~= nil then
+		-- vulcanusのデモリッシャーを検索
+		local all_demolishers = find_all_demolishers(fulgora_surface)
+		-- fulgoraのデモリッシャー追加枠への移行(new)
+		if storage.fulgora_demolishers ~= nil then
+			storage.new_fulgora_demolishers = storage.new_fulgora_demolishers or {}
+			for key, value in pairs(storage.fulgora_demolishers) do
+				if key ~= "count" then
+					local entity = find_demolisher_entity(all_demolishers, key)
+					if entity ~= nil then
+						add_new_wild_demolisher(storage.new_fulgora_demolishers, entity, value + 180 * 3600)
+					end
+				end
+			end
+			storage.fulgora_demolishers = {}
+		end
+	end
+
 end)
 
 -- ----------------------------
@@ -94,30 +194,28 @@ function init()
 	if storage.teststr == nil then
 		storage.teststr = "teststr1"
 	end
+
 	if storage.respawn_queue == nil then
 		storage.respawn_queue = {}
 	end
-	-- vulcanusのデモリッシャー追加枠
-	if storage.additional_demolishers == nil then
-		storage.additional_demolishers = {}
-		storage.additional_demolishers["count"] = 0
-	end
-	-- fulgoraのデモリッシャー追加枠
-	if storage.fulgora_demolishers == nil then
-		storage.fulgora_demolishers = {}
-		storage.fulgora_demolishers["count"] = 0
-	end
+
+	-- vulcanusのデモリッシャー追加枠(old)
+	storage.additional_demolishers = storage.additional_demolishers or {}
+
+	-- vulcanusのデモリッシャー追加枠(new)
+	storage.new_vulcanus_demolishers = storage.new_vulcanus_demolishers or {}
+
+	-- fulgoraのデモリッシャー追加枠(old)
+	storage.fulgora_demolishers = storage.fulgora_demolishers or {}
+	-- fulgoraのデモリッシャー追加枠(new)
+	storage.new_fulgora_demolishers = storage.new_fulgora_demolishers or {}
+
 	-- ペットのデモリッシャー追加枠
-	if storage.my_demolishers == nil then
-		storage.my_demolishers = {}
-	end
+	storage.my_demolishers = storage.my_demolishers or {}
 
 	-- 卵管理(古いので初期化)
-	if storage.eggs == nil then
-		storage.eggs = {}
-	else
-		storage.eggs = {}
-	end
+	storage.eggs = {}
+
 	-- 卵管理(正式仕様:ペット分 - 3次元)
 	if storage.my_eggs == nil then
 		storage.my_eggs = {}
@@ -154,6 +252,7 @@ function init()
 			,{id = 41, trait = "dammy"},{id = 42, trait = "dammy"},{id = 43, trait = "dammy"},{id = 44, trait = "dammy"}
 		}
 	end
+
 	-- 第三勢力デモリッシャー
 	if not game.forces["demolishers"] then
 		local new_force = game.create_force("demolishers")
@@ -167,6 +266,52 @@ function init()
 	-- セーブデータ対応(ver.0.1.9)
 	if is_before_save_data(old_version) then
 		adding_demolisher_life()
+	end
+
+	local vulcanus_surface = game.surfaces["vulcanus"]
+	
+	-- vulcanus 無ければ対処なし
+	if vulcanus_surface ~= nil then
+		-- vulcanusのデモリッシャーを検索
+		local all_demolishers = find_all_demolishers(vulcanus_surface)
+		-- vulcanusのデモリッシャー追加枠への移行(new)
+		if storage.additional_demolishers ~= nil then
+
+			storage.new_vulcanus_demolishers = storage.new_vulcanus_demolishers or {}
+			for key, value in pairs(storage.additional_demolishers) do
+				if key ~= "count" then
+					local entity = find_demolisher_entity(all_demolishers, key)
+					if entity ~= nil then
+						if type(value) == "table" then
+							add_new_wild_demolisher(storage.new_vulcanus_demolishers, entity, value.life + 180 * 3600)
+						else
+							add_new_wild_demolisher(storage.new_vulcanus_demolishers, entity, value + 180 * 3600)
+						end
+					end
+				end
+			end
+			storage.additional_demolishers = {}
+		end
+	end
+
+	local fulgora_surface = game.surfaces["fulgora"]
+	-- fulgora 無ければ対処なし
+	if fulgora_surface ~= nil then
+		-- vulcanusのデモリッシャーを検索
+		local all_demolishers = find_all_demolishers(fulgora_surface)
+		-- fulgoraのデモリッシャー追加枠への移行(new)
+		if storage.fulgora_demolishers ~= nil then
+			storage.new_fulgora_demolishers = storage.new_fulgora_demolishers or {}
+			for key, value in pairs(storage.fulgora_demolishers) do
+				if key ~= "count" then
+					local entity = find_demolisher_entity(all_demolishers, key)
+					if entity ~= nil then
+						add_new_wild_demolisher(storage.new_fulgora_demolishers, entity, value + 180 * 3600)
+					end
+				end
+			end
+			storage.fulgora_demolishers = {}
+		end
 	end
 end
 

@@ -3,10 +3,14 @@
 -- ----------------------------
 local initialized = false
 
+
 -- ----------------------------
 -- 野生のデモリッシャー発生
 -- ----------------------------
-local function spawn_wild_demolishers()
+local function spawn_wild_demolishers(vulcanus_surface)
+
+	local demolishers = find_all_demolishers(vulcanus_surface)
+
 	-- デモリッシャの複製イベント
 	for i = #storage.respawn_queue, 1, -1 do
 		local queued = storage.respawn_queue[i]
@@ -30,23 +34,35 @@ local function spawn_wild_demolishers()
 					end
 				end
 			end
-			
-			local new_entity = queued.surface.create_entity{
-				name = queued.entity_name,
-				position = position,
-				force = queued.force,
-				quality = choose_quality(queued.evolution_factor)
-			}
-			-- リスポーンキュー削除
-			table.remove(storage.respawn_queue, i)
-			-- デモリッシャーテーブルに現在のtickを追加
-			if(queued.surface.name == "vulcanus") then
-				storage.additional_demolishers[new_entity.unit_number] = game.tick
-				storage.additional_demolishers["count"] = storage.additional_demolishers["count"] + 1
-				-- debug_print("new_entity.unit_number = " ..new_entity.unit_number)
-			elseif (queued.surface.name == "fulgora") then
-				storage.fulgora_demolishers[new_entity.unit_number] = game.tick
-				storage.fulgora_demolishers["count"] = storage.additional_demolishers["count"] + 1
+
+			-- 半径60以内に4匹以上いたら腐る
+			local count = #(find_neighbor_demolishers(
+				vulcanus_surface, {
+				{x = position.x - 60, y = position.y - 60},
+				{x = position.x + 60, y = position.y + 60}
+			}))
+
+			if count >= 4 then 
+				-- リスポーンキュー削除
+				table.remove(storage.respawn_queue, i)
+				-- game_print.debug("egg rotten")
+			else
+				-- entity作成
+				local new_entity = queued.surface.create_entity{
+					name = queued.entity_name,
+					position = position,
+					force = queued.force,
+					quality = choose_quality(queued.evolution_factor)
+				}
+				-- リスポーンキュー削除
+				table.remove(storage.respawn_queue, i)
+				-- デモリッシャーテーブルに追加
+				if(queued.surface.name == "vulcanus") then
+					add_new_wild_demolisher(storage.new_vulcanus_demolishers, new_entity, game.tick + 180 * 3600)
+				elseif (queued.surface.name == "fulgora") then
+					add_new_wild_demolisher(storage.new_fulgora_demolishers, new_entity, game.tick + 180 * 3600)
+				end
+				game_print.debug("hatched at (" .. position.x .. ", " .. position.y .. ")")
 			end
 		end
 	end
@@ -56,16 +72,94 @@ end
 -- 毎分イベント
 -- ----------------------------
 script.on_nth_tick(3600, function()
+
+	--[[
+	game_print.debug("storage.new_vulcanus_demolishers = " .. table_length(storage.new_vulcanus_demolishers))
+	game_print.debug("6665597 = " .. type(storage.new_vulcanus_demolishers["6665597"]))
+	local c = 0
+	local invalid = 0
+	for key, value in pairs(storage.new_vulcanus_demolishers) do
+		if value.entity.valid then
+			c = c + 1
+			if c < 10 then
+				game_print.debug(
+					"key = " .. key .. 
+					", value = " .. value.entity.unit_number .. 
+					", surface = " .. value.entity.surface.name .. 
+					", pos = " .. value.entity.position.x .. ", " .. value.entity.position.y .. ")")
+			end
+		else
+			invalid = invalid + 1
+		end
+	end
+	game_print.debug("valid = " .. c .. ", invalid = " .. invalid)
+	]]
+
+	-- vulcanus 無ければ対処なし
+	local vulcanus_surface = game.surfaces["vulcanus"]
+	if vulcanus_surface == nil then
+		return
+	end
+
+	local demolishers = find_all_demolishers(vulcanus_surface)
+	-- game_print.debug("demolishers = " .. #demolishers)
+
+	-- ランダムにどれか、寿命チェック
+	add_demolisher_life(demolishers[math.random(1, #demolishers)], demolishers)
+
 	-- ペットおなかが減る 1分
 	my_demolisher_getting_hangry()
 
 	-- ペット産卵する 1分 (todo イベント登録してタスク処理する方が無難か。同時に生まれた個体が多いとマルチは落ちるかも) 
 	my_demolisher_breeding()
 
+	-- 野生のデモリッシャー自然死 1分
+	die_wild_demolishers(vulcanus_surface)
+
 	-- 野生のデモリッシャー発生 1分
-	spawn_wild_demolishers()
+	spawn_wild_demolishers(vulcanus_surface)
+
 end)
 
+-- ----------------------------
+-- vulcanusの野生のデモリッシャー自然死 1分
+-- ----------------------------
+function die_wild_demolishers(vulcanus_surface)
+	
+	-- デモリッシャ削除イベント
+	if vulcanus_surface == nil then
+		return
+	end
+
+	local dead_count = 0
+
+	local all_demolishers = find_all_demolishers(vulcanus_surface)
+	for _, entity in pairs(all_demolishers) do
+		
+		if(storage.new_vulcanus_demolishers[entity.unit_number] ~= nil) then
+			if((storage.new_vulcanus_demolishers[entity.unit_number].life) < game.tick) then
+
+				local count = #(find_neighbor_demolishers(
+					vulcanus_surface, {
+					{x = entity.position.x - 150, y = entity.position.y - 150},
+					{x = entity.position.x + 150, y = entity.position.y + 150}
+				}))
+
+				if count >= 3 then -- 半径150以内に3匹以上なら普通に死亡
+					storage.new_vulcanus_demolishers[entity.unit_number] = nil
+					-- destoroyから、dieに変更(石は残っても良いし、それよりdieイベントをキャッチできないケースの方が怖いと判断)
+					entity.die()
+					dead_count = dead_count + 1
+				else  -- 2匹しか居ないなら、寿命延長
+					storage.new_vulcanus_demolishers[entity.unit_number].life = game.tick + math.random(120, 180) * 3600 -- 3時間延長
+				end
+				
+			end
+		end
+
+	end
+	-- game_print.debug("dead_count = " .. dead_count)
+end
 
 -- ----------------------------
 -- ペット産卵する
@@ -76,7 +170,7 @@ function my_demolisher_breeding()
 	if #storage.my_demolishers == 0 then
 		return
 	end
-	debug_print("[BreedingDemolisher] my_demolisher_breeding function")
+	game_print.debug("[BreedingDemolisher] my_demolisher_breeding function")
 	
 	for _, parent_value in pairs(storage.my_demolishers) do
 		if parent_value.customparam:get_entity().valid then
@@ -104,7 +198,7 @@ function my_demolisher_breeding()
 								elseif parent_entity.force == "demolishers" then
 									item_name = CONST_ITEM_NAME.NEW_SPIECES_DEMOLISHER_EGG
 								end
-								debug_print("[BreedingDemolisher] my_demolisher_breeding neer (x, y) = (" .. parent_entity.position.x .. ", " .. parent_entity.position.y ..")" )
+								game_print.debug("[BreedingDemolisher] my_demolisher_breeding neer (x, y) = (" .. parent_entity.position.x .. ", " .. parent_entity.position.y ..")" )
 								drop_item(parent_entity, item_name, drop_rate, customparam, customparam:get_quality())
 								return
 							end

@@ -54,7 +54,7 @@ function create_frame(player, entity)
 	end
 	
 	if my_demolisher == nil then
-		wild_demolisher_frame(main_frame, entity)
+		wild_demolisher_frame(main_frame, entity, life)
 	else
 		my_demolisher_frame(main_frame, entity, my_demolisher)
 	end
@@ -63,7 +63,7 @@ end
 -- ----------------------------
 -- 野生のデモリッシャー
 -- ----------------------------
-function wild_demolisher_frame(main_frame, entity)
+function wild_demolisher_frame(main_frame, entity, life)
 	-- 個体名
 	local name_label = main_frame.add{type = "label", caption = "name: Vulcanus_typeB+_#" .. entity.unit_number}
 	name_label.style.font = "default-large-bold"
@@ -71,15 +71,17 @@ function wild_demolisher_frame(main_frame, entity)
 	local force_label = main_frame.add{type = "label", caption = "force: "..entity.force.name}
 	force_label.style.font = "default-large-bold"
 	-- 基本情報テーブル見出し
-	local basic_info_label = main_frame.add{type = "label", caption = "基本情報"}
+	local basic_info_label = main_frame.add{type = "label", caption = {"item-name.demolisher-basic-info"}}
 	basic_info_label.style.font = "default-bold"
 
 	-- 追加デモリッシャーリストに居れば、追記
 	main_frame.add{type = "label", caption = "type: wild"}
+	-- 寿命の記載
+	main_frame.add{type = "label", caption = "life: " .. life}
 
-	if storage.additional_demolishers[entity.unit_number] ~= nil then
-		main_frame.add{type = "label", caption = "life: " .. math.floor((storage.additional_demolishers[entity.unit_number] - game.tick) / 3600).. "min"}
-	end
+	-- 詳細情報テーブル見出し
+	local basic_info_label = main_frame.add{type = "label", caption = {"item-name.demolisher-detail-info"}}
+	basic_info_label.style.font = "default-bold"
 
 	main_frame.add{type = "label", caption = "unknown"}
 end
@@ -185,8 +187,8 @@ end
 -- 寿命
 -- ----------------------------
 function get_life(entity)
-	if storage.additional_demolishers[entity.unit_number] ~= nil then
-		return (math.floor((storage.additional_demolishers[entity.unit_number] + 648000 - game.tick) / 3600)+1).."min."
+	if storage.new_vulcanus_demolishers[entity.unit_number] ~= nil then
+		return (math.floor((storage.new_vulcanus_demolishers[entity.unit_number].life - game.tick) / 3600)+1).."min."
 	else
 		return "Infinity"
 	end
