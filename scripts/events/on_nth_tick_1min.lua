@@ -62,7 +62,7 @@ local function spawn_wild_demolishers(vulcanus_surface)
 				elseif (queued.surface.name == "fulgora") then
 					add_new_wild_demolisher(storage.new_fulgora_demolishers, new_entity, game.tick + 180 * 3600)
 				end
-				game_print.debug("hatched at (" .. position.x .. ", " .. position.y .. ")")
+				-- game_print.debug("hatched at (" .. position.x .. ", " .. position.y .. ")")
 			end
 		end
 	end

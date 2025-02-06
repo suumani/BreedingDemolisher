@@ -26,7 +26,7 @@ function demolisher_rush(surface, evolution_factor)
 				min_length = town_center_pos.x ^ 2 + town_center_pos.y ^ 2
 			elseif min_length > (silo.position.x^2 + silo.position.y^2) then
 				min_length = (silo.position.x^2 + silo.position.y^2)
-				town_center_pos = silo
+				town_center_pos = silo.position
 			end
 		end
 		
@@ -49,7 +49,7 @@ function demolisher_rush(surface, evolution_factor)
 
 		-- 産卵率は、進化度の半分
 		if math.random() < evolution_factor / 2 then
-			-- 1度のラッシュの最大の生成数は (100 * evolution_factor / 10) + 5 体
+			-- 1度のラッシュの最大の生成数は (100 * evolution_factor / 10) + 10 体
 			if c >  (100 * evolution_factor / 10) + 5 then
 				break
 			end
@@ -71,7 +71,7 @@ function demolisher_rush(surface, evolution_factor)
 					, position = spawn_position
 					, evolution_factor = evolution_factor
 					, force = entity.force
-					, respawn_tick = game.tick + 18000 + 3600*c} -- 60=1秒, 3600=1分, 18000=5分, 5分後から1秒間隔で孵化
+					, respawn_tick = game.tick + 18000 + 3600*i} -- 60=1秒, 3600=1分, 18000=5分, 5分後から1秒間隔で孵化
 			)
 		end
 
