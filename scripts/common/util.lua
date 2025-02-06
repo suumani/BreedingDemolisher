@@ -32,8 +32,7 @@ function add_demolisher_life(entity, all_demolishers)
 
 	-- 寿命の付与
 	if #noliffe_demolishers >= 6 then
-		game_print.debug("Added life... " .. #noliffe_demolishers .. " demos, entity = " .. entity.unit_number .. 
-        ", pos = ()" .. entity.position.x .. ", " .. entity.position.y .. ")")
+		-- game_print.debug("Added life... " .. #noliffe_demolishers .. " demos, entity = " .. entity.unit_number .. ", pos = ()" .. entity.position.x .. ", " .. entity.position.y .. ")")
 		local count = 0
 		for _, entity in pairs(noliffe_demolishers) do
 			count = count + 1
