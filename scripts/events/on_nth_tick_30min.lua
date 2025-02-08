@@ -20,7 +20,7 @@ script.on_nth_tick(108000, function()
 			storage.new_vulcanus_demolishers[key] = nil
 		end
 	end
-	game_print.debug("valid = " .. valid .. ", invalid = " .. invalid .. "new_vulcanus_demolishers updated: " .. table_length(storage.new_vulcanus_demolishers))
+	-- game_print.debug("valid = " .. valid .. ", invalid = " .. invalid .. "new_vulcanus_demolishers updated: " .. table_length(storage.new_vulcanus_demolishers))
 
 	-- デモリッシャラッシュ--30分
 	wild_demolisher_breeding()
@@ -43,13 +43,13 @@ function my_demolisher_getting_hangry()
 		value.customparam:getting_hangury()
 		-- 満腹度が-1以下になったら死亡
 		if value.customparam:get_satiety() < 0 then
-			value.customparam:get_entity().die()
+			if value.customparam:get_entity() ~= nil and value.customparam:get_entity().valid() then value.customparam:get_entity().die() end
 		end
 		-- 寿命減り
 		value.customparam:getting_old()
 		-- 寿命が-1以下になったら死亡
 		if value.customparam:get_life() < 0 then
-			if value.customparam:get_entity().valid() then
+			if value.customparam:get_entity() ~= nil and value.customparam:get_entity().valid() then
 				value.customparam:get_entity().die()
 			end
 		end

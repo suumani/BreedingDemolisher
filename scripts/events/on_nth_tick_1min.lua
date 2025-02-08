@@ -173,7 +173,7 @@ function my_demolisher_breeding()
 	game_print.debug("[BreedingDemolisher] my_demolisher_breeding function")
 	
 	for _, parent_value in pairs(storage.my_demolishers) do
-		if parent_value.customparam:get_entity().valid then
+		if parent_value.customparam:get_entity() ~= nil and parent_value.customparam:get_entity().valid then
 			-- 成長度
 			local growth = parent_value.customparam:get_growth()
 			if growth < 20 and growth ~= parent_value.customparam:get_max_growth() then

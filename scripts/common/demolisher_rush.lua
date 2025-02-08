@@ -39,7 +39,7 @@ function demolisher_rush(surface, evolution_factor)
 		--	town_center_pos.y = town_center_pos.y / #silos
 	end
 
-	game_print.debug("town_center = " .. town_center_pos.x .. ", " .. town_center_pos.y)
+	-- game_print.debug("town_center = " .. town_center_pos.x .. ", " .. town_center_pos.y)
 
 	-- デモリッシャーの取得
 	local all_demolishers = find_all_demolishers(surface)
