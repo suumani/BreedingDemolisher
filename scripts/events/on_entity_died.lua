@@ -158,7 +158,7 @@ function on_entity_dead_local.demolisher_dead_event(event, entity)
 	if((r < evolution_factor/4) or (evolution_factor < 0.3 and r < 0.15)) then
 		local spawn_position = getSpawnPosition(entity.surface, evolution_factor, entity.position)
 		if spawn_position ~= nil then
-			game_print.message("["..entity.surface.name.."]".."demolisher defeated, but egg is missing... would hatch within 10 minutes...")
+			game_print.message("["..entity.surface.name.."]".. entity.quality.name .. " " .. entity.name .. " defeated, but egg is missing... would hatch within 10 minutes...")
 			table.insert(
 				storage.respawn_queue
 				, {
@@ -170,10 +170,10 @@ function on_entity_dead_local.demolisher_dead_event(event, entity)
 					, respawn_tick = game.tick + 18000 + 18000*r2} -- 60=1秒, 3600=1分, 18000=5分, 5～10分で孵化
 			)
 		else
-			game_print.message("["..entity.surface.name.."] ".. entity.name .. " defeated, egg was rotten...")
+			game_print.message("["..entity.surface.name.."] ".. entity.quality.name .. " " .. entity.name .. " defeated, egg was rotten...")
 		end
 	else
-		game_print.message("["..entity.surface.name.."] ".. entity.name .. " defeated, egg destroyed.")
+		game_print.message("["..entity.surface.name.."] ".. entity.quality.name .. " ".. entity.name .. " defeated, egg destroyed.")
 	end
 	
 	-- 追加デモリッシャーリストから削除
