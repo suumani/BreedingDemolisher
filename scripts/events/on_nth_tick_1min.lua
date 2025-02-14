@@ -73,28 +73,6 @@ end
 -- ----------------------------
 script.on_nth_tick(3600, function()
 
-	--[[
-	game_print.debug("storage.new_vulcanus_demolishers = " .. table_length(storage.new_vulcanus_demolishers))
-	game_print.debug("6665597 = " .. type(storage.new_vulcanus_demolishers["6665597"]))
-	local c = 0
-	local invalid = 0
-	for key, value in pairs(storage.new_vulcanus_demolishers) do
-		if value.entity.valid then
-			c = c + 1
-			if c < 10 then
-				game_print.debug(
-					"key = " .. key .. 
-					", value = " .. value.entity.unit_number .. 
-					", surface = " .. value.entity.surface.name .. 
-					", pos = " .. value.entity.position.x .. ", " .. value.entity.position.y .. ")")
-			end
-		else
-			invalid = invalid + 1
-		end
-	end
-	game_print.debug("valid = " .. c .. ", invalid = " .. invalid)
-	]]
-
 	-- vulcanus 無ければ対処なし
 	local vulcanus_surface = game.surfaces["vulcanus"]
 	if vulcanus_surface == nil then
@@ -105,7 +83,9 @@ script.on_nth_tick(3600, function()
 	-- game_print.debug("demolishers = " .. #demolishers)
 
 	-- ランダムにどれか、寿命チェック
-	add_demolisher_life(demolishers[math.random(1, #demolishers)], demolishers)
+	if #demolishers > 1 then
+		add_demolisher_life(demolishers[math.random(1, #demolishers)], demolishers)
+	end
 
 	-- ペットおなかが減る 1分
 	my_demolisher_getting_hangry()
