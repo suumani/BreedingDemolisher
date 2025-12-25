@@ -4,6 +4,7 @@
 
 Customparam = {}
 Customparam.__index = Customparam
+local DemolisherNames = require("__Manis_lib__/scripts/definition/DemolisherNames")
 
 -- ----------------------------
 -- コンストラクタ
@@ -76,7 +77,7 @@ function Customparam:mutate(type, partnerparam)
 	local entity_name = nil
 	-- 生みの親がDEMOLISHER_EGG出身
 	if type == "enemy" then
-		entity_name = CONST_ENTITY_NAME.DEMOLISHER
+		entity_name = DemolisherNames.SMALL_DEMOLISHER
 		type_control_max = 0
 	elseif type == "demolishers" then
 		type_control_max = 1
@@ -221,21 +222,21 @@ function Customparam:mutate(type, partnerparam)
 	end
 
 	-- 進化処理：small demolisher <-> medium demolisher <-> big demolisher
-	if entity_name == CONST_ENTITY_NAME.SMALL_DEMOLISHER then
+	if entity_name == DemolisherNames.SMALL_DEMOLISHER then
 		if size > 100000 then
-			entity_name = CONST_ENTITY_NAME.MEDIUM_DEMOLISHER
+			entity_name = DemolisherNames.MEDIUM_DEMOLISHER
 		elseif size < 15000 then
 			size = 15000
 		end
-	elseif entity_name == CONST_ENTITY_NAME.MEDIUM_DEMOLISHER then
+	elseif entity_name == DemolisherNames.MEDIUM_DEMOLISHER then
 		if size > 300000 then
-			entity_name = CONST_ENTITY_NAME.BIG_DEMOLISHER
+			entity_name = DemolisherNames.BIG_DEMOLISHER
 		elseif size < 30000 then
-			entity_name = CONST_ENTITY_NAME.SMALL_DEMOLISHER
+			entity_name = DemolisherNames.SMALL_DEMOLISHER
 		end
 	else
 		if size < 300000 then
-			entity_name = CONST_ENTITY_NAME.MEDIUM_DEMOLISHER
+			entity_name = DemolisherNames.MEDIUM_DEMOLISHER
 		end
 	end
 
@@ -324,11 +325,11 @@ end
 -- ----------------------------
 function Customparam:get_dafault_name_size()
 	-- ユニットタイプ
-	if self.entity.name == CONST_ENTITY_NAME.BIG_DEMOLISHER then
+	if self.entity.name == DemolisherNames.BIG_DEMOLISHER then
 		return  "S"
-	elseif  self.entity.name == CONST_ENTITY_NAME.MEDIUM_DEMOLISHER then
+	elseif  self.entity.name == DemolisherNames.MEDIUM_DEMOLISHER then
 		return  "A"
-	elseif  self.entity.name == CONST_ENTITY_NAME.SMALL_DEMOLISHER then
+	elseif  self.entity.name == DemolisherNames.SMALL_DEMOLISHER then
 		return  "B"
 	else
 		return  "U"
@@ -375,11 +376,11 @@ function private_default_name(entity)
 	name = entity.surface.name
 	
 	-- ユニットタイプ
-	if entity.name == CONST_ENTITY_NAME.BIG_DEMOLISHER then
+	if entity.name == DemolisherNames.BIG_DEMOLISHER then
 		name = name .. "_" .. "S"
-	elseif  entity.name == CONST_ENTITY_NAME.MEDIUM_DEMOLISHER then
+	elseif  entity.name == DemolisherNames.MEDIUM_DEMOLISHER then
 		name = name .. "_" .. "A"
-	elseif  entity.name == CONST_ENTITY_NAME.SMALL_DEMOLISHER then
+	elseif  entity.name == DemolisherNames.SMALL_DEMOLISHER then
 		name = name .. "_" .. "B"
 	else
 		name = name .. "_" .. "U"
