@@ -1,33 +1,17 @@
--- ローカル関数
-local on_entity_dead_local = {}
-
--- ----------------------------
--- エンティティの死亡イベントを捕捉
--- ----------------------------
-script.on_event(defines.events.on_entity_died, function(event)
-
-	local entity = event.entity
-
-	if (entity.name == CONST_ENTITY_NAME.SMALL_DEMOLISHER or entity.name == CONST_ENTITY_NAME.MEDIUM_DEMOLISHER or entity.name == CONST_ENTITY_NAME.BIG_DEMOLISHER) then
-		-- デモリッシャー死亡イベント
-		on_entity_dead_local.demolisher_dead_event(event, entity)
-	else
-		-- デモリッシャー食事イベント
-		on_entity_dead_local.enemy_except_demolisher_dead(event, entity)
-	end
-end)
+local SpawnPositionService = require("scripts.services.SpawnPositionService")
+local DemolisherNames = require("__Manis_lib__/scripts/definition/DemolisherNames")
 
 -- ----------------------------
 -- デモリッシャー以外のすべての破壊イベント
 -- ----------------------------
-function on_entity_dead_local.enemy_except_demolisher_dead(event, entity)
+local function enemy_except_demolisher_dead(event, entity)
 
 	if entity == nil or not entity.valid then
 		return
 	end
 
 	-- ペットが居なければ終了
-	if #storage.my_demolishers == 0 then
+	if not storage.my_demolishers or #storage.my_demolishers == 0 then
 		return
 	end
 	
@@ -129,13 +113,22 @@ end
 -- ----------------------------
 -- デモリッシャー死亡イベント
 -- ----------------------------
-function on_entity_dead_local.demolisher_dead_event(event, entity)
+local function demolisher_dead_event(event, entity)
 
 	-- ペットデモリッシャー処理
 	local result = dead_my_demolisher(event, entity)
 	
 	-- ペット処理が終わっていたら終了
 	if result == true then
+		return
+	end
+
+	-- ペット処理以外で寿命で死んだ場合は、ドロップ処理もメッセージ処理もなし
+	local dead_cause_lifespan = false
+	if(storage.new_vulcanus_demolishers[entity.unit_number] ~= nil) then
+		dead_cause_lifespan = (storage.new_vulcanus_demolishers[entity.unit_number].customparam:get_life() < 0)
+	end
+	if dead_cause_lifespan == true then
 		return
 	end
 
@@ -156,7 +149,7 @@ function on_entity_dead_local.demolisher_dead_event(event, entity)
 	
 	-- (進化度の半分未満のrの時)または、(進化度が30以下の時は固定15％)で、卵が発生
 	if((r < evolution_factor/4) or (evolution_factor < 0.3 and r < 0.15)) then
-		local spawn_position = getSpawnPosition(entity.surface, evolution_factor, entity.position)
+		local spawn_position = SpawnPositionService.getSpawnPosition(entity.surface, evolution_factor, entity.position)
 		if spawn_position ~= nil then
 			game_print.message("["..entity.surface.name.."]".. entity.quality.name .. " " .. entity.name .. " defeated, but egg is missing... would hatch within 10 minutes...")
 			table.insert(
@@ -239,3 +232,19 @@ function drop_item(entity, item_name, drop_rate, customparam, quality)
 	end
 	return false
 end
+
+-- ----------------------------
+-- エンティティの死亡イベントを捕捉
+-- ----------------------------
+script.on_event(defines.events.on_entity_died, function(event)
+
+	local entity = event.entity
+
+	if (entity.name == DemolisherNames.SMALL_DEMOLISHER or entity.name == DemolisherNames.MEDIUM_DEMOLISHER or entity.name == DemolisherNames.BIG_DEMOLISHER) then
+		-- デモリッシャー死亡イベント
+		demolisher_dead_event(event, entity)
+	else
+		-- デモリッシャー食事イベント
+		enemy_except_demolisher_dead(event, entity)
+	end
+end)

@@ -1,3 +1,5 @@
+local DemolisherNames = require("__Manis_lib__/scripts/definition/DemolisherNames")
+
 -- ----------------------------
 -- traitsテーブルをローカライズキーでマッピング
 -- ----------------------------
@@ -16,7 +18,7 @@ function update_selected_demolisher_gui(player, entity)
 		frame.destroy() -- 既存のGUIがあれば削除
 	end
 	
-	if entity and (entity.name == CONST_ENTITY_NAME.SMALL_DEMOLISHER or entity.name == CONST_ENTITY_NAME.MEDIUM_DEMOLISHER or entity.name == CONST_ENTITY_NAME.BIG_DEMOLISHER) then
+	if entity and (entity.name == DemolisherNames.SMALL_DEMOLISHER or entity.name == DemolisherNames.MEDIUM_DEMOLISHER or entity.name == DemolisherNames.BIG_DEMOLISHER) then
 		local success, result = pcall(function()
 			create_frame(player, entity)
 		end)

@@ -3,15 +3,11 @@
 -- ----------------------------
 require("scripts.defines.constant_demolisher_parameters")
 require("scripts.defines.constant_demolisher_traits")
-require("scripts.defines.constant_entity_name")
 require("scripts.defines.constant_item_name")
 require("scripts.defines.constant_quality")
 
 require("scripts.common.customparam")
-require("scripts.common.choose_quality")
-require("scripts.common.demolisher_rush")
 require("scripts.common.game_print")
-require("scripts.common.wild_demolisher")
 require("scripts.common.util")
 
 require("scripts.events.on_breeding_demolisher_mouse_button_2")
@@ -24,12 +20,16 @@ require("scripts.events.on_nth_tick_30min")
 
 require("scripts.gui.selected_demolisher_gui")
 require("scripts.updates.ver_0_1_9_save_update")
+
+
+local DemolisherQuery = require("__Manis_lib__/scripts/queries/DemolisherQuery")
+local LimitLifeSpanService = require("scripts.services.LimitLifeSpanService")
 -- ----------------------------
 -- 開始
 -- ----------------------------
 script.on_init(function()
 	init()
-	storage = storage or {}
+	--storage = storage or {}
 	storage.teststr = storage.teststr or "teststr2"
 end)
 
@@ -37,7 +37,7 @@ end)
 -- ロード
 -- ----------------------------
 script.on_load(function()
-
+	
     -- Customparamのmetatableを設定する関数
     local function restore_customparam_metatable(data_table)
         for _, item in pairs(data_table) do
@@ -53,7 +53,7 @@ script.on_load(function()
     if storage.my_demolishers then
         restore_customparam_metatable(storage.my_demolishers)
     end
-	
+
 	if storage.my_eggs then
 		for _, demolisher_quality_list in pairs (storage.my_eggs) do -- my_eggs はまず、各デモリッシャーサイズごとに、品質別リストが入っている
 			for _2, demolisher_egg_list in pairs (demolisher_quality_list) do -- 各品質別リストには、各卵が入っている
@@ -127,7 +127,7 @@ script.on_configuration_changed(function(event)
 	if vulcanus_surface == nil then return end
 
 	-- vulcanusのデモリッシャーを検索
-	local all_demolishers = find_all_demolishers(vulcanus_surface)
+	local all_demolishers = DemolisherQuery.find_all_demolishers(vulcanus_surface)
 	
 	-- デモリッシャー配列から、検索でかからないデモリッシャーを削除
 	delete_unfound_demolishers(all_demolishers)
@@ -145,7 +145,7 @@ script.on_configuration_changed(function(event)
 	-- vulcanus 無ければ対処なし
 	if vulcanus_surface ~= nil then
 		-- vulcanusのデモリッシャーを検索
-		local all_demolishers = find_all_demolishers(vulcanus_surface)
+		all_demolishers = DemolisherQuery.find_all_demolishers(vulcanus_surface)
 		-- vulcanusのデモリッシャー追加枠への移行(new)
 		if storage.additional_demolishers ~= nil then
 
@@ -154,7 +154,7 @@ script.on_configuration_changed(function(event)
 				if key ~= "count" then
 					local entity = find_demolisher_entity(all_demolishers, key)
 					if entity ~= nil then
-						add_new_wild_demolisher(storage.new_vulcanus_demolishers, entity, value + 180 * 3600)
+						LimitLifeSpanService.add_lifelimit_wild_demolisher(storage.new_vulcanus_demolishers, entity, value + 180 * 3600)
 					end
 				end
 			end
@@ -166,7 +166,7 @@ script.on_configuration_changed(function(event)
 	-- fulgora 無ければ対処なし
 	if fulgora_surface ~= nil then
 		-- vulcanusのデモリッシャーを検索
-		local all_demolishers = find_all_demolishers(fulgora_surface)
+		local all_demolishers = DemolisherQuery.find_all_demolishers(fulgora_surface)
 		-- fulgoraのデモリッシャー追加枠への移行(new)
 		if storage.fulgora_demolishers ~= nil then
 			storage.new_fulgora_demolishers = storage.new_fulgora_demolishers or {}
@@ -174,7 +174,7 @@ script.on_configuration_changed(function(event)
 				if key ~= "count" then
 					local entity = find_demolisher_entity(all_demolishers, key)
 					if entity ~= nil then
-						add_new_wild_demolisher(storage.new_fulgora_demolishers, entity, value + 180 * 3600)
+						LimitLifeSpanService.add_lifelimit_wild_demolisher(storage.new_fulgora_demolishers, entity, value + 180 * 3600)
 					end
 				end
 			end
@@ -262,7 +262,7 @@ function init()
 		new_force.set_cease_fire("neutral", true) -- 中立と停戦
 		game_print.message("[mod:BreedingDemolisher] initialize forces")
 	end
-	
+
 	-- セーブデータ対応(ver.0.1.9)
 	if is_before_save_data(old_version) then
 		adding_demolisher_life()
@@ -273,7 +273,7 @@ function init()
 	-- vulcanus 無ければ対処なし
 	if vulcanus_surface ~= nil then
 		-- vulcanusのデモリッシャーを検索
-		local all_demolishers = find_all_demolishers(vulcanus_surface)
+		local all_demolishers = DemolisherQuery.find_all_demolishers(vulcanus_surface)
 		-- vulcanusのデモリッシャー追加枠への移行(new)
 		if storage.additional_demolishers ~= nil then
 
@@ -283,9 +283,9 @@ function init()
 					local entity = find_demolisher_entity(all_demolishers, key)
 					if entity ~= nil then
 						if type(value) == "table" then
-							add_new_wild_demolisher(storage.new_vulcanus_demolishers, entity, value.life + 180 * 3600)
+							LimitLifeSpanService.add_lifelimit_wild_demolisher(storage.new_vulcanus_demolishers, entity, value.life + 180 * 3600)
 						else
-							add_new_wild_demolisher(storage.new_vulcanus_demolishers, entity, value + 180 * 3600)
+							LimitLifeSpanService.add_lifelimit_wild_demolisher(storage.new_vulcanus_demolishers, entity, value + 180 * 3600)
 						end
 					end
 				end
@@ -298,7 +298,7 @@ function init()
 	-- fulgora 無ければ対処なし
 	if fulgora_surface ~= nil then
 		-- vulcanusのデモリッシャーを検索
-		local all_demolishers = find_all_demolishers(fulgora_surface)
+		local all_demolishers = DemolisherQuery.find_all_demolishers(fulgora_surface)
 		-- fulgoraのデモリッシャー追加枠への移行(new)
 		if storage.fulgora_demolishers ~= nil then
 			storage.new_fulgora_demolishers = storage.new_fulgora_demolishers or {}
@@ -306,7 +306,7 @@ function init()
 				if key ~= "count" then
 					local entity = find_demolisher_entity(all_demolishers, key)
 					if entity ~= nil then
-						add_new_wild_demolisher(storage.new_fulgora_demolishers, entity, value + 180 * 3600)
+						LimitLifeSpanService.add_lifelimit_wild_demolisher(storage.new_fulgora_demolishers, entity, value + 180 * 3600)
 					end
 				end
 			end

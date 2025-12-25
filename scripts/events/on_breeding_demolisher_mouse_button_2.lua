@@ -1,3 +1,16 @@
+local DemolisherNames = require("__Manis_lib__/scripts/definition/DemolisherNames")
+-- プレイヤーの向きに応じた座標計算（10マス先）
+local SPAWN_OFFSET = {
+  [defines.direction.north]     = {x = 0,  y = -20},
+  [defines.direction.northeast] = {x = 14, y = -14},
+  [defines.direction.east]      = {x = 20, y = 0},
+  [defines.direction.southeast] = {x = 14, y = 14},
+  [defines.direction.south]     = {x = 0,  y = 20},
+  [defines.direction.southwest] = {x = -14,y = 14},
+  [defines.direction.west]      = {x = -20,y = 0},
+  [defines.direction.northwest] = {x = -14,y = -14},
+}
+
 script.on_event("on_breeding_demolisher_mouse_button_2", function(event)
 	
     local player = game.get_player(event.player_index)
@@ -10,7 +23,7 @@ script.on_event("on_breeding_demolisher_mouse_button_2", function(event)
 		if cursor_stack.valid_for_read then
 			-- game_print.debug("cursor_stack.name = " .. cursor_stack.name)
 			if cursor_stack.name:find("demolisher%-egg") then
-				quality = cursor_stack.quality.name or "Normal" -- Quality取得
+				quality = (cursor_stack.quality and cursor_stack.quality.name) or CONST_QUALITY.NORMAL -- Quality取得
 				-- 氷なら砕けておしまい。遺伝子はロストしない（ロストすべきかも）
 				if cursor_stack.name:find("frozen") then
 					game_print.message("shattered...")
@@ -31,17 +44,6 @@ script.on_event("on_breeding_demolisher_mouse_button_2", function(event)
     local position = player.position -- プレイヤーの現在位置
     local direction = player.character and player.character.direction or defines.direction.north -- プレイヤーの向き
 
-    -- プレイヤーの向きに応じた座標計算（10マス先）
-    local spawn_offset = {
-		[defines.direction.north] = {x = 0, y = -20},
-		[defines.direction.northeast] = {x = 14, y = -14},
-		[defines.direction.east] = {x = 20, y = 0},
-		[defines.direction.southeast] = {x = 14, y = 14},
-		[defines.direction.south] = {x = 0, y = 20},
-		[defines.direction.southwest] = {x = -14, y = 14},
-		[defines.direction.west] = {x = -20, y = 0},
-		[defines.direction.northwest] = {x = -14, y = -14},
-    }
 
     local spawn_position = {
         x = position.x + spawn_offset[direction].x,
@@ -55,6 +57,8 @@ script.on_event("on_breeding_demolisher_mouse_button_2", function(event)
 	elseif cursor_stack.name:find("friend") then
 		local player = game.get_player(event.player_index)
 		force = player.force
+	else
+		force = "enemy"
 	end
 
 	local customparam = nil
@@ -69,11 +73,11 @@ script.on_event("on_breeding_demolisher_mouse_button_2", function(event)
 	end
 
 	local surface = player.surface
-	local name = CONST_ENTITY_NAME.SMALL_DEMOLISHER
+	local name = DemolisherNames.SMALL_DEMOLISHER
 	if cursor_stack.name:find("medium") then
-		name = CONST_ENTITY_NAME.MEDIUM_DEMOLISHER
+		name = DemolisherNames.MEDIUM_DEMOLISHER
 	elseif cursor_stack.name:find("big") then
-		name = CONST_ENTITY_NAME.BIG_DEMOLISHER
+		name = DemolisherNames.BIG_DEMOLISHER
 	end
 
 	spawn_my_demolisher(surface, name, spawn_position, force, customparam, quality)
@@ -87,7 +91,7 @@ end)
 -- ----------------------------
 -- ペットデモリッシャーの生成
 -- ----------------------------
-function spawn_my_demolisher(surface, name, position, force, customparam, strquality)
+local function spawn_my_demolisher(surface, name, position, force, customparam, strquality)
 	local entity = surface.create_entity({
 		name = name,
 		position = position,
