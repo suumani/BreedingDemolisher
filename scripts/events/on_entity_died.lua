@@ -1,6 +1,6 @@
 local SpawnPositionService = require("scripts.services.SpawnPositionService")
 local DemolisherNames = require("__Manis_lib__/scripts/definition/DemolisherNames")
-
+local DRand = require("scripts.util.DeterministicRandom")
 -- ----------------------------
 -- デモリッシャー以外のすべての破壊イベント
 -- ----------------------------
@@ -63,7 +63,7 @@ function dead_my_demolisher(event, entity)
 		
 			if my_demolisher.customparam:get_growth() > 20 then
 				local drop_rate = 0
-				local r2 = math.random()
+				local r2 = DRand.random()
 				local item = CONST_ITEM_NAME.DEMOLISHER_EGG
 				
 				-- 標準種の場合、卵ドロップは50％、種類はランダム
@@ -141,8 +141,8 @@ local function demolisher_dead_event(event, entity)
 		return
 	end
 
-	local r = math.random()
-	local r2 = math.random()
+	local r = DRand.random()
+	local r2 = DRand.random()
 	
 	-- 進化度の取得
 	local evolution_factor = game.forces["enemy"].get_evolution_factor(entity.surface)
@@ -189,7 +189,7 @@ function drop_item(entity, item_name, drop_rate, customparam, quality)
 		quality = 0
 	end
 	
-	local r = math.random()
+	local r = DRand.random()
 	if r < drop_rate then
 		
 		local str_quality = CONST_QUALITY.NORMAL

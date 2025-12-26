@@ -1,6 +1,6 @@
 local KillWildDemolishersService = {}
 local DemolisherQuery = require("__Manis_lib__/scripts/queries/DemolisherQuery")
-
+local DRand = require("scripts.util.DeterministicRandom")
 -- ----------------------------
 -- vulcanusの野生のデモリッシャー自然死 1分
 -- ----------------------------
@@ -31,7 +31,7 @@ function KillWildDemolishersService.kill_wild_demolishers(vulcanus_surface)
 					entity.die()
 					dead_count = dead_count + 1
 				else  -- 2匹しか居ないなら、寿命延長
-					storage.new_vulcanus_demolishers[entity.unit_number].life = game.tick + math.random(120, 180) * 3600 -- 3時間延長
+					storage.new_vulcanus_demolishers[entity.unit_number].life = game.tick + DRand.random(120, 180) * 3600 -- 3時間延長
 				end
 				
 			end

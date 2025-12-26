@@ -5,7 +5,7 @@
 -- 全てのデモリッシャーが、2～5体に分裂し、ある程度広範囲に散らばる
 -- ----------------------------
 local DemolisherRushService = {}
-
+local DRand = require("scripts.util.DeterministicRandom")
 local DemolisherQuery = require("__Manis_lib__/scripts/queries/DemolisherQuery")
 local SpawnPositionService = require("scripts.services.SpawnPositionService")
 
@@ -46,7 +46,7 @@ function DemolisherRushService.demolisher_rush(surface, evolution_factor)
 	for _, entity in pairs(all_demolishers) do
 
 		-- 産卵率は、進化度の半分
-		if math.random() < evolution_factor / 2 then
+		if DRand.random() < evolution_factor / 2 then
 			-- 1度のラッシュの最大の生成数は (100 * evolution_factor / 10) + 10 体
 			if c >  (100 * evolution_factor / 10) + 5 then
 				break
@@ -61,7 +61,7 @@ function DemolisherRushService.demolisher_rush(surface, evolution_factor)
 	end
 
 	for i = 1, c, 1 do
-		local entity = all_demolishers[math.random(1, #all_demolishers)]
+		local entity = all_demolishers[DRand.random(1, #all_demolishers)]
 		local demolisher_position = entity.position
 		local spawn_position = SpawnPositionService.getSpawnPosition(surface, evolution_factor, demolisher_position, town_center_pos)
 		

@@ -1,5 +1,5 @@
 local SpawnPositionService = {}
-
+local DRand = require("scripts.util.DeterministicRandom")
 -- ----------------------------
 -- デモリッシャー拡散先座標
 -- ----------------------------
@@ -33,7 +33,7 @@ function SpawnPositionService.getSpawnPosition(surface, evolution_factor, demoli
 		has_hidden_tile = false}
 	-- 周辺座標が存在し、hidden_tileでないならば存在
 	if #positions > 0 then
-		local index = math.random(#positions)
+		local index = DRand.random(#positions)
 		local spawn_position = {x = positions[index].position.x, y = positions[index].position.y}
 		-- チャンク生成済み判定を取得（念のため）
 		if surface.is_chunk_generated({x = math.floor(spawn_position.x / 32), y = math.floor(spawn_position.y / 32)}) then
