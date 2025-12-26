@@ -10,6 +10,122 @@ local QualityRoller = require("__Manis_lib__/scripts/rollers/QualityRoller")
 local DemolisherQuery = require("__Manis_lib__/scripts/queries/DemolisherQuery")
 local LimitLifeSpanService = require("scripts.services.LimitLifeSpanService")
 local DRand = require("scripts.util.DeterministicRandom")
+local TownCenter  = require("scripts.services.town_center_resolver")
+
+
+-- ----------------------------
+-- 方向の決定
+-- ----------------------------
+local function choose_cardinal_direction(from_pos, to_pos)
+  local dx = to_pos.x - from_pos.x
+  local dy = to_pos.y - from_pos.y
+  if math.abs(dx) >= math.abs(dy) then
+    return (dx >= 0) and defines.direction.east or defines.direction.west
+  else
+    return (dy >= 0) and defines.direction.south or defines.direction.north
+  end
+end
+
+-- ----------------------------
+-- プレイヤー施設との衝突
+-- ----------------------------
+local function has_player_buildings_near(surface, pos, r)
+  local area = { {pos.x - r, pos.y - r}, {pos.x + r, pos.y + r} }
+  return surface.count_entities_filtered{
+    area = area,
+    force = game.forces.player
+  } > 0
+end
+
+-- ----------------------------
+-- positionが原点に近すぎる場合の補正
+-- ----------------------------
+local function adjust_position_if_too_close_to_origin(position)
+  local l2 = position.x * position.x + position.y * position.y
+  if l2 >= 40000 then
+    return position
+  end
+
+  local p = { x = position.x, y = position.y }
+
+  if p.x * p.x < p.y * p.y then
+    p.y = (p.y < 0) and (p.y - 200) or (p.y + 200)
+  else
+    p.x = (p.x < 0) and (p.x - 200) or (p.x + 200)
+  end
+
+  return p
+end
+
+-- ----------------------------
+-- 半径60以内に4匹以上なら腐る判定
+-- ----------------------------
+local function should_rot_egg(surface, position)
+  local neighbors = DemolisherQuery.find_neighbor_demolishers(surface, {
+    { x = position.x - 60, y = position.y - 60 },
+    { x = position.x + 60, y = position.y + 60 },
+  })
+  return #neighbors >= 4
+end
+
+-- ----------------------------
+-- 建物回避：town_centerから遠ざける方向へ50だけ動かす（1回のみ）
+-- ----------------------------
+local function retry_position_away_from_town_center(position, town_center)
+  local p = { x = position.x, y = position.y }
+
+  local dx = p.x - town_center.x
+  p.x = (dx > 0) and (p.x + 50) or (p.x - 50)
+
+  local dy = p.y - town_center.y
+  p.y = (dy > 0) and (p.y + 50) or (p.y - 50)
+
+  return p
+end
+
+-- ----------------------------
+-- スポーン位置確定：建造物30マス回避＋1回リトライ
+-- 返り値：position or nil（nilなら腐る）
+-- ----------------------------
+local function resolve_spawn_position(surface, position, town_center)
+  if not has_player_buildings_near(surface, position, 30) then
+    return position
+  end
+
+  local retry = retry_position_away_from_town_center(position, town_center)
+  if not has_player_buildings_near(surface, retry, 30) then
+    return retry
+  end
+
+  return nil
+end
+
+-- ----------------------------
+-- entity生成（direction/quality）
+-- ----------------------------
+local function spawn_demolisher(surface, queued, position, town_center)
+  local dir = choose_cardinal_direction(position, town_center)
+
+  return surface.create_entity{
+    name = queued.entity_name,
+    position = position,
+    force = queued.force,
+    quality = QualityRoller.choose_quality(queued.evolution_factor, DRand.random()),
+    direction = dir
+  }
+end
+
+-- ----------------------------
+-- 寿命登録
+-- ----------------------------
+local function register_lifespan(surface, new_entity)
+  if surface.name == "vulcanus" then
+    LimitLifeSpanService.add_lifelimit_wild_demolisher(storage.new_vulcanus_demolishers, new_entity, game.tick + 180 * 3600)
+  elseif surface.name == "fulgora" then
+    LimitLifeSpanService.add_lifelimit_wild_demolisher(storage.new_fulgora_demolishers, new_entity, game.tick + 180 * 3600)
+  end
+end
+
 -- ----------------------------
 -- 野生のデモリッシャー発生
 -- ----------------------------
@@ -21,54 +137,23 @@ function SpawnWildDemolishersService.spawn_wild_demolishers(vulcanus_surface)
 	for i = #storage.respawn_queue, 1, -1 do
 		local queued = storage.respawn_queue[i]
 		if game.tick >= queued.respawn_tick then
-			-- debug_print("!!!demolisher egg hatched at x = "..queued.position.x ..", y = "..queued.position.y..", name = "..queued.entity_name..", force = "..queued.force.name)
-			-- home に近すぎるpositionを上書き
-			local position = queued.position
-			local l2 = position.x * position.x + position.y * position.y
-			if l2 < 40000 then -- 200 m 以内判定
-				if position.x * position.x < position.y * position.y then -- xの絶対値の方が小さい
-					if position.y < 0 then
-						position.y = position.y - 200
-					else
-						position.y = position.y + 200
-					end
-				else
-					if position.x < 0 then
-						position.x = position.x - 200
-					else
-						position.x = position.x + 200
-					end
-				end
-			end
 
-			-- 半径60以内に4匹以上いたら腐る
-			local count = #(DemolisherQuery.find_neighbor_demolishers(
-				vulcanus_surface, {
-				{x = position.x - 60, y = position.y - 60},
-				{x = position.x + 60, y = position.y + 60}
-			}))
+			local surface = queued.surface
+			local position = adjust_position_if_too_close_to_origin(queued.position)
 
-			if count >= 4 then 
-				-- リスポーンキュー削除
+			if should_rot_egg(vulcanus_surface, position) then
 				table.remove(storage.respawn_queue, i)
-				-- game_print.debug("egg rotten")
 			else
-				-- entity作成
-				local new_entity = queued.surface.create_entity{
-					name = queued.entity_name,
-					position = position,
-					force = queued.force,
-					quality = QualityRoller.choose_quality(queued.evolution_factor, Drand.random())
-				}
-				-- リスポーンキュー削除
-				table.remove(storage.respawn_queue, i)
-				-- デモリッシャーテーブルに追加
-				if(queued.surface.name == "vulcanus") then
-					LimitLifeSpanService.add_lifelimit_wild_demolisher(storage.new_vulcanus_demolishers, new_entity, game.tick + 180 * 3600)
-				elseif (queued.surface.name == "fulgora") then
-					LimitLifeSpanService.add_lifelimit_wild_demolisher(storage.new_fulgora_demolishers, new_entity, game.tick + 180 * 3600)
+				local town_center = TownCenter.resolve(surface)
+				local spawn_pos = resolve_spawn_position(surface, position, town_center)
+
+				if not spawn_pos then
+					table.remove(storage.respawn_queue, i) -- 腐る
+				else
+					local new_entity = spawn_demolisher(surface, queued, spawn_pos, town_center)
+					table.remove(storage.respawn_queue, i)
+					register_lifespan(surface, new_entity)
 				end
-				-- game_print.debug("hatched at (" .. position.x .. ", " .. position.y .. ")")
 			end
 		end
 	end
