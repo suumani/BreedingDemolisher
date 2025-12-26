@@ -24,6 +24,8 @@ require("scripts.updates.ver_0_1_9_save_update")
 
 local DemolisherQuery = require("__Manis_lib__/scripts/queries/DemolisherQuery")
 local LimitLifeSpanService = require("scripts.services.LimitLifeSpanService")
+
+local DRand = require("scripts/util/DeterministicRandom")
 -- ----------------------------
 -- ŠJn
 -- ----------------------------
@@ -188,6 +190,9 @@ end)
 -- ‰Šú‰»‹¤’Ê
 -- ----------------------------
 function init()
+	-- —”‰Šú‰»
+	DRand.init(1234567)
+
 	if storage == nil then
 		storage = {}
 	end

@@ -5,7 +5,7 @@
 Customparam = {}
 Customparam.__index = Customparam
 local DemolisherNames = require("__Manis_lib__/scripts/definition/DemolisherNames")
-
+local DRand = require("scripts.util.DeterministicRandom")
 -- ----------------------------
 -- コンストラクタ
 -- ----------------------------
@@ -27,9 +27,9 @@ function Customparam.new(
 	self.entity = entity -- entityが誕生済みなら設定
 	self.entity_name = entity_name or entity.name -- 種別名
 	self.name = name or (private_default_name(entity)) -- 個体名
-	self.size = size or math.random(100, 500) -- サイズ
-	self.quality = quality or 1 + math.random(1, 4) / 10  -- 品質 (0.0 - 1.0)
-	self.speed = speed or 1 + math.random(1, 4) / 10 -- 移動速度 (0.1 - 1.0)
+	self.size = size or DRand.random(100, 500) -- サイズ
+	self.quality = quality or 1 + DRand.random(1, 4) / 10  -- 品質 (0.0 - 1.0)
+	self.speed = speed or 1 + DRand.random(1, 4) / 10 -- 移動速度 (0.1 - 1.0)
 	self.max_life = max_life or 180
 	self.life = max_life or 180
 	self.max_growth = max_growth
@@ -41,9 +41,9 @@ function Customparam.new(
 	-- game_print.debug("self.quality1 = " .. self.quality)
 	-- 遺伝的特徴: 特性リスト
 	self.traits = traits or {
-		[CONST_DEMOLISHER_TRAIT.SHORT_WARP] = 1+math.random(0, 4) / 10, -- 近距離ワープ
-		[CONST_DEMOLISHER_TRAIT.EMERGENCY_FOOD] = 1+math.random(0, 4) / 10, -- 緊急食
-		[CONST_DEMOLISHER_TRAIT.BONUS_GROWTH] = 1+math.random(0, 4) / 10 -- 成長ボーナス
+		[CONST_DEMOLISHER_TRAIT.SHORT_WARP] = 1+DRand.random(0, 4) / 10, -- 近距離ワープ
+		[CONST_DEMOLISHER_TRAIT.EMERGENCY_FOOD] = 1+DRand.random(0, 4) / 10, -- 緊急食
+		[CONST_DEMOLISHER_TRAIT.BONUS_GROWTH] = 1+DRand.random(0, 4) / 10 -- 成長ボーナス
 	}
 
 	if self.name == "unknown" then
@@ -103,42 +103,42 @@ function Customparam:mutate(type, partnerparam)
 		max_satiety = self.max_satiety or 100
 	else
 		-- size
-		local r = math.random()
+		local r = DRand.random()
 		if r < 0.5 then
 			size = self.size
 		else
 			size = partnerparam:get_size()
 		end
 		-- quality
-		r = math.random()
+		r = DRand.random()
 		if r < 0.5 then
 			quality = self.quality
 		else
 			quality = partnerparam:get_quality()
 		end
 		-- speed
-		r = math.random()
+		r = DRand.random()
 		if r < 0.5 then
 			speed = self.speed
 		else
 			speed = partnerparam:get_speed()
 		end
 		-- max_life
-		r = math.random()
+		r = DRand.random()
 		if r < 0.5 then
 			max_life = self.max_life
 		else
 			max_life = partnerparam:get_max_life()
 		end
 		-- max_growth
-		r = math.random()
+		r = DRand.random()
 		if r < 0.5 then
 			max_growth = self.max_growth
 		else
 			max_growth = partnerparam:get_max_growth()
 		end
 		-- max_satiety
-		r = math.random()
+		r = DRand.random()
 		if r < 0.5 then
 			max_satiety = self.max_satiety
 		else
@@ -147,17 +147,17 @@ function Customparam:mutate(type, partnerparam)
 	end
 
 	-- 大きさの変動
-	size = size + math.random(-2000, 2000 * max_rate) -- サイズ変動 (small 30000, medium 100000, big 300000 )
+	size = size + DRand.random(-2000, 2000 * max_rate) -- サイズ変動 (small 30000, medium 100000, big 300000 )
 	-- 大きさ制限処理は、進化依存
 
 	-- 品質の変動
-	quality = quality + math.random(-4, 4 * max_rate) / 100 -- 品質変動
+	quality = quality + DRand.random(-4, 4 * max_rate) / 100 -- 品質変動
 	if quality < 0 then
 		quality = 0
 	end
 
 	-- 速度の変動
-	speed = speed + math.random(-4, 4 * max_rate) / 100 -- 移動速度 (変動0.04)
+	speed = speed + DRand.random(-4, 4 * max_rate) / 100 -- 移動速度 (変動0.04)
 	-- speed の下限は、0.25 + quality * 0.1、上限は0.25 + quality * 0.25
 	if speed < 0.25 + quality * 0.1 then
 		speed = 0.25 + quality * 0.1
@@ -166,7 +166,7 @@ function Customparam:mutate(type, partnerparam)
 	end
 
 	-- 寿命の変動
-	max_life = max_life + math.random(-10, 10 * max_rate) / 10 -- 寿命（変動10分・品質上限あり）
+	max_life = max_life + DRand.random(-10, 10 * max_rate) / 10 -- 寿命（変動10分・品質上限あり）
 	-- max_life の下限は、60 + quality * 30、上限は150 + quality * 30
 	if max_life < 60 + quality * 30 then
 		max_life = 60 + quality * 30
@@ -175,7 +175,7 @@ function Customparam:mutate(type, partnerparam)
 	end
 
 	-- 最大成長値初期化なしデータ対応
-	max_growth = max_growth + math.random(-1, 1 * max_rate) -- 成長値（変動1・品質上限あり）
+	max_growth = max_growth + DRand.random(-1, 1 * max_rate) -- 成長値（変動1・品質上限あり）
 	-- max_growth の下限は、30 + quality * 10、上限は50 + quality * 10
 	if max_growth < 30 + quality * 10 then
 		max_growth = 30 + quality * 10
@@ -184,7 +184,7 @@ function Customparam:mutate(type, partnerparam)
 	end
 
 	-- 最大満腹度初期化なしデータ対応
-	local max_satiety = max_satiety + math.random(-10, 10 * max_rate) -- 満腹度（変動10・品質上限あり）
+	local max_satiety = max_satiety + DRand.random(-10, 10 * max_rate) -- 満腹度（変動10・品質上限あり）
 	-- max_satiety の下限は、50 + quality * 10、上限は110 + quality * 20
 	if max_satiety < 50 + quality * 10 then
 		max_satiety = 50 + quality * 10
@@ -196,7 +196,7 @@ function Customparam:mutate(type, partnerparam)
 	local traits = {}
 	-- 生み親
 	for key, value in pairs(self.traits) do
-		local v = value + math.random(-1, 1 * max_rate) / 10
+		local v = value + DRand.random(-1, 1 * max_rate) / 10
 		if v > 0 then
 			traits[key] = v
 		end
@@ -204,7 +204,7 @@ function Customparam:mutate(type, partnerparam)
 	-- パートナー
 	if partnerparam ~= nil then
 		for key, value in pairs(partnerparam:get_traits()) do
-			local v = value + math.random(-1, 1 * max_rate) / 10
+			local v = value + DRand.random(-1, 1 * max_rate) / 10
 			if v > 0 then
 				if traits[key] ~= nil then
 					-- 両親とも保有しているときは高い方にボーナス

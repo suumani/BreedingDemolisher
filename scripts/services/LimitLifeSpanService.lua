@@ -2,7 +2,7 @@
 -- vulcanusのデモリッシャーに寿命を付与
 -- ----------------------------
 local DemolisherQuery = require("__Manis_lib__/scripts/queries/DemolisherQuery")
-
+local DRand = require("scripts.util.DeterministicRandom")
 -- ----------------------------
 -- 寿命のないデモリッシャーを抽出
 -- ----------------------------
@@ -79,7 +79,7 @@ function LimitLifeSpanService.add_demolisher_life(vulcanus_surface, all_demolish
 		for _, entity2 in pairs(noliffe_demolishers) do
 			count = count + 1
 			if count >= 6 then
-				LimitLifeSpanService.add_lifelimit_wild_demolisher(storage.new_vulcanus_demolishers, entity2, game.tick + math.random(1, 30) * 3600)
+				LimitLifeSpanService.add_lifelimit_wild_demolisher(storage.new_vulcanus_demolishers, entity2, game.tick + DRand.random(1, 30) * 3600)
 			end
 		end
 	end
@@ -93,7 +93,7 @@ function LimitLifeSpanService.limit_lifespan(vulcanus_surface)
 	local demolishers = DemolisherQuery.find_all_demolishers(vulcanus_surface)
 	-- ランダムにどれか、寿命チェック
 	if #demolishers > 1 then
-		LimitLifeSpanService.add_demolisher_life(vulcanus_surface, demolishers, demolishers[math.random(1, #demolishers)])
+		LimitLifeSpanService.add_demolisher_life(vulcanus_surface, demolishers, demolishers[DRand.random(1, #demolishers)])
 	end
 
 end
