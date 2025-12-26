@@ -9,7 +9,7 @@ local SpawnWildDemolishersService = {}
 local QualityRoller = require("__Manis_lib__/scripts/rollers/QualityRoller")
 local DemolisherQuery = require("__Manis_lib__/scripts/queries/DemolisherQuery")
 local LimitLifeSpanService = require("scripts.services.LimitLifeSpanService")
-
+local DRand = require("scripts.util.DeterministicRandom")
 -- ----------------------------
 -- 野生のデモリッシャー発生
 -- ----------------------------
@@ -58,7 +58,7 @@ function SpawnWildDemolishersService.spawn_wild_demolishers(vulcanus_surface)
 					name = queued.entity_name,
 					position = position,
 					force = queued.force,
-					quality = QualityRoller.choose_quality(queued.evolution_factor)
+					quality = QualityRoller.choose_quality(queued.evolution_factor, Drand.random())
 				}
 				-- リスポーンキュー削除
 				table.remove(storage.respawn_queue, i)
