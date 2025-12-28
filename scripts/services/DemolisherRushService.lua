@@ -15,6 +15,37 @@ local SpawnPositionService = require("scripts.services.SpawnPositionService")
 local TableUtil = require("scripts.util.TableUtil")
 local util  = require("scripts.common.util")
 
+-- 最低保証（卵数）：経過時間（時間）に応じて増える
+local function calc_min_eggs_since_first_kill()
+  local t0 = storage.bd_demolisher_first_kill_tick
+  if not t0 then
+    return 0
+  end
+
+  local dt = game.tick - t0
+  if dt < 0 then
+    return 0
+  end
+
+  local hours = dt / (60 * 60 * 60)
+
+  if hours < 2 then
+    return 1
+  elseif hours < 4 then
+    return 2
+  elseif hours < 8 then
+    return 3
+  elseif hours < 16 then
+    return 4
+  elseif hours < 32 then
+    return 5
+  elseif hours < 128 then
+    return 6
+  else
+    return 2 -- ゲーム攻略上の最終ラッシュはせいぜい128時間までと想定
+  end
+end
+
 -- normal品質フィルター
 local function is_normal_quality_demolisher(entity)
   return entity.quality.name == "normal"
@@ -179,10 +210,51 @@ function DemolisherRushService.demolisher_rush(surface, evolution_factor)
     end
   end
 
+    -- ------------------------------------------------------------
+  -- 最低保証（卵数）：長時間プレイで「連続0」を防ぐ
+  -- 既存の抽選結果で足りない分だけ、強制的に卵を追加で積む
+  -- （上限は egg_budget が優先）
+  -- ------------------------------------------------------------
+  local min_eggs = calc_min_eggs_since_first_kill()
+  if min_eggs > egg_budget then
+    min_eggs = egg_budget
+  end
+
+  if enqueued_eggs < min_eggs then
+    local need = min_eggs - enqueued_eggs
+
+    for _ = 1, need do
+      -- 親は候補集合からランダム（候補が空になるケースは既にreturnされている前提）
+      local parent = candidates[DRand.random(1, #candidates)]
+      local parent_pos = parent.position
+
+      local spawn_position = SpawnPositionService.getSpawnPosition(
+        surface,
+        evolution_factor,
+        parent_pos,
+        nearest_silo_pos
+      )
+
+      if spawn_position ~= nil then
+        egg_seq = egg_seq + 1
+        table.insert(storage.respawn_queue, {
+          surface = parent.surface,
+          entity_name = parent.name,
+          position = spawn_position,
+          evolution_factor = evolution_factor,
+          force = parent.force,
+          respawn_tick = game.tick + 18000 + 3600 * egg_seq
+        })
+        enqueued_eggs = enqueued_eggs + 1
+      end
+      -- spawn_position が nil の場合は、その回は“腐敗/失敗”扱いでスキップ（次のneedループに進む）
+    end
+  end
+
   if enqueued_eggs ~= 0 then
     util.print("[vulcanus]demolishers are multiplying... more than " .. enqueued_eggs .. " eggs are missing...")
   else
-    util.print("[vulcanus]demolishers are multiplying... but nothing happen...")
+    util.print("[vulcanus]demolishers are multiplying... but nothing happen..." .. #all_demolishers .. "demolishers are swarming... ")
   end
 end
 

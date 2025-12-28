@@ -224,8 +224,29 @@ end
 -- エンティティの死亡イベントを捕捉
 -- ----------------------------
 script.on_event(defines.events.on_entity_died, function(event)
-
 	local entity = event.entity
+	if entity and entity.valid and entity.surface and entity.surface.name == "vulcanus" then
+		-- デモリッシャー判定（名前で判定するのが確実）
+		if DemolisherNames and DemolisherNames.LIST then
+			for _, n in pairs(DemolisherNames.LIST) do
+				if entity.name == n then
+					storage.bd_demolisher_first_kill_tick = storage.bd_demolisher_first_kill_tick or game.tick
+					break
+				end
+			end
+		end
+	end
+	if entity and entity.valid and entity.surface and entity.surface.name == "vulcanus" then
+	-- デモリッシャー判定（名前で判定するのが確実）
+		if DemolisherNames and DemolisherNames.LIST then
+			for _, n in pairs(DemolisherNames.LIST) do
+				if entity.name == n then
+					storage.bd_demolisher_first_kill_tick = storage.bd_demolisher_first_kill_tick or game.tick
+					break
+				end
+			end
+		end
+	end
 
 	if (entity.name == DemolisherNames.SMALL_DEMOLISHER or entity.name == DemolisherNames.MEDIUM_DEMOLISHER or entity.name == DemolisherNames.BIG_DEMOLISHER) then
 		-- デモリッシャー死亡イベント
