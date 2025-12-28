@@ -1,3 +1,4 @@
+-- scripts/common/util.lua
 local util = {}
 
 -- デバッグ出力フラグ

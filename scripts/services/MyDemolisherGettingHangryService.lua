@@ -9,7 +9,6 @@ local MyDemolisherGettingHangryService = {}
 -- ----------------------------
 function MyDemolisherGettingHangryService.my_demolisher_getting_hangry()
 
-	-- game_print.debug("my_demolisher_getting_hangry")
 	-- ペットが居なければ終了
 	if #storage.my_demolishers == 0 then
 		return
