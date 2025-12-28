@@ -13,6 +13,7 @@ local DRand = require("scripts.util.DeterministicRandom")
 local DemolisherQuery = require("__Manis_lib__/scripts/queries/DemolisherQuery")
 local SpawnPositionService = require("scripts.services.SpawnPositionService")
 local TableUtil = require("scripts.util.TableUtil")
+local util  = require("scripts.common.util")
 
 -- normal品質フィルター
 local function is_normal_quality_demolisher(entity)
@@ -89,7 +90,7 @@ function DemolisherRushService.demolisher_rush(surface, evolution_factor)
 	local unnormal_demolishers = extract_unnormal_demolishers(all_demolishers)
 	local result_count = #unnormal_demolishers
 	if #unnormal_demolishers >= 200 then
-		game_print.message("[vulcanus] demolishers abound...")
+		util.print("[vulcanus] demolishers abound...")
 		return
 	end
 
@@ -97,7 +98,7 @@ function DemolisherRushService.demolisher_rush(surface, evolution_factor)
 	local remaining_capacity = 200 - result_count
 	local egg_budget = math.min(100, remaining_capacity)
 	if egg_budget <= 0 then
-		game_print.message("[vulcanus] demolishers abound...")
+		util.print("[vulcanus] demolishers abound...")
 		return
 	end
 
@@ -119,12 +120,9 @@ function DemolisherRushService.demolisher_rush(surface, evolution_factor)
   end
 
   -- デモリッシャーの取得（normalのみを母集団とする）
-  local normal_demolishers = {}
-  for _, e in pairs(DemolisherQuery.find_all_demolishers(surface)) do
-    if is_normal_quality_demolisher(e) then
-      table.insert(normal_demolishers, e)
-    end
-  end
+  local all_demolishers = DemolisherQuery.find_all_demolishers(surface)
+
+  local normal_demolishers = extract_normal_demolishers(all_demolishers)
 
   -- normal demolisherが居ない（ゲーム上のイレギュラー例外状態）
   if #normal_demolishers == 0 then
@@ -185,9 +183,9 @@ function DemolisherRushService.demolisher_rush(surface, evolution_factor)
   end
 
   if enqueued_eggs ~= 0 then
-    game_print.message("[vulcanus]demolishers are multiplying... more than " .. enqueued_eggs .. " eggs are missing...")
+    util.print("[vulcanus]demolishers are multiplying... more than " .. enqueued_eggs .. " eggs are missing...")
   else
-    game_print.message("[vulcanus]demolishers are multiplying... but nothing happen...")
+    util.print("[vulcanus]demolishers are multiplying... but nothing happen...")
   end
 end
 

@@ -38,7 +38,6 @@ function Customparam.new(
 	self.satiety = max_satiety
 	self.lv = 1
 
-	-- game_print.debug("self.quality1 = " .. self.quality)
 	-- 遺伝的特徴: 特性リスト
 	self.traits = traits or {
 		[CONST_DEMOLISHER_TRAIT.SHORT_WARP] = 1+DRand.random(0, 4) / 10, -- 近距離ワープ
@@ -63,7 +62,6 @@ end
 -- 進化: ランダム変異
 -- ----------------------------
 function Customparam:mutate(type, partnerparam)
-	-- game_print.debug("self.quality2 = " .. self.quality)
 
 	-- 親の数を指定
 	local parent_num = 1
