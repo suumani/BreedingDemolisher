@@ -100,7 +100,7 @@ function E.execute_one_step(plan)
   if moved > 0 then
     util.debug({"", "[BossDemolisher][", plan.surface_name, "] moved=", moved, " step=", plan.step - 1, "/", cell_count})
   else
-    util.debug({"", "[BossDemolisher][", plan.surface_name, "] moved=", no moved, " step=", plan.step - 1, "/", cell_count})
+    util.debug({"", "[BossDemolisher][", plan.surface_name, "] moved=",  moved, " step=", plan.step - 1, "/", cell_count})
   end
 
   return moved
