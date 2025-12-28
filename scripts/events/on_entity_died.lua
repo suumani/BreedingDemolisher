@@ -123,15 +123,6 @@ local function demolisher_dead_event(event, entity)
 		return
 	end
 
-	-- ペット処理以外で寿命で死んだ場合は、ドロップ処理もメッセージ処理もなし
-	local dead_cause_lifespan = false
-	if(storage.new_vulcanus_demolishers[entity.unit_number] ~= nil) then
-		dead_cause_lifespan = (storage.new_vulcanus_demolishers[entity.unit_number].customparam:get_life() < 0)
-	end
-	if dead_cause_lifespan == true then
-		return
-	end
-
 	-- 野良デモリッシャー
 	local drop_rate = 0.05
 	local item = CONST_ITEM_NAME.DEMOLISHER_EGG
@@ -169,10 +160,6 @@ local function demolisher_dead_event(event, entity)
 		game_print.message("["..entity.surface.name.."] ".. entity.quality.name .. " ".. entity.name .. " defeated, egg destroyed.")
 	end
 	
-	-- 追加デモリッシャーリストから削除
-	if(storage.new_vulcanus_demolishers[entity.unit_number] ~= nil) then
-		storage.new_vulcanus_demolishers[entity.unit_number] = nil
-	end
 end
 
 

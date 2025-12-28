@@ -8,7 +8,6 @@ local SpawnWildDemolishersService = {}
 -- ----------------------------
 local QualityRoller = require("__Manis_lib__/scripts/rollers/QualityRoller")
 local DemolisherQuery = require("__Manis_lib__/scripts/queries/DemolisherQuery")
-local LimitLifeSpanService = require("scripts.services.LimitLifeSpanService")
 local DRand = require("scripts.util.DeterministicRandom")
 local TownCenter  = require("scripts.services.town_center_resolver")
 
@@ -105,25 +104,16 @@ end
 -- ----------------------------
 local function spawn_demolisher(surface, queued, position, town_center)
   local dir = choose_cardinal_direction(position, town_center)
+  local quality = QualityRoller.choose_quality(queued.evolution_factor, DRand.random())
+  if quality == normal then quality = "uncommon" end
 
   return surface.create_entity{
     name = queued.entity_name,
     position = position,
     force = queued.force,
-    quality = QualityRoller.choose_quality(queued.evolution_factor, DRand.random()),
+    quality = quality,
     direction = dir
   }
-end
-
--- ----------------------------
--- 寿命登録
--- ----------------------------
-local function register_lifespan(surface, new_entity)
-  if surface.name == "vulcanus" then
-    LimitLifeSpanService.add_lifelimit_wild_demolisher(storage.new_vulcanus_demolishers, new_entity, game.tick + 180 * 3600)
-  elseif surface.name == "fulgora" then
-    LimitLifeSpanService.add_lifelimit_wild_demolisher(storage.new_fulgora_demolishers, new_entity, game.tick + 180 * 3600)
-  end
 end
 
 -- ----------------------------
@@ -152,7 +142,6 @@ function SpawnWildDemolishersService.spawn_wild_demolishers(vulcanus_surface)
 				else
 					local new_entity = spawn_demolisher(surface, queued, spawn_pos, town_center)
 					table.remove(storage.respawn_queue, i)
-					register_lifespan(surface, new_entity)
 				end
 			end
 		end
