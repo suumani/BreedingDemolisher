@@ -73,11 +73,11 @@ script.on_event("on_breeding_demolisher_mouse_button_2", function(event)
 	end
 
 	local surface = player.surface
-	local name = DemolisherNames.SMALL_DEMOLISHER
+	local name = DemolisherNames.SMALL
 	if cursor_stack.name:find("medium") then
-		name = DemolisherNames.MEDIUM_DEMOLISHER
+		name = DemolisherNames.MEDIUM
 	elseif cursor_stack.name:find("big") then
-		name = DemolisherNames.BIG_DEMOLISHER
+		name = DemolisherNames.BIG
 	end
 
 	spawn_my_demolisher(surface, name, spawn_position, force, customparam, quality)

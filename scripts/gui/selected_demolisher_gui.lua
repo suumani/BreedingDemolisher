@@ -189,9 +189,5 @@ end
 -- 寿命
 -- ----------------------------
 function get_life(entity)
-	if storage.new_vulcanus_demolishers[entity.unit_number] ~= nil then
-		return (math.floor((storage.new_vulcanus_demolishers[entity.unit_number].life - game.tick) / 3600)+1).."min."
-	else
-		return "Infinity"
-	end
+	return "Infinity"
 end
