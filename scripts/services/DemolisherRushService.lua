@@ -36,19 +36,17 @@ local function calc_max_eggs_per_parent(evo)
   return math.ceil(1 + (evo * 4))
 end
 
--- normal_demolishers から k 体を「抽選対象」として非復元で選ぶ（部分シャッフル）
-local function choose_candidates(normal_demolishers, k)
-  local n = #normal_demolishers
+-- all_demolishers から k 体を「抽選対象」として非復元で選ぶ（部分シャッフル）
+local function choose_candidates(all_demolishers, k)
+  local n = #all_demolishers
   if k > n then k = n end
   if k <= 0 then return {} end
 
-  -- shallow copy
   local tmp = {}
   for i = 1, n do
-    tmp[i] = normal_demolishers[i]
+    tmp[i] = all_demolishers[i]
   end
 
-  -- partial Fisher–Yates: i..n からランダムに選んで先頭へ
   local candidates = {}
   for i = 1, k do
     local j = DRand.random(i, n)
@@ -122,24 +120,23 @@ function DemolisherRushService.demolisher_rush(surface, evolution_factor)
   -- デモリッシャーの取得（normalのみを母集団とする）
   local all_demolishers = DemolisherQuery.find_all_demolishers(surface)
 
-  local normal_demolishers = extract_normal_demolishers(all_demolishers)
-
   -- normal demolisherが居ない（ゲーム上のイレギュラー例外状態）
-  if #normal_demolishers == 0 then
+  if #all_demolishers == 0 then
     return
   end
 
   -- source_count に依存せず、sourceのデモリッシャー5～20体を抽選対象として選ぶ（evolution依存）
   local k = calc_candidate_count(evolution_factor)
-  local candidates = choose_candidates(normal_demolishers, k)
+  local candidates = choose_candidates(all_demolishers, k)
 
   -- 抽選対象が0体（イレギュラー）
   if #candidates == 0 then
     return
   end
 
-  -- 抽選対象の各sourceが確率で産卵（産卵率は進化度の半分）
-  local spawn_prob = evolution_factor / 2
+  -- 抽選対象の各sourceが確率で産卵（産卵率は進化度の半分、最低保証0.1）
+  local P_MIN = 0.1
+  local spawn_prob = math.max(P_MIN, evolution_factor / 2)
   local max_eggs = calc_max_eggs_per_parent(evolution_factor)
 
   local enqueued_eggs = 0
