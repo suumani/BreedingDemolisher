@@ -1,4 +1,4 @@
--- scripts/services/town_center_resolver.lua
+-- __BreedingDemolisher__/scripts/services/TownCenterResolver.lua
 local R = {}
 
 local function dist2(p)

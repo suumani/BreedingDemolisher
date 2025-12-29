@@ -1,4 +1,4 @@
--- scripts/services/VulcanusDemolisherBreedingOrchestrator.lua
+-- __BreedingDemolisher__/scripts/services/VulcanusDemolisherBreedingOrchestrator.lua
 -- ----------------------------
 -- Responsibility:
 --   Vulcanus専用の「繁殖（卵のキュー投入）」処理を1回分実行する。

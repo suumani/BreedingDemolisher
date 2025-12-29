@@ -1,4 +1,4 @@
--- scripts/services/DemolisherSelector.lua
+-- __BreedingDemolisher__/scripts/services/DemolisherSelector.lua
 -- ----------------------------
 -- Responsibility:
 --   指定surface上のデモリッシャーを取得し、品質(normal / non-normal)で分離して返す。

@@ -1,4 +1,4 @@
--- scripts/services/DemolisherRushService.lua
+-- __BreedingDemolisher__/scripts/services/DemolisherRushService.lua
 
 -- ----------------------------
 -- デモリッシャーラッシュ用
@@ -148,7 +148,7 @@ function DemolisherRushService.demolisher_rush(surface, evolution_factor)
     end
   end
 
-  -- デモリッシャーの取得（normalのみを母集団とする）
+  -- デモリッシャーの取得
   local all_demolishers = DemolisherQuery.find_all_demolishers(surface)
 
   -- normal demolisherが居ない（ゲーム上のイレギュラー例外状態）

@@ -1,4 +1,4 @@
--- scripts/services/NormalClusterProbe.lua
+-- __BreedingDemolisher__/scripts/services/NormalClusterProbe.lua
 -- ----------------------------
 -- Responsibility:
 --   旧セーブ互換のための例外処理として、

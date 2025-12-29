@@ -1,4 +1,4 @@
--- scripts/services/VulcanusDemolisherMovePlanStore.lua
+-- __BreedingDemolisher__/scripts/services/VulcanusDemolisherMovePlanStore.lua
 -- ----------------------------
 -- Responsibility:
 --   Vulcanus用の移動計画（MovePlan）を storage に保存/取得/破棄する。
