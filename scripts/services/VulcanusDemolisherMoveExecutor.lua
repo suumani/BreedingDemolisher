@@ -1,109 +1,78 @@
--- scripts/services/VulcanusDemolisherMoveExecutor.lua
+-- __BreedingDemolisher__/scripts/services/VulcanusDemolisherMoveExecutor.lua
+-- ----------------------------
+-- Responsibility:
+--   Lib側の共通実行器（DemolisherMoveStepExecutor）に対して、
+--   繁殖Mod固有の「移動対象抽選」と「ポリシー」を注入して1ステップ実行する。
+--   乱数状態（LuaRandomGenerator）は本Modのstorageで所有し、deps.get_rngで注入する。
+-- ----------------------------
 local E = {}
 
+-- Lib共通実行器
+local StepExecutor = require("__Manis_lib__/scripts/domain/demolisher/move/DemolisherMoveStepExecutor")
+
+-- 共通クエリ（Lib）
 local DemolisherQuery = require("__Manis_lib__/scripts/queries/DemolisherQuery")
+
+-- Mod固有ロジック
 local NormalClusterProbe = require("scripts.services.NormalClusterProbe")
-local mover = require("scripts.services.combat_demolisher_mover")
+local MovePolicy = require("scripts.policies.vulcanus_demolisher_move_policy")
+local ModRandomProvider = require("scripts.services.ModRandomProvider")
+
 local util  = require("scripts.common.util")
 
-local function cell_index_to_area(plan, idx)
-  local lt = plan.rect.left_top
-  local rb = plan.rect.right_bottom
-  local w = rb.x - lt.x
-  local h = rb.y - lt.y
-
-  local cell_w = w / plan.cols
-  local cell_h = h / plan.rows
-
-  local r = math.floor((idx - 1) / plan.cols)  -- 0-based row
-  local c = (idx - 1) % plan.cols              -- 0-based col
-
-  local x1 = lt.x + c * cell_w
-  local y1 = lt.y + r * cell_h
-  local x2 = lt.x + (c + 1) * cell_w
-  local y2 = lt.y + (r + 1) * cell_h
-
-  return { { x = x1, y = y1 }, { x = x2, y = y2 } }
-end
-
-local function compute_cap(plan)
-  local remaining = plan.planned_total - plan.moved_so_far
-  if remaining <= 0 then return 0 end
-
-  local cell_count = plan.rows * plan.cols
-  local remaining_cells = cell_count - (plan.step - 1)
-  if remaining_cells <= 0 then
-    return remaining
-  end
-
-  local cap = math.floor(remaining / remaining_cells)
-  if cap < 1 then cap = 1 end -- 残予算がある限り最低1
-  return cap
-end
-
-function E.execute_one_step(plan)
-  local surface = game.surfaces[plan.surface_name]
-  if not surface then return 0 end
-
-  local cell_count = plan.rows * plan.cols
-  if plan.step > cell_count then
-    return 0
-  end
-
-  local idx = plan.order[plan.step]
-  local area = cell_index_to_area(plan, idx)
-
-  -- セル内のデモリッシャーを取得（軽量）
+-- ----------------------------
+-- Mod固有：移動対象抽選
+--   - non-normal優先
+--   - 例外として normal が密集している場合に1体だけ追加
+-- ----------------------------
+local function build_move_targets(surface, area, ctx)
   local cell_demolishers = DemolisherQuery.find_neighbor_demolishers(surface, area)
 
   local normal = {}
   local unnormal = {}
 
-  for _, e in pairs(cell_demolishers) do
+  for _, e in ipairs(cell_demolishers) do
     if e.quality.name == "normal" then
-      table.insert(normal, e)
+      normal[#normal + 1] = e
     else
-      table.insert(unnormal, e)
+      unnormal[#unnormal + 1] = e
     end
   end
 
-  -- non-normal優先
   local move_targets = unnormal
 
-  -- 例外normal（セル内normalからランダム→近傍150で4以上なら選ぶ）
   local extra = NormalClusterProbe.pick_one(surface, normal)
   if extra then
-    table.insert(move_targets, extra)
+    move_targets[#move_targets + 1] = extra
   end
 
-  local cap = compute_cap(plan)
-  if cap <= 0 then
-    plan.step = plan.step + 1
-    return 0
-  end
+  return move_targets
+end
 
-  if #move_targets > cap then
-    local sliced = {}
-    for i = 1, cap do sliced[i] = move_targets[i] end
-    move_targets = sliced
-  end
+-- planからロケット候補座標配列を取得（互換: rocket_positions / positions）
+local function get_rocket_positions(plan)
+  return plan.rocket_positions or plan.positions
+end
 
-  local evo = game.forces.enemy.get_evolution_factor(surface)
-  local move_rate = #plan.positions
-  if move_rate > 3 then move_rate = 3 end
+function E.execute_one_step(plan)
+  return StepExecutor.execute_one_step(plan, {
+    get_surface = function(surface_name)
+      return game.surfaces[surface_name]
+    end,
 
-  local moved = mover.move(move_targets, evo, move_rate, plan.positions)
+    get_rocket_positions = get_rocket_positions,
+    build_move_targets = build_move_targets,
 
-  plan.moved_so_far = plan.moved_so_far + moved
-  plan.step = plan.step + 1
+    compute_move_rate = MovePolicy.compute_move_rate,
+    can_move = MovePolicy.can_move,
 
-  if moved > 0 then
-    util.debug({"", "[BossDemolisher][", plan.surface_name, "] moved=", moved, " step=", plan.step - 1, "/", cell_count})
-  else
-    util.debug({"", "[BossDemolisher][", plan.surface_name, "] moved=",  moved, " step=", plan.step - 1, "/", cell_count})
-  end
+    -- ★追加：rng注入（本Modのstorageに保持しているRNGを返す）
+    get_rng = function()
+      return ModRandomProvider.get()
+    end,
 
-  return moved
+    log = util.debug
+  })
 end
 
 return E

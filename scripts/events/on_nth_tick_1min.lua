@@ -1,8 +1,8 @@
--- scripts/events/on_nth_tick_1min.lua
+-- __BreedingDemolisher__/scripts/events/on_nth_tick_1min.lua
 
 local MyDemolisherGettingHangryService = require("scripts.services.MyDemolisherGettingHangryService")
 local MyDemolisherBreedingService = require("scripts.services.MyDemolisherBreedingService")
-local SpawnWildDemolishersService = require("scripts.services.SpawnWildDemolishersService")
+local DemolisherEggHatchService = require("scripts.services.DemolisherEggHatchService")
 
 local VulcanusDemolisherMovePlanRunner = require("scripts.services.VulcanusDemolisherMovePlanRunner")
 
@@ -17,7 +17,7 @@ local function on_nth_tick_1min(event)
 
   MyDemolisherGettingHangryService.my_demolisher_getting_hangry()
   MyDemolisherBreedingService.my_demolisher_breeding()
-  SpawnWildDemolishersService.spawn_wild_demolishers(vulcanus_surface)
+  DemolisherEggHatchService.spawn_wild_demolishers(vulcanus_surface)
 end
 
 script.on_nth_tick(3600, on_nth_tick_1min)

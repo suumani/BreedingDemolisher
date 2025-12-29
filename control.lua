@@ -1,3 +1,4 @@
+-- __BreedingDemolisher__/scripts/control.lua
 -- ----------------------------
 -- requires
 -- ----------------------------
@@ -29,36 +30,36 @@ local MigrationService = require("scripts.services.MigrationService")
 local DRand = require("scripts.util.DeterministicRandom")
 
 -- ----------------------------
--- ŠJn
+-- é–‹å§‹
 -- ----------------------------
 script.on_init(function()
   init()
 end)
 
 -- ----------------------------
--- ƒ[ƒh
+-- ãƒ­ãƒ¼ãƒ‰
 -- ----------------------------
 script.on_load(function()
   SaveRestoreService.on_load_restore()
 end)
 
 -- ----------------------------
--- \¬•ÏX
+-- æ§‹æˆå¤‰æ›´
 -- ----------------------------
 script.on_configuration_changed(function(event)
   init()
 end)
 
 -- ----------------------------
--- ‰Šú‰»‹¤’Ê
+-- åˆæœŸåŒ–å…±é€š
 -- ----------------------------
 function init()
-  -- —”‰Šú‰»
+  -- ä¹±æ•°åˆæœŸåŒ–
   DRand.init(1234567)
 
-  -- storage ‰Šú‰»
+  -- storage åˆæœŸåŒ–
   StorageInitializer.init_all()
 
-  -- ‘æO¨—Íƒfƒ‚ƒŠƒbƒVƒƒ[
+  -- ç¬¬ä¸‰å‹¢åŠ›ãƒ‡ãƒ¢ãƒªãƒƒã‚·ãƒ£ãƒ¼
   ForceInitializer.ensure_demolishers_force()
 end

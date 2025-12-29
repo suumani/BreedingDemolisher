@@ -1,20 +1,20 @@
+-- __BreedingDemolisher__/scripts/services/DemolisherEggHatchService.lua
 -- ----------------------------
--- class SpawnWildDemolishersService
+-- class DemolisherEggHatchService
+-- Responsibility:
+--   卵（respawn_queue）を孵化させてデモリッシャーを生成する。
+--   ※respawn_queue の所有・追加は別責務。ここは消費のみ。
 -- ----------------------------
-local SpawnWildDemolishersService = {}
+local DemolisherEggHatchService = {}
 
 -- ----------------------------
 -- requires
 -- ----------------------------
 local QualityRoller = require("__Manis_lib__/scripts/rollers/QualityRoller")
 local DemolisherQuery = require("__Manis_lib__/scripts/queries/DemolisherQuery")
-local DRand = require("scripts.util.DeterministicRandom")
-local TownCenter  = require("scripts.services.town_center_resolver")
+local DRand = require("scripts.util.DeterministicRandom") -- 当面維持
+local TownCenter  = require("scripts.services.TownCenterResolver")
 
-
--- ----------------------------
--- 方向の決定
--- ----------------------------
 local function choose_cardinal_direction(from_pos, to_pos)
   local dx = to_pos.x - from_pos.x
   local dy = to_pos.y - from_pos.y
@@ -25,9 +25,6 @@ local function choose_cardinal_direction(from_pos, to_pos)
   end
 end
 
--- ----------------------------
--- プレイヤー施設との衝突
--- ----------------------------
 local function has_player_buildings_near(surface, pos, r)
   local area = { {pos.x - r, pos.y - r}, {pos.x + r, pos.y + r} }
   return surface.count_entities_filtered{
@@ -36,9 +33,6 @@ local function has_player_buildings_near(surface, pos, r)
   } > 0
 end
 
--- ----------------------------
--- positionが原点に近すぎる場合の補正
--- ----------------------------
 local function adjust_position_if_too_close_to_origin(position)
   local l2 = position.x * position.x + position.y * position.y
   if l2 >= 40000 then
@@ -56,9 +50,6 @@ local function adjust_position_if_too_close_to_origin(position)
   return p
 end
 
--- ----------------------------
--- 半径60以内に4匹以上なら腐る判定
--- ----------------------------
 local function should_rot_egg(surface, position)
   local neighbors = DemolisherQuery.find_neighbor_demolishers(surface, {
     { x = position.x - 60, y = position.y - 60 },
@@ -67,9 +58,6 @@ local function should_rot_egg(surface, position)
   return #neighbors >= 4
 end
 
--- ----------------------------
--- 建物回避：town_centerから遠ざける方向へ50だけ動かす（1回のみ）
--- ----------------------------
 local function retry_position_away_from_town_center(position, town_center)
   local p = { x = position.x, y = position.y }
 
@@ -82,10 +70,6 @@ local function retry_position_away_from_town_center(position, town_center)
   return p
 end
 
--- ----------------------------
--- スポーン位置確定：建造物30マス回避＋1回リトライ
--- 返り値：position or nil（nilなら腐る）
--- ----------------------------
 local function resolve_spawn_position(surface, position, town_center)
   if not has_player_buildings_near(surface, position, 30) then
     return position
@@ -99,13 +83,16 @@ local function resolve_spawn_position(surface, position, town_center)
   return nil
 end
 
--- ----------------------------
--- entity生成（direction/quality）
--- ----------------------------
 local function spawn_demolisher(surface, queued, position, town_center)
   local dir = choose_cardinal_direction(position, town_center)
+
+  -- QualityRoller が期待する「乱数」が 0..1 の実数なら、DRand.random() でOK
   local quality = QualityRoller.choose_quality(queued.evolution_factor, DRand.random())
-  if quality == normal then quality = "uncommon" end
+
+  -- BUGFIX: normal は未定義。文字列で比較する
+  if quality == "normal" then
+    quality = "uncommon"
+  end
 
   return surface.create_entity{
     name = queued.entity_name,
@@ -117,35 +104,30 @@ local function spawn_demolisher(surface, queued, position, town_center)
 end
 
 -- ----------------------------
--- 野生のデモリッシャー発生
+-- 卵の孵化（respawn_queueを消費）
 -- ----------------------------
-function SpawnWildDemolishersService.spawn_wild_demolishers(vulcanus_surface)
+function DemolisherEggHatchService.spawn_wild_demolishers(vulcanus_surface)
+  for i = #storage.respawn_queue, 1, -1 do
+    local queued = storage.respawn_queue[i]
+    if game.tick >= queued.respawn_tick then
+      local surface = queued.surface
+      local position = adjust_position_if_too_close_to_origin(queued.position)
 
-	local demolishers = DemolisherQuery.find_all_demolishers(vulcanus_surface)
+      if should_rot_egg(vulcanus_surface, position) then
+        table.remove(storage.respawn_queue, i)
+      else
+        local town_center = TownCenter.resolve(surface)
+        local spawn_pos = resolve_spawn_position(surface, position, town_center)
 
-	-- デモリッシャの複製イベント
-	for i = #storage.respawn_queue, 1, -1 do
-		local queued = storage.respawn_queue[i]
-		if game.tick >= queued.respawn_tick then
-
-			local surface = queued.surface
-			local position = adjust_position_if_too_close_to_origin(queued.position)
-
-			if should_rot_egg(vulcanus_surface, position) then
-				table.remove(storage.respawn_queue, i)
-			else
-				local town_center = TownCenter.resolve(surface)
-				local spawn_pos = resolve_spawn_position(surface, position, town_center)
-
-				if not spawn_pos then
-					table.remove(storage.respawn_queue, i) -- 腐る
-				else
-					local new_entity = spawn_demolisher(surface, queued, spawn_pos, town_center)
-					table.remove(storage.respawn_queue, i)
-				end
-			end
-		end
-	end
+        if not spawn_pos then
+          table.remove(storage.respawn_queue, i) -- 腐る
+        else
+          spawn_demolisher(surface, queued, spawn_pos, town_center)
+          table.remove(storage.respawn_queue, i)
+        end
+      end
+    end
+  end
 end
 
-return SpawnWildDemolishersService
+return DemolisherEggHatchService

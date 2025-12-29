@@ -1,9 +1,9 @@
+-- __BreedingDemolisher __/scripts/events/on_rocket_launched.lua
+
 -- ----------------------------
 -- ロケット打ち上げイベント
--- scripts/events/on_rocket_launched.lua
 -- ----------------------------
-
-local RocketLaunchHistoryStore = require("scripts.services.RocketLaunchHistoryStore")
+local RocketLaunchHistoryStore = require("__Manis_lib__/scripts/domain/demolisher/move/RocketLaunchHistoryStore")
 
 script.on_event(defines.events.on_rocket_launched, function(event)
   local silo = event.rocket_silo
@@ -16,6 +16,6 @@ script.on_event(defines.events.on_rocket_launched, function(event)
     return
   end
 
-  -- ロケット履歴を記録（30分移動イベント用）
-  RocketLaunchHistoryStore.add(surface.name, silo.position)
+  -- ロケット履歴を記録（チャンク集約＋TTL）
+  RocketLaunchHistoryStore.add(surface.name, silo.position, event.tick)
 end)

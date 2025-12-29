@@ -1,4 +1,4 @@
--- scripts/services/ForceInitializer.lua
+-- __BreedingDemolisher__/scripts/services/ForceInitializer.lua
 -- ----------------------------
 -- Responsibility:
 --   Modが必要とする force を作成し、敵対関係を設定する。

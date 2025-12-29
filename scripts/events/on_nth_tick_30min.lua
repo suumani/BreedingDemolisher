@@ -1,4 +1,4 @@
--- scripts/events/on_nth_tick_30min.lua
+-- __BreedingDemolisher__/scripts/events/on_nth_tick_30min.lua
 
 local VulcanusDemolisherBreedingOrchestrator = require("scripts.services.VulcanusDemolisherBreedingOrchestrator")
 local VulcanusDemolisherMoveOrchestrator = require("scripts.services.VulcanusDemolisherMoveOrchestrator")

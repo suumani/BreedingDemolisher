@@ -1,4 +1,4 @@
--- scripts/services/StorageInitializer.lua
+-- __BreedingDemolisher__/scripts/services/StorageInitializer.lua
 -- ----------------------------
 -- Responsibility:
 --   init() 時に必要な storage の初期化を行う。
