@@ -20,6 +20,7 @@ It is designed for players who enjoy high-risk, high-density combat environments
 - Population growth is controlled by a global cap and current population
 - Eggs may drop from defeated demolishers
 - Hatch quality and egg dispersion scale with evolution
+- Total demolisher population is capped at **200 (fixed)** for performance stability.
 
 ### Player interaction / Pets
 - Eggs can sometimes be obtained by defeating wild demolishers
