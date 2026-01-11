@@ -2,7 +2,32 @@
 
 local SpawnPositionService = require("scripts.services.SpawnPositionService")
 local DemolisherNames = require("__Manis_definitions__/scripts/definition/DemolisherNames")
-local DRand = require("scripts.util.DeterministicRandom")
+local DRand = require("-- __BreedingDemolisher__/scripts/util/DeterministicRandom")
+
+-- Demolisher判定用の高速セット（ロード時に一度だけ構築）
+local DEMOLISHER_NAME_SET = {}
+do
+  for _, n in ipairs(DemolisherNames.ALL) do
+    DEMOLISHER_NAME_SET[n] = true
+  end
+end
+
+local function is_demolisher(entity)
+  return entity ~= nil and entity.valid and DEMOLISHER_NAME_SET[entity.name] == true
+end
+
+local function quality_to_item_quality(q)
+  if type(q) ~= "number" then
+    q = 0
+  end
+  -- 現行仕様：2/3/4/5 で昇格
+  if q >= 5 then return CONST_QUALITY.LEGENDARY end
+  if q >= 4 then return CONST_QUALITY.EPIC end
+  if q >= 3 then return CONST_QUALITY.RARE end
+  if q >= 2 then return CONST_QUALITY.UNCOMMON end
+  return CONST_QUALITY.NORMAL
+end
+
 -- ----------------------------
 -- デモリッシャー以外のすべての破壊イベント
 -- ----------------------------
@@ -17,7 +42,6 @@ local function enemy_except_demolisher_dead(event, entity)
 		return
 	end
 	
-	local surface = entity.surface
 	local nearby_demolisher = nil
 	
 	-- 最大食事距離は30
@@ -167,32 +191,18 @@ function drop_item(entity, item_name, drop_rate, customparam, quality)
   local position = entity.position
   local drop_count = 1
 
-  -- ★ 追加：my_eggs を必ず初期化（customparam 付きで落ちるのを防ぐ）
   storage.my_eggs = storage.my_eggs or {}
 
-  -- 野良でもりんは、quality == nil が期待値
-  if quality == nil then
-    quality = 0
-  end
-  
-  if type(quality) ~= "number" then
+  -- nil/非数は 0 扱い
+  if quality == nil or type(quality) ~= "number" then
     quality = 0
   end
 
   local r = DRand.random()
   if r < drop_rate then
 
-    -- ★ 修正：高い品質から判定（今のコードは >=2 が先に刺さって全部 UNCOMMON になりがち）
-    local str_quality = CONST_QUALITY.NORMAL
-    if quality >= 5 then
-      str_quality = CONST_QUALITY.LEGENDARY
-    elseif quality >= 4 then
-      str_quality = CONST_QUALITY.EPIC
-    elseif quality >= 3 then
-      str_quality = CONST_QUALITY.RARE
-    elseif quality >= 2 then
-      str_quality = CONST_QUALITY.UNCOMMON
-    end
+    -- 連続quality → 段階quality（Factorio item quality）
+    local str_quality = quality_to_item_quality(quality)
 
     surface.spill_item_stack{
       position = position,
@@ -204,7 +214,6 @@ function drop_item(entity, item_name, drop_rate, customparam, quality)
     else
       game_print.message("item_name, str_quality = " .. item_name .. ", " .. str_quality)
 
-      -- ドロップした卵のステータスを保存
       if storage.my_eggs[item_name] == nil then
         storage.my_eggs[item_name] = {}
       end
@@ -226,26 +235,18 @@ end
 -- エンティティの死亡イベントを捕捉
 -- ----------------------------
 script.on_event(defines.events.on_entity_died, function(event)
-	local entity = event.entity
-	if not entity or not entity.valid or not entity.surface then return end
+  local entity = event.entity
+  if not entity or not entity.valid or not entity.surface then return end
 
-	if entity and entity.valid and entity.surface and entity.surface.name == "vulcanus" then
-		-- デモリッシャー判定（名前で判定するのが確実）
-		if DemolisherNames and DemolisherNames.LIST then
-			for _, n in pairs(DemolisherNames.LIST) do
-				if entity.name == n then
-					storage.bd_demolisher_first_kill_tick = storage.bd_demolisher_first_kill_tick or game.tick
-					break
-				end
-			end
-		end
-	end
+  local demolisher = is_demolisher(entity)
 
-	if (entity.name == DemolisherNames.SMALL_DEMOLISHER or entity.name == DemolisherNames.MEDIUM_DEMOLISHER or entity.name == DemolisherNames.BIG_DEMOLISHER) then
-		-- デモリッシャー死亡イベント
-		demolisher_dead_event(event, entity)
-	else
-		-- デモリッシャー食事イベント
-		enemy_except_demolisher_dead(event, entity)
-	end
+  if demolisher and entity.surface.name == "vulcanus" then
+    storage.bd_demolisher_first_kill_tick = storage.bd_demolisher_first_kill_tick or game.tick
+  end
+
+  if demolisher then
+    demolisher_dead_event(event, entity)
+  else
+    enemy_except_demolisher_dead(event, entity)
+  end
 end)

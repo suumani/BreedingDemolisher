@@ -30,7 +30,7 @@ function Customparam.new(
 	self.entity_name = entity_name or entity.name -- 種別名
 	self.name = name or (private_default_name(entity)) -- 個体名
 	self.size = size or DRand.random(100, 500) -- サイズ
-	self.quality = quality or 1 + DRand.random(1, 4) / 10  -- 品質 (0.0 - 1.0)
+	self.quality = quality or 0 + DRand.random(1, 4) / 10  -- 品質 (0.0 - 0.4)
 	self.speed = speed or 1 + DRand.random(1, 4) / 10 -- 移動速度 (0.1 - 1.0)
 	self.max_life = max_life or 180
 	self.life = self.max_life
@@ -60,188 +60,195 @@ function Customparam.new(
 	return self
 end
 
+local function apply_quality_mutation(quality, parent_num, max_rate, type)
+  -- 減衰係数：quality が大きいほど成長率が下がる（上限は持たせない）
+  -- a = 1.0
+  local d = 1.0 / (1.0 + quality)
+
+  -- 片親：下がりやすい（平均マイナス）
+  if parent_num == 1 then
+    local delta = DRand.random(-2, 0) / 10    -- -0.2 .. 0.0
+    quality = quality + delta * d
+
+  else
+    -- 両親：ベース成長（平均 +0.2 相当を想定）
+    local delta = DRand.random(-2, 6) / 10    -- -0.2 .. +0.6
+    quality = quality + delta * d
+
+    -- 突然変異：両親のみ、確率。max_rate が大きいほど起きやすい
+    local p = 0.05 * max_rate
+    if p > 0.30 then p = 0.30 end
+
+    if DRand.random() < p then
+      local mut = DRand.random(0, 6) / 10     -- +0.0 .. +0.6
+      quality = quality + mut * d
+    end
+  end
+
+  -- 下限のみ保証（上限は設けない）
+  if quality < 0 then quality = 0 end
+  return quality
+end
+
+local function resolve_parent_context(self, type, partnerparam)
+  local parent_num = partnerparam and 2 or 1
+
+  local entity_name = self.entity_name or DemolisherNames.SMALL
+  local type_control_max = 0
+
+  if type == "enemy" then
+    entity_name = DemolisherNames.SMALL
+    type_control_max = 0
+  elseif type == "demolishers" then
+    type_control_max = 1
+  elseif type == "player" then
+    type_control_max = 2
+  else
+    type_control_max = 2
+  end
+
+  local max_rate = parent_num * (1 + type_control_max)
+  return parent_num, max_rate, entity_name
+end
+
+local function inherit_base(self, partnerparam)
+  if not partnerparam then
+    return
+      self.size,
+      self.quality,
+      self.speed,
+      self.max_life,
+      self.max_growth or 50,
+      self.max_satiety or 100
+  end
+
+  local function pick(a, b)
+    return (DRand.random() < 0.5) and a or b
+  end
+
+  return
+    pick(self.size,        partnerparam:get_size()),
+    pick(self.quality,     partnerparam:get_quality()),
+    pick(self.speed,       partnerparam:get_speed()),
+    pick(self.max_life,    partnerparam:get_max_life()),
+    pick(self.max_growth,  partnerparam:get_max_growth()),
+    pick(self.max_satiety, partnerparam:get_max_satiety())
+end
+
+local function quality_decay(q)
+  return 1.0 / (1.0 + q)   -- a=1.0
+end
+
+local function mutate_size(size, max_rate)
+  return size + DRand.random(-2000, 2000 * max_rate)
+end
+
+local function mutate_speed(speed, quality, max_rate)
+  speed = speed + DRand.random(-4, 4 * max_rate) / 100
+  local min = 0.25 + quality * 0.1
+  local max = 0.25 + quality * 0.25
+  if speed < min then return min end
+  if speed > max then return max end
+  return speed
+end
+
+local function mutate_life(max_life, quality, max_rate)
+  max_life = max_life + DRand.random(-10, 10 * max_rate) / 10
+  local min = 60 + quality * 30
+  local max = 150 + quality * 30
+  if max_life < min then return min end
+  if max_life > max then return max end
+  return max_life
+end
+
+local function mutate_growth(max_growth, quality, max_rate)
+  max_growth = max_growth + DRand.random(-1, 1 * max_rate)
+  local min = 30 + quality * 10
+  local max = 50 + quality * 10
+  if max_growth < min then return min end
+  if max_growth > max then return max end
+  return max_growth
+end
+
+local function mutate_satiety(max_satiety, quality, max_rate)
+  max_satiety = max_satiety + DRand.random(-10, 10 * max_rate)
+  local min = 50 + quality * 10
+  local max = 110 + quality * 20
+  if max_satiety < min then return min end
+  if max_satiety > max then return max end
+  return max_satiety
+end
+
+local function mutate_traits(self_traits, partner_traits, max_rate)
+  local traits = {}
+
+  for k, v in pairs(self_traits) do
+    local nv = v + DRand.random(-1, 1 * max_rate) / 10
+    if nv > 0 then traits[k] = nv end
+  end
+
+  if partner_traits then
+    for k, v in pairs(partner_traits) do
+      local nv = v + DRand.random(-1, 1 * max_rate) / 10
+      if nv > 0 then
+        if traits[k] then
+          traits[k] = math.max(traits[k], nv) + 0.1
+        else
+          traits[k] = nv
+        end
+      end
+    end
+  end
+
+  return traits
+end
+
+local function evolve_entity(entity_name, size)
+  if entity_name == DemolisherNames.SMALL then
+    if size > 100000 then return DemolisherNames.MEDIUM end
+    if size < 15000 then return DemolisherNames.SMALL, 15000 end
+  elseif entity_name == DemolisherNames.MEDIUM then
+    if size > 300000 then return DemolisherNames.BIG end
+    if size < 30000 then return DemolisherNames.SMALL end
+  else
+    if size < 300000 then return DemolisherNames.MEDIUM end
+  end
+  return entity_name
+end
+
 -- ----------------------------
 -- 進化: ランダム変異
 -- ----------------------------
 function Customparam:mutate(type, partnerparam)
 
-	-- 親の数を指定
-	local parent_num = 1
-	if partnerparam ~= nil then
-		parent_num = 2
-	end
+  local parent_num, max_rate, entity_name =
+    resolve_parent_context(self, type, partnerparam)
 
-	-- 種別補正を指定
-	local type_control_max = 0
-	local entity_name = self.entity_name or DemolisherNames.SMALL
+  local size, quality, speed, max_life, max_growth, max_satiety =
+    inherit_base(self, partnerparam)
 
-	-- 生みの親がDEMOLISHER_EGG出身
-	if type == "enemy" then
-		entity_name = DemolisherNames.SMALL -- enemyは強制small
-		type_control_max = 0
-	elseif type == "demolishers" then
-		type_control_max = 1
-	elseif type == "player" then
-	  type_control_max = 2
-	else
-	  type_control_max = 2 -- fallback
-	end
-	local max_rate = parent_num * (1 + type_control_max)
+  size       = mutate_size(size, max_rate)
+  quality    = apply_quality_mutation(quality, parent_num, max_rate, type)
+  speed      = mutate_speed(speed, quality, max_rate)
+  max_life   = mutate_life(max_life, quality, max_rate)
+  max_growth = mutate_growth(max_growth, quality, max_rate)
+  max_satiety= mutate_satiety(max_satiety, quality, max_rate)
 
-	local entity = nil
-	local name = nil
+  local traits = mutate_traits(
+    self.traits,
+    partnerparam and partnerparam:get_traits() or nil,
+    max_rate
+  )
 
-	local size, quality, speed, max_life, max_growth, max_satiety
+  local new_entity_name, fixed_size = evolve_entity(entity_name, size)
+  if fixed_size then size = fixed_size end
 
-	-- 基礎値の決定
-	if partnerparam == nil then
-		-- 片親
-		size = self.size
-		quality = self.quality
-		speed = self.speed
-		max_life = self.max_life
-		max_growth = self.max_growth or 50
-		max_satiety = self.max_satiety or 100
-	else
-		-- size
-		local r = DRand.random()
-		if r < 0.5 then
-			size = self.size
-		else
-			size = partnerparam:get_size()
-		end
-		-- quality
-		r = DRand.random()
-		if r < 0.5 then
-			quality = self.quality
-		else
-			quality = partnerparam:get_quality()
-		end
-		-- speed
-		r = DRand.random()
-		if r < 0.5 then
-			speed = self.speed
-		else
-			speed = partnerparam:get_speed()
-		end
-		-- max_life
-		r = DRand.random()
-		if r < 0.5 then
-			max_life = self.max_life
-		else
-			max_life = partnerparam:get_max_life()
-		end
-		-- max_growth
-		r = DRand.random()
-		if r < 0.5 then
-			max_growth = self.max_growth
-		else
-			max_growth = partnerparam:get_max_growth()
-		end
-		-- max_satiety
-		r = DRand.random()
-		if r < 0.5 then
-			max_satiety = self.max_satiety
-		else
-			max_satiety = partnerparam:get_max_satiety()
-		end
-	end
-
-	-- 大きさの変動
-	size = size + DRand.random(-2000, 2000 * max_rate) -- サイズ変動 (small 30000, medium 100000, big 300000 )
-	-- 大きさ制限処理は、進化依存
-
-	-- 品質の変動
-	quality = quality + DRand.random(-4, 4 * max_rate) / 100 -- 品質変動
-	if quality < 0 then
-		quality = 0
-	end
-
-	-- 速度の変動
-	speed = speed + DRand.random(-4, 4 * max_rate) / 100 -- 移動速度 (変動0.04)
-	-- speed の下限は、0.25 + quality * 0.1、上限は0.25 + quality * 0.25
-	if speed < 0.25 + quality * 0.1 then
-		speed = 0.25 + quality * 0.1
-	elseif speed > 0.25 + quality * 0.25 then
-		speed = 0.25 + quality * 0.25
-	end
-
-	-- 寿命の変動
-	max_life = max_life + DRand.random(-10, 10 * max_rate) / 10 -- 寿命（変動10分・品質上限あり）
-	-- max_life の下限は、60 + quality * 30、上限は150 + quality * 30
-	if max_life < 60 + quality * 30 then
-		max_life = 60 + quality * 30
-	elseif max_life > 150 + quality * 30 then
-		max_life = 150 + quality * 30
-	end
-
-	-- 最大成長値初期化なしデータ対応
-	max_growth = max_growth + DRand.random(-1, 1 * max_rate) -- 成長値（変動1・品質上限あり）
-	-- max_growth の下限は、30 + quality * 10、上限は50 + quality * 10
-	if max_growth < 30 + quality * 10 then
-		max_growth = 30 + quality * 10
-	elseif max_growth > 50 + quality * 10 then
-		max_growth = 50 + quality * 10
-	end
-
-	-- 最大満腹度初期化なしデータ対応
-	local max_satiety = max_satiety + DRand.random(-10, 10 * max_rate) -- 満腹度（変動10・品質上限あり）
-	-- max_satiety の下限は、50 + quality * 10、上限は110 + quality * 20
-	if max_satiety < 50 + quality * 10 then
-		max_satiety = 50 + quality * 10
-	elseif max_satiety > 110 + quality * 20 then
-		max_satiety = 110 + quality * 20
-	end
-	
-	-- 遺伝的特徴: 特性リスト
-	local traits = {}
-	-- 生み親
-	for key, value in pairs(self.traits) do
-		local v = value + DRand.random(-1, 1 * max_rate) / 10
-		if v > 0 then
-			traits[key] = v
-		end
-	end
-	-- パートナー
-	if partnerparam ~= nil then
-		for key, value in pairs(partnerparam:get_traits()) do
-			local v = value + DRand.random(-1, 1 * max_rate) / 10
-			if v > 0 then
-				if traits[key] ~= nil then
-					-- 両親とも保有しているときは高い方にボーナス
-					if traits[key] < v then
-						traits[key] = v + 0.1
-					else
-						-- 両親とも保有しているときはボーナス
-						traits[key] = traits[key] + 0.1
-					end
-				else
-					traits[key] = v
-				end
-			end
-		end
-	end
-
-	-- 進化処理：small demolisher <-> medium demolisher <-> big demolisher
-	if entity_name == DemolisherNames.SMALL then
-		if size > 100000 then
-			entity_name = DemolisherNames.MEDIUM
-		elseif size < 15000 then
-			size = 15000
-		end
-	elseif entity_name == DemolisherNames.MEDIUM then
-		if size > 300000 then
-			entity_name = DemolisherNames.BIG
-		elseif size < 30000 then
-			entity_name = DemolisherNames.SMALL
-		end
-	else
-		if size < 300000 then
-			entity_name = DemolisherNames.MEDIUM
-		end
-	end
-
-	return Customparam.new(entity, entity_name, name, size, quality, speed, max_life, max_growth, max_satiety, traits, game.tick)
+  return Customparam.new(
+    nil, new_entity_name, nil,
+    size, quality, speed,
+    max_life, max_growth, max_satiety,
+    traits, game.tick
+  )
 end
 
 function Customparam:set_entity(entity)
