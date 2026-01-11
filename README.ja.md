@@ -4,8 +4,8 @@ Breeding Demolisher は、デモリッシャーが繁殖する世界を追加す
 時間経過（および戦闘）により卵が生まれ、孵化し、個体数が増加します。  
 放置すれば、脅威は指数関数的に拡大していきます。
 
-- Mod Portal: BreedingDemolisher (Factorio 2.0) :contentReference[oaicite:5]{index=5}  
-- ソース: https://github.com/suumani/BreedingDemolisher :contentReference[oaicite:6]{index=6}  
+- Mod Portal: BreedingDemolisher (Factorio 2.0)
+- ソース: https://github.com/suumani/BreedingDemolisher 
 
 ## コンセプト
 本 Mod は、デモリッシャーを「倒す対象」だけでなく、  
@@ -30,7 +30,7 @@ Breeding Demolisher は、デモリッシャーが繁殖する世界を追加す
 - 繁殖卵はドロップ卵より高品質になりやすい
 
 ## 対応環境
-- Factorio 2.0（Space Age 前提） :contentReference[oaicite:7]{index=7}  
+- Factorio 2.0（Space Age 前提）
 
 ## ドキュメント
 - 詳細仕様・設計判断は `spec.md`（日本語は `spec.ja.md`）を参照
