@@ -1,3 +1,5 @@
+-- __BreedingDemolisher__/scripts/common/customparam.lua
+
 -- ----------------------------
 -- Customparamクラス
 -- ----------------------------
@@ -31,11 +33,11 @@ function Customparam.new(
 	self.quality = quality or 1 + DRand.random(1, 4) / 10  -- 品質 (0.0 - 1.0)
 	self.speed = speed or 1 + DRand.random(1, 4) / 10 -- 移動速度 (0.1 - 1.0)
 	self.max_life = max_life or 180
-	self.life = max_life or 180
-	self.max_growth = max_growth
+	self.life = self.max_life
+	self.max_growth = max_growth or 50
 	self.growth = 0 --40
-	self.max_satiety = max_satiety
-	self.satiety = max_satiety
+	self.max_satiety = max_satiety or 100
+	self.satiety = self.max_satiety
 	self.lv = 1
 
 	-- 遺伝的特徴: 特性リスト
@@ -70,17 +72,19 @@ function Customparam:mutate(type, partnerparam)
 	end
 
 	-- 種別補正を指定
-	local type_control_min = 0
 	local type_control_max = 0
-	local entity_name = nil
+	local entity_name = self.entity_name or DemolisherNames.SMALL
+
 	-- 生みの親がDEMOLISHER_EGG出身
 	if type == "enemy" then
-		entity_name = DemolisherNames.SMALL
+		entity_name = DemolisherNames.SMALL -- enemyは強制small
 		type_control_max = 0
 	elseif type == "demolishers" then
 		type_control_max = 1
+	elseif type == "player" then
+	  type_control_max = 2
 	else
-		type_control_max = 2
+	  type_control_max = 2 -- fallback
 	end
 	local max_rate = parent_num * (1 + type_control_max)
 
@@ -90,7 +94,6 @@ function Customparam:mutate(type, partnerparam)
 	local size, quality, speed, max_life, max_growth, max_satiety
 
 	-- 基礎値の決定
-	local size
 	if partnerparam == nil then
 		-- 片親
 		size = self.size
@@ -238,7 +241,7 @@ function Customparam:mutate(type, partnerparam)
 		end
 	end
 
-	return Customparam.new(entity, entity_name, name, size, quality, speed, max_life, max_growth, max_satiety, traits, tick)
+	return Customparam.new(entity, entity_name, name, size, quality, speed, max_life, max_growth, max_satiety, traits, game.tick)
 end
 
 function Customparam:set_entity(entity)
@@ -275,13 +278,13 @@ function Customparam:get_traits()
 	return self.traits
 end
 function Customparam:get_max_satiety()
-	return self.satiety
+	return self.max_satiety
 end
 function Customparam:get_max_growth()
-	return self.growth
+	return self.max_growth
 end
 function Customparam:get_max_life()
-	return self.growth
+	return self.max_life
 end
 
 -- 成長
