@@ -4,8 +4,8 @@ Breeding Demolisher introduces a world where demolishers can reproduce.
 Over time (and through combat), demolishers lay eggs, hatch, and increase in number.
 If left unchecked, they can become an exponentially growing threat.
 
-- Mod Portal: BreedingDemolisher (Factorio 2.0) :contentReference[oaicite:2]{index=2}  
-- Source: https://github.com/suumani/BreedingDemolisher :contentReference[oaicite:3]{index=3}  
+- Mod Portal: BreedingDemolisher (Factorio 2.0)
+- Source: https://github.com/suumani/BreedingDemolisher
 
 ## Concept
 This mod reimagines demolishers not only as enemies to defeat,
@@ -30,7 +30,7 @@ It is designed for players who enjoy high-risk, high-density combat environments
 - Eggs produced via breeding tend to be higher quality than drop eggs
 
 ## Supported environment
-- Factorio 2.0 (Space Age) :contentReference[oaicite:4]{index=4}
+- Factorio 2.0 (Space Age)
 
 ## Documentation
 - Detailed mechanics and design decisions: see `spec.md` (and `spec.ja.md` for Japanese)
