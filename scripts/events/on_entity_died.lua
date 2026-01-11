@@ -2,7 +2,7 @@
 
 local SpawnPositionService = require("scripts.services.SpawnPositionService")
 local DemolisherNames = require("__Manis_definitions__/scripts/definition/DemolisherNames")
-local DRand = require("-- __BreedingDemolisher__/scripts/util/DeterministicRandom")
+local DRand = require("__BreedingDemolisher__/scripts/util/DeterministicRandom")
 
 -- Demolisher判定用の高速セット（ロード時に一度だけ構築）
 local DEMOLISHER_NAME_SET = {}
