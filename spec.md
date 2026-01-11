@@ -43,6 +43,9 @@ It preserves criteria, priorities, and the boundary between intended behavior an
 - With higher evolution:
   - hatched demolishers may have higher quality
   - egg dispersion range increases
+- Total population is capped.
+  - The cap is **fixed at 200** (performance stability prioritized).
+- Growth is controlled based on current population and the cap.
 
 ---
 
