@@ -1,4 +1,4 @@
-local DemolisherNames = require("__Manis_lib__/scripts/definition/DemolisherNames")
+local DemolisherNames = require("__Manis_definitions__/scripts/definition/DemolisherNames")
 -- プレイヤーの向きに応じた座標計算（10マス先）
 local SPAWN_OFFSET = {
   [defines.direction.north]     = {x = 0,  y = -20},

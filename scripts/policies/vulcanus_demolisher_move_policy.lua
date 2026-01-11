@@ -6,7 +6,7 @@
 -- ----------------------------
 local Policy = {}
 
-local DemolisherNames = require("__Manis_lib__/scripts/definition/DemolisherNames")
+local DemolisherNames = require("__Manis_definitions__/scripts/definition/DemolisherNames")
 
 -- 進化度による移動可否（このModの閾値）
 local thresholds = {

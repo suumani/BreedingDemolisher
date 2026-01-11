@@ -113,7 +113,7 @@ end
 function DemolisherRushService.demolisher_rush(surface, evolution_factor)
 
 	-- 全てのデモリッシャーの取得
-	local all_demolishers = DemolisherQuery.find_all_demolishers(surface) 
+	local all_demolishers = DemolisherQuery.find_demolishers(surface) 
 
 	-- result_count が200以上ならラッシュしない
 	local unnormal_demolishers = extract_unnormal_demolishers(all_demolishers)
@@ -149,7 +149,7 @@ function DemolisherRushService.demolisher_rush(surface, evolution_factor)
   end
 
   -- デモリッシャーの取得
-  local all_demolishers = DemolisherQuery.find_all_demolishers(surface)
+  local all_demolishers = DemolisherQuery.find_demolishers(surface)
 
   -- normal demolisherが居ない（ゲーム上のイレギュラー例外状態）
   if #all_demolishers == 0 then

@@ -51,7 +51,7 @@ local function adjust_position_if_too_close_to_origin(position)
 end
 
 local function should_rot_egg(surface, position)
-  local neighbors = DemolisherQuery.find_neighbor_demolishers(surface, {
+  local neighbors = DemolisherQuery.find_demolishers_range(surface, {
     { x = position.x - 60, y = position.y - 60 },
     { x = position.x + 60, y = position.y + 60 },
   })
@@ -86,16 +86,21 @@ end
 local function spawn_demolisher(surface, queued, position, town_center)
   local dir = choose_cardinal_direction(position, town_center)
 
-  -- QualityRoller が期待する「乱数」が 0..1 の実数なら、DRand.random() でOK
   local quality = QualityRoller.choose_quality(queued.evolution_factor, DRand.random())
 
-  -- BUGFIX: normal は未定義。文字列で比較する
-  if quality == "normal" then
-    quality = "uncommon"
+  local entity_name = queued.entity_name
+  if surface.name == "vulcanus" then
+    if entity_name == "small-demolisher" then
+      entity_name = "manis-small-demolisher"
+    elseif entity_name == "medium-demolisher" then
+      entity_name = "manis-medium-demolisher"
+    elseif entity_name == "big-demolisher" then
+      entity_name = "manis-big-demolisher"
+    end
   end
 
   return surface.create_entity{
-    name = queued.entity_name,
+    name = entity_name,
     position = position,
     force = queued.force,
     quality = quality,

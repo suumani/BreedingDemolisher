@@ -22,30 +22,10 @@ local util  = require("scripts.common.util")
 
 -- ----------------------------
 -- Mod固有：移動対象抽選
---   - non-normal優先
---   - 例外として normal が密集している場合に1体だけ追加
+--   - manis-small, manis-medium, manis-big限定
 -- ----------------------------
 local function build_move_targets(surface, area, ctx)
-  local cell_demolishers = DemolisherQuery.find_neighbor_demolishers(surface, area)
-
-  local normal = {}
-  local unnormal = {}
-
-  for _, e in ipairs(cell_demolishers) do
-    if e.quality.name == "normal" then
-      normal[#normal + 1] = e
-    else
-      unnormal[#unnormal + 1] = e
-    end
-  end
-
-  local move_targets = unnormal
-
-  local extra = NormalClusterProbe.pick_one(surface, normal)
-  if extra then
-    move_targets[#move_targets + 1] = extra
-  end
-
+  local move_targets = DemolisherQuery.find_breeding_demolishers_range(surface, area)
   return move_targets
 end
 

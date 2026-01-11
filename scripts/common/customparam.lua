@@ -4,7 +4,7 @@
 
 Customparam = {}
 Customparam.__index = Customparam
-local DemolisherNames = require("__Manis_lib__/scripts/definition/DemolisherNames")
+local DemolisherNames = require("__Manis_definitions__/scripts/definition/DemolisherNames")
 local DRand = require("scripts.util.DeterministicRandom")
 -- ----------------------------
 -- コンストラクタ

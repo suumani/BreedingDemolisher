@@ -37,7 +37,7 @@ function Orchestrator.run_once()
 
   -- planned_total（移動予算）
   -- normal含むデモリッシャー数 * evo * 0.5、上限100でクリップする。
-  local all_demolishers = DemolisherQuery.find_all_demolishers(surface)
+  local all_demolishers = DemolisherQuery.find_demolishers(surface)
   local demolisher_count = #all_demolishers
 
   local evo = game.forces.enemy.get_evolution_factor(surface)

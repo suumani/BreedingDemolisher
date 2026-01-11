@@ -57,7 +57,7 @@ function Probe.pick_one(surface, normal_demolishers, opts)
   local picked = pick_unique_random(normal_demolishers, samples)
 
   for _, e in pairs(picked) do
-    local neighbors = DemolisherQuery.find_neighbor_demolishers(surface, {
+    local neighbors = DemolisherQuery.find_demolishers_range(surface, {
       { x = e.position.x - radius, y = e.position.y - radius },
       { x = e.position.x + radius, y = e.position.y + radius }
     })
