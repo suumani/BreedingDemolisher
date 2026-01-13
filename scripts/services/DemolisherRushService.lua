@@ -157,60 +157,76 @@ function DemolisherRushService.demolisher_rush(surface, evolution_factor)
   end
 
   -- source_count に依存せず、sourceのデモリッシャー5～20体を抽選対象として選ぶ（evolution依存）
+    -- 抽選対象 k（evo依存）
   local k = calc_candidate_count(evolution_factor)
   local candidates = choose_candidates(all_demolishers, k)
-
-  -- 抽選対象が0体（イレギュラー）
   if #candidates == 0 then
     return
   end
 
-  -- 抽選対象の各sourceが確率で産卵（産卵率は進化度の半分、最低保証0.1）
-  local P_MIN = 0.1
-  local spawn_prob = math.max(P_MIN, evolution_factor / 2)
+  -- 確率カーブ調整（序盤底上げ）
+  local P_MIN = 0.12
+  local spawn_prob = math.max(P_MIN, (evolution_factor ^ 0.7) / 2)
   local max_eggs = calc_max_eggs_per_parent(evolution_factor)
+
+  -- 親当選：最低2体保証
+  local spawn_parents = {}
+  for _, parent in pairs(candidates) do
+    if DRand.random() < spawn_prob then
+      table.insert(spawn_parents, parent)
+    end
+  end
+
+  local MIN_PARENTS = 2
+  while #spawn_parents < math.min(MIN_PARENTS, #candidates) do
+    table.insert(spawn_parents, candidates[DRand.random(1, #candidates)])
+  end
+
+  -- 親ごとの最低卵数（1 or 2 抽選）
+  local function roll_min_eggs()
+    -- 2が30%（必要なら後で調整）
+    return (DRand.random() < 0.30) and 2 or 1
+  end
 
   local enqueued_eggs = 0
   local egg_seq = 0 -- respawn_tick用（キュー投入順に1分刻み）
 
-  for _, parent in pairs(candidates) do
+  for _, parent in pairs(spawn_parents) do
     if enqueued_eggs >= egg_budget then
       break
     end
 
-    if DRand.random() < spawn_prob then
-      local egg_n = DRand.random(1, max_eggs) -- 1～(1+evo*4) ※整数上限
+    local rolled = DRand.random(1, max_eggs)
+    local egg_n = math.max(roll_min_eggs(), rolled)
 
-      for _ = 1, egg_n do
-        if enqueued_eggs >= egg_budget then
-          break
-        end
+    for _ = 1, egg_n do
+      if enqueued_eggs >= egg_budget then
+        break
+      end
 
-        local parent_pos = parent.position
-        local spawn_position = SpawnPositionService.getSpawnPosition(
-          surface,
-          evolution_factor,
-          parent_pos,
-          nearest_silo_pos
-        )
+      local spawn_position = SpawnPositionService.getSpawnPosition(
+        surface,
+        evolution_factor,
+        parent.position,
+        nearest_silo_pos
+      )
 
-        if spawn_position ~= nil then
-          egg_seq = egg_seq + 1
-          table.insert(storage.respawn_queue, {
-            surface = parent.surface,
-            entity_name = parent.name,
-            position = spawn_position,
-            evolution_factor = evolution_factor,
-            force = parent.force,
-            respawn_tick = game.tick + 18000 + 3600 * egg_seq -- 5分後から1分間隔で孵化
-          })
-          enqueued_eggs = enqueued_eggs + 1
-        end
+      if spawn_position ~= nil then
+        egg_seq = egg_seq + 1
+        table.insert(storage.respawn_queue, {
+          surface = parent.surface,
+          entity_name = parent.name,
+          position = spawn_position,
+          evolution_factor = evolution_factor,
+          force = parent.force,
+          respawn_tick = game.tick + 18000 + 3600 * egg_seq
+        })
+        enqueued_eggs = enqueued_eggs + 1
       end
     end
   end
 
-    -- ------------------------------------------------------------
+  -- ------------------------------------------------------------
   -- 最低保証（卵数）：長時間プレイで「連続0」を防ぐ
   -- 既存の抽選結果で足りない分だけ、強制的に卵を追加で積む
   -- （上限は egg_budget が優先）
