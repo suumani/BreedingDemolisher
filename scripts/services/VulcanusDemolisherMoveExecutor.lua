@@ -23,19 +23,19 @@ local util  = require("scripts.common.util")
 -- ----------------------------
 -- Mod固有：移動対象抽選
 --   - 通常：BreedingDemolisher（manis-small/medium/big）のみ
---   - 追加（掃除）：default demolisher のうち quality が normal（またはquality無し）が
---     半径50に5体以上で密集している場合、その塊からランダムで1体だけ追加で移動させる
+--   - 追加（掃除）：default demolisher が半径50に5体以上で密集している場合、
+--     その塊からランダムで1体だけ追加で移動させる（品質は不問）
 -- ----------------------------
 local function build_move_targets(surface, area, ctx)
   -- 通常の移動対象（このModの守備範囲）
   local move_targets = DemolisherQuery.find_breeding_demolishers_range(surface, area)
 
-  -- 掃除はヴルカヌス限定（不要ならこのifを消す）
+  -- 掃除はヴルカヌス限定
   if surface.name ~= "vulcanus" then
     return move_targets
   end
 
-  -- rng（FactorioのLuaRandomGenerator：rng(1,n)形式）
+  -- rng（Factorio LuaRandomGenerator：rng(1,n)形式）
   local rng = (ctx and ctx.get_rng) and ctx.get_rng() or nil
   local function pick_index(n)
     if n <= 1 then return 1 end
@@ -43,61 +43,70 @@ local function build_move_targets(surface, area, ctx)
     return math.random(1, n)
   end
 
-  local function is_normal_or_nil_quality(e)
-    return (e.quality == nil) or (e.quality.name == nil) or (e.quality.name == "normal")
-  end
-
-  -- default demolisher を取得（個体数はせいぜい200想定なので全取得でOK）
+  -- default demolisher を取得（ここでDefinition参照はDemolisherQueryが担当）
   local defaults = DemolisherQuery.find_default_demolishers(surface)
   if not defaults or #defaults == 0 then
     return move_targets
   end
 
-  -- quality normal(or nil)だけに絞る
-  local normal_defaults = {}
+  -- validなものだけに絞る（念のため）
+  local valid_defaults = {}
   for _, e in pairs(defaults) do
-    if e and e.valid and is_normal_or_nil_quality(e) then
-      normal_defaults[#normal_defaults + 1] = e
+    if e and e.valid then
+      valid_defaults[#valid_defaults + 1] = e
     end
   end
-  if #normal_defaults == 0 then
+  if #valid_defaults == 0 then
     return move_targets
   end
 
-  -- ランダムサンプル → 密集判定
-  local SAMPLE    = math.min(5, #normal_defaults)
+  -- ランダムサンプル → 密集判定（配列同士の距離判定で完結）
+  local SAMPLE    = math.min(5, #valid_defaults)
   local RADIUS    = 50
+  local R2        = RADIUS * RADIUS
   local THRESHOLD = 5
 
-  for _ = 1, SAMPLE do
-    local seed = normal_defaults[pick_index(#normal_defaults)]
-    if seed and seed.valid then
-      -- まず数だけ数える（軽量）
-      local c = surface.count_entities_filtered{
-        force    = "enemy",
-        name     = DemolisherNames.ALL_DEFAULT,
-        position = seed.position,
-        radius   = RADIUS,
-      }
-
-      if c >= THRESHOLD then
-        -- 当たり：実体を取って、normal(or nil)から1体選ぶ
-        local cluster = surface.find_entities_filtered{
-          force    = "enemy",
-          name     = DemolisherNames.ALL_DEFAULT,
-          position = seed.position,
-          radius   = RADIUS,
-        }
-
-        local cluster_normal = {}
-        for _, e in pairs(cluster) do
-          if e and e.valid and is_normal_or_nil_quality(e) then
-            cluster_normal[#cluster_normal + 1] = e
+  local function count_neighbors(center)
+    local cx, cy = center.position.x, center.position.y
+    local cnt = 0
+    for _, other in pairs(valid_defaults) do
+      if other.valid then
+        local dx = other.position.x - cx
+        local dy = other.position.y - cy
+        if (dx*dx + dy*dy) <= R2 then
+          cnt = cnt + 1
+          if cnt >= THRESHOLD then
+            return cnt
           end
         end
+      end
+    end
+    return cnt
+  end
 
-        if #cluster_normal > 0 then
-          local picked = cluster_normal[pick_index(#cluster_normal)]
+  local function collect_cluster(center)
+    local cx, cy = center.position.x, center.position.y
+    local cluster = {}
+    for _, other in pairs(valid_defaults) do
+      if other.valid then
+        local dx = other.position.x - cx
+        local dy = other.position.y - cy
+        if (dx*dx + dy*dy) <= R2 then
+          cluster[#cluster + 1] = other
+        end
+      end
+    end
+    return cluster
+  end
+
+  for _ = 1, SAMPLE do
+    local seed = valid_defaults[pick_index(#valid_defaults)]
+    if seed and seed.valid then
+      local c = count_neighbors(seed)
+      if c >= THRESHOLD then
+        local cluster = collect_cluster(seed)
+        if #cluster > 0 then
+          local picked = cluster[pick_index(#cluster)]
 
           -- move_targetsに既に同じentityが入っていなければ追加（掃除は1体だけ）
           local exists = false

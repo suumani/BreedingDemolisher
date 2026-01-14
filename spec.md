@@ -83,24 +83,28 @@ Its purpose is to preserve decision criteria, priority rules, and the boundary b
 - Destinations are determined within the bounds of generated map chunks
 
 ### 6.3 Density Cleanup (Legacy Save Remediation)
-- Some legacy saves contain **unintended high-density clusters of default Demolishers**
-  caused by earlier mods
-- These cases are treated not as bugs, but as **ecosystem correction (cleanup)**
+
+- Some legacy saves contain **high-density clusters of default Demolishers**
+  caused by earlier mod behavior
+- In older specifications, **both normal and non-normal quality Demolishers were allowed to proliferate**
+- Therefore, density cleanup **must not apply any quality-based filtering**
+- These cases are treated not as bugs, but as
+  **ecosystem correction (cleanup)**
 
 #### Cleanup Rules
-- 대상 (Targets):
-  - Default Demolishers
-  - Quality is **normal or undefined**
+- Targets:
+  - **Default Demolishers**
+  - **No quality filtering is applied**
 - Detection:
   - Instead of full scans, **a small random sample** (e.g., up to 5 entities) is examined
-  - If a sampled entity has **≥ N Demolishers (e.g., 5)** within a fixed radius (e.g., 50 tiles),
-    the area is classified as an abnormal cluster
+  - If a sampled entity has **≥ N Demolishers (e.g., 5)** within a fixed radius
+    (e.g., 50 tiles), the area is classified as an abnormal cluster
 - Effect:
   - When detected, **exactly one Demolisher** is randomly selected from that cluster
     and added as an additional movement target
 - Constraints:
   - Cleanup adds **at most one entity per evaluation cycle**
-  - Lightweight checks are mandatory to preserve performance
+  - Lightweight checks are mandatory to preserve performance stability
 
 ---
 
