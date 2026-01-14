@@ -1,6 +1,6 @@
 {
   "name": "BreedingDemolisher",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "factorio_version": "2.0",
   "title": "BreedingDemolisher",
   "author": "suumani",
@@ -12,6 +12,6 @@
     "quality >= 2.0.0",
     "space-age >= 2.0.0",
     "Manis_lib >= 0.0.8",
-    "Manis_definitions >= 0.0.1"
+    "Manis_definitions >= 0.0.4"
   ]
 }

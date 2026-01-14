@@ -1,92 +1,131 @@
 # Breeding Demolisher — Specification (spec)
 
-This document records the **design intent, specifications, and agreed decisions** of Breeding Demolisher.  
-It preserves criteria, priorities, and the boundary between intended behavior and bugs that cannot be fully described in the Mod Portal/README.
+This document records the **design intent, specifications, and agreed rules** of the Breeding Demolisher mod.  
+Its purpose is to preserve decision criteria, priority rules, and the boundary between *intended behavior* and *bugs* that cannot be fully explained in the Mod Portal or README.
 
 ---
 
 ## 0. Purpose and Non-goals
 
 ### 0.1 Purpose
-- Provide an experience where demolishers are treated as a **reproducing ecosystem**, not a one-off threat.
-- Prevent the game from breaking by controlling growth via **caps and growth logic**, while still keeping pressure.
-- Create meaningful decisions around **culling / ignoring / breeding (pets)**.
+- To treat Demolishers not as a one-time threat, but as a **growing ecosystem**
+- To ensure that neglect increases danger, while **hard caps and control logic** prevent total game collapse
+- To create meaningful player decisions around **containment, thinning, and breeding**
 
 ### 0.2 Non-goals
-- It does not guarantee “safe and manageable” difficulty at all times.
-- Eggs/breeding are not intended to be a mere collection feature; neglect must have consequences.
-- It does not aim to replace global enemy behavior entirely.
+- Guaranteeing a consistently safe or manageable difficulty
+- Reducing eggs or breeding to a mere collection mechanic (neglect must always carry risk)
+- Replacing all global enemy behavior systems
 
 ---
 
 ## 1. Mod Positioning
-- Category: Content / Enemies
-- Target: Factorio 2.0 (Space Age) :contentReference[oaicite:9]{index=9}
-- Core experience: manage demolisher population by hunting, containment, or breeding.
+- Category: Content Addition / Enemies
+- Target: Factorio 2.0 (Space Age)
+- Core Experience: Managing proliferating Demolishers through **hunt / neglect / controlled breeding**
 
 ---
 
-## 2. Core Loop
-1. Eggs are generated through time and combat.
-2. Eggs hatch and population increases.
-3. Population pressure requires defense, culling, and movement control.
-4. The player chooses containment, thinning, or breeding.
+## 2. Core Gameplay Loop
+1. Eggs are generated through time passage or combat
+2. Eggs hatch, increasing the population
+3. Population growth creates pressure, requiring defense, elimination, or relocation
+4. The player chooses between **containment, culling, or breeding**
 
 ---
 
-## 3. Natural Reproduction (Wild)
-- Demolishers reproduce periodically and create eggs.
-- Eggs hatch after some time.
-- Total population is capped.
-- Growth is controlled based on current population and the cap.
-- Eggs may occasionally drop from defeated demolishers.
-- With higher evolution:
-  - hatched demolishers may have higher quality
-  - egg dispersion range increases
-- Total population is capped.
-  - The cap is **fixed at 200** (performance stability prioritized).
-- Growth is controlled based on current population and the cap.
+## 3. Natural Breeding (Wild)
+- Demolishers reproduce at fixed intervals, generating eggs
+- Eggs hatch after a fixed duration
+- The total population is capped
+- Breeding is regulated based on **current population vs. cap**
+- Eggs may rarely drop when a Demolisher is defeated
+- Depending on evolution factor:
+  - Hatched Demolishers may gain higher quality
+  - Egg dispersal range may increase
+- Population cap:
+  - **Fixed at 200** to prioritize performance stability
+- Each breeding cycle also enforces an upper limit on generated eggs to prevent spikes
 
 ---
 
-## 4. Player Interaction / Pets
-- Eggs can sometimes be obtained by defeating wild demolishers.
-- Hatched demolishers are treated as “pets”.
-- Pets can be hostile / neutral / friendly.
-- Mature pets begin reproducing and laying eggs.
-- Offspring may inherit traits and abilities from parents.
-- Eggs produced through breeding tend to be higher quality than dropped eggs.
+## 4. Player Interaction and Pets
+- Eggs may be obtained by defeating wild Demolishers
+- Demolishers hatched from eggs are treated as *pets*
+- Pets may have alignment states (hostile / neutral / friendly)
+- Mature pets may begin breeding
+- Offspring may inherit traits or abilities from parents
+- Eggs produced via breeding are more likely to have higher quality than dropped eggs
 
 ---
 
 ## 5. Difficulty and Pressure Design
-- This mod targets players who enjoy high-risk, high-density combat.
-- It reduces early-game frustration while preserving meaningful population pressure.
-- As the game progresses, quality, dispersal, and pressure increase.
+- This mod targets players who prefer **high-risk, high-density combat**
+- Early-game unfairness is mitigated, while **neglect-based escalation** is preserved
+- As progression advances, the following intensify:
+  - Individual quality
+  - Breeding success rate
+  - Movement and dispersion pressure
 
 ---
 
-## 6. Reaction to Rocket Launches (Vibration Trait)
-- From the mid-game onward, when a rocket is launched, demolishers gradually move toward the rocket silo during that 30-minute cycle (intended behavior).
-- This is expressed as a trait: demolishers dislike the vibrations caused by rocket launches (worldbuilding).
+## 6. Movement Behavior and Pressure Diffusion
+
+### 6.1 Movement Target Scope
+- This mod controls movement only for the following Demolishers:
+  - **manis-small / manis-medium / manis-big**
+- Gigantic and King-class Demolishers are explicitly excluded
+- Movement targets are selected via dedicated MovePlanner and Executor systems
+
+### 6.2 Periodic Movement (Normal Behavior)
+- Movement evaluation occurs approximately **once per minute**
+- Movement exists to **redistribute pressure** and create shifting frontlines
+- Destinations are determined within the bounds of generated map chunks
+
+### 6.3 Density Cleanup (Legacy Save Remediation)
+- Some legacy saves contain **unintended high-density clusters of default Demolishers**
+  caused by earlier mods
+- These cases are treated not as bugs, but as **ecosystem correction (cleanup)**
+
+#### Cleanup Rules
+- 대상 (Targets):
+  - Default Demolishers
+  - Quality is **normal or undefined**
+- Detection:
+  - Instead of full scans, **a small random sample** (e.g., up to 5 entities) is examined
+  - If a sampled entity has **≥ N Demolishers (e.g., 5)** within a fixed radius (e.g., 50 tiles),
+    the area is classified as an abnormal cluster
+- Effect:
+  - When detected, **exactly one Demolisher** is randomly selected from that cluster
+    and added as an additional movement target
+- Constraints:
+  - Cleanup adds **at most one entity per evaluation cycle**
+  - Lightweight checks are mandatory to preserve performance
 
 ---
 
-## 7. Determinism / Multiplayer
-- Randomness uses deterministic methods and assumes multiplayer reproducibility.
-- Any deviation from determinism is treated as a bug.
+## 7. Reaction to Rocket Launches (Vibration Response)
+- From mid-game onward, rocket launches cause Demolishers to gradually move toward silos
+  over a fixed cycle
+- This behavior is framed as an aversion to **vibration and activity** within the game world
 
 ---
 
-## 8. Save Data
-- Global storage is maintained under `storage` (keys follow implementation).
-- If a breaking change requires migration, the migration steps must be documented.
+## 8. Determinism and Multiplayer
+- All randomness must be deterministic to ensure multiplayer consistency
+- RNG is centrally managed within the mod
+- Any reproducibility issue is treated as a **bug**
 
 ---
 
-## 9. Status of This Specification
-- This document takes precedence over the README and Mod Portal descriptions.
-- If discrepancies arise:
-  - either treat implementation as authoritative,
-  - or update this specification,
-  and make the decision explicitly.
+## 9. Save Data
+- All global data is stored under `storage` (keys follow implementation definitions)
+- Any change requiring data migration must explicitly document migration steps
+
+---
+
+## 10. Status of This Specification
+- This document takes precedence over README and Mod Portal descriptions
+- When discrepancies arise between implementation and specification:
+  - Either the implementation is accepted as correct, or
+  - The specification must be updated explicitly
