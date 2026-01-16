@@ -1,3 +1,5 @@
+--__BreedingDemolisher__/scripts/gui/selected_demolisher_gui.lua
+
 local DemolisherNames = require("__Manis_definitions__/scripts/definition/DemolisherNames")
 
 -- ----------------------------

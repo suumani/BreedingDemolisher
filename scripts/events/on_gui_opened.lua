@@ -1,3 +1,5 @@
+-- __BreedingDemolisher__/scripts/events/on_gui_opened.lua
+
 -- on_gui_openedイベント内でcreate_genetic_analysis_uiを呼び出す
 script.on_event(defines.events.on_gui_opened, function(event)
 	if event.entity and event.entity.name == "genetic-analysis-machine" then

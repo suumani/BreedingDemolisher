@@ -1,4 +1,4 @@
--- __BreedingDemolisher__/scripts/control.lua
+-- __BreedingDemolisher__/control.lua
 -- ----------------------------
 -- requires
 -- ----------------------------
