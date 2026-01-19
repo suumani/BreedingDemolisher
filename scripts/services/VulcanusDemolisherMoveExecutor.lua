@@ -136,21 +136,13 @@ end
 
 function E.execute_one_step(plan)
   return StepExecutor.execute_one_step(plan, {
-    get_surface = function(surface_name)
-      return game.surfaces[surface_name]
-    end,
-
+    get_surface = function(surface_name) return game.surfaces[surface_name] end,
     get_rocket_positions = get_rocket_positions,
     build_move_targets = build_move_targets,
-
     compute_move_rate = MovePolicy.compute_move_rate,
     can_move = MovePolicy.can_move,
-
-    -- ★追加：rng注入（本Modのstorageに保持しているRNGを返す）
-    get_rng = function()
-      return ModRandomProvider.get()
-    end,
-
+    get_rng = function() return ModRandomProvider.get() end,
+    mod_name = "BreedingDemolisher",
     log = util.debug
   })
 end

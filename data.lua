@@ -1,4 +1,6 @@
-require("prototypes.demolisher-eggs")
+--__BreedingDemolisher__/data.lua
+require("prototypes.init")
+
 require("prototypes.genetic-analysis-machine")
 
 

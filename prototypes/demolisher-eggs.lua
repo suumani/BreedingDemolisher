@@ -1,3 +1,5 @@
+--__BreedingDemolisher__/prototypes/demolisher-eggs.lua
+
 data:extend({
 	{
 		type = "item",
