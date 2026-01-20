@@ -1,40 +1,55 @@
 # Breeding Demolisher
 
-Breeding Demolisher は、デモリッシャーが繁殖する世界を追加する Mod です。  
-時間経過（および戦闘）により卵が生まれ、孵化し、個体数が増加します。  
-放置すれば、脅威は指数関数的に拡大していきます。
+Breeding Demolisher is a mod that adds a world where demolishers can reproduce.  
+Over time (and through combat), eggs are produced, hatch, and increase the overall population.  
+If left unchecked, the threat can grow exponentially.
 
 - Mod Portal: BreedingDemolisher (Factorio 2.0)
-- ソース: https://github.com/suumani/BreedingDemolisher 
+- Source: https://github.com/suumani/BreedingDemolisher
 
-## コンセプト
-本 Mod は、デモリッシャーを「倒す対象」だけでなく、  
-「増殖する生態系」として管理・封じ込める体験へ再解釈します。
+## Concept
+This mod reinterprets demolishers not only as enemies to be defeated,  
+but as a **growing ecosystem** that must be managed and contained.
 
-高リスク・高密度な戦闘環境を好むプレイヤー向けです。
+It is designed for players who enjoy high-risk, high-density combat environments.
 
-## 追加される体験
-### 自然繁殖
-- 一定間隔での産卵
-- 卵は時間経過で孵化
-- 総個体数の上限と現在数に応じた増殖制御
-- 撃破時の卵ドロップ
-- 進化度による孵化品質・拡散範囲の上昇
-- デモリッシャー総数の上限は **200固定**（パフォーマンス安定性優先）
+## Added Gameplay
 
-### プレイヤー介入 / ペット
-- 野生撃破で卵を得られる場合がある
-- 卵から「ペットデモリッシャー」を孵化できる
-- 敵対／中立／友好的の性質がある
-- 成長すると繁殖する
-- 子孫が特徴・能力を引き継ぐ場合がある
-- 繁殖卵はドロップ卵より高品質になりやすい
+### Natural Breeding
+- Periodic egg laying
+- Eggs hatch over time
+- Reproduction is controlled based on the current population and a global cap
+- Eggs may drop when demolishers are defeated
+- Hatch quality and spread scale with the evolution factor
+- The total number of demolishers is capped at **200** (prioritizing performance stability)
 
-## 対応環境
-- Factorio 2.0（Space Age 前提）
+### Player Interaction / Pets
+- Eggs may be obtained by defeating wild demolishers
+- Eggs can be hatched into **pet demolishers**
+- Pets can be hostile, neutral, or friendly
+- Pets grow over time and may reproduce when mature
+- Offspring may inherit traits and abilities from their parents
+- Eggs produced through breeding tend to be higher quality than dropped eggs
+- New-species demolishers are an intermediate evolutionary stage and eventually lead to friendly demolishers
 
-## ドキュメント
-- 詳細仕様・設計判断は `spec.md`（日本語は `spec.ja.md`）を参照
+### Breeding and Genetics
+- Pet demolishers reproduce as they grow
+- Eggs produced through breeding **retain genetic information**
+- Genetic data is preserved through transport, storage, and hatching
+- Two-parent breeding tends to produce more favorable offspring
 
-## ライセンス
+## Planetary Restrictions
+- Demolishers are native to **Vulcanus**
+- Egg processing and evolution (size evolution, new-species evolution, freezing/unfreezing)
+  can only be performed on Vulcanus
+- Hatched demolishers can be transported to and deployed on other planets
+
+## Supported Environment
+- Factorio 2.0 (Space Age required)
+
+## Documentation
+- For detailed specifications and design decisions, see `spec.md`
+  (Japanese version: `spec.ja.md`)
+
+## License
 MIT

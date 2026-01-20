@@ -24,7 +24,7 @@ local function make_recipe(args)
 
     ingredients = args.ingredients,
     results = args.results,
-    surface_conditions = args.surface_conditions or D.pressure_100_600(),
+    surface_conditions = args.surface_conditions or D.pressure_4000(),
   }
 end
 

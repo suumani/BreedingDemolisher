@@ -1,19 +1,14 @@
-game_print = {}
+-- __BreedingDemolisher__/scripts/common/game_print.lua
 
--- ----------------------------
--- debug文の表示
--- ----------------------------
-local function debug_print(str)
-	-- game.print("[debug] " .. str)
+-- game_print compatibility bridge
+local util = require("scripts.common.util")
+
+game_print = game_print or {}
+
+game_print.debug = function(msg)
+  util.debug(msg)
 end
 
--- ----------------------------
--- ユーザへの通知メッセージ
--- ----------------------------
-local function game_message_print(str)
-	game.print(str)
+game_print.message = function(msg)
+  util.print(msg)
 end
-
-game_print.debug = debug_print
-game_print.message = game_message_print
-

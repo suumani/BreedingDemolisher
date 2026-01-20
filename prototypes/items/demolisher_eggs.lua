@@ -10,7 +10,7 @@ local items = {}
 
 local function make_egg_item(args)
   return {
-    type = "item",
+    type = "item-with-tags",
     name = args.name,
     localised_name = {"item-name." .. args.name},
     localised_description = {"item-description." .. args.name},

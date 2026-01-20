@@ -18,6 +18,7 @@ local function on_nth_tick_1min(event)
   MyDemolisherGettingHangryService.my_demolisher_getting_hangry()
   MyDemolisherBreedingService.my_demolisher_breeding()
   DemolisherEggHatchService.spawn_wild_demolishers(vulcanus_surface)
+  game_print.debug("[BreedingDemolisher] on_nth_tick_1min fired tick=" .. game.tick)
 end
 
 script.on_nth_tick(3600, on_nth_tick_1min)

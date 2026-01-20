@@ -21,6 +21,9 @@ require("scripts.events.on_nth_tick_30min")
 require("scripts.events.on_rocket_launched")
 
 require("scripts.gui.selected_demolisher_gui")
+require("scripts.commands.bd_debug_commands")
+require("scripts.events.on_selected_entity_changed")
+
 
 local SaveRestoreService = require("scripts.services.SaveRestoreService")
 local ForceInitializer = require("scripts.services.ForceInitializer")
