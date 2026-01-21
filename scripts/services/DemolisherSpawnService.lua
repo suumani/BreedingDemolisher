@@ -5,6 +5,7 @@
 --   and enqueue chart job for the pet safe area.
 -- ----------------------------
 local PetChartJobService = require("scripts.services.PetChartJobService")
+local SpawnClampPolicy = require("scripts.domain.genetics.SpawnClampPolicy")
 
 local S = {}
 
@@ -29,11 +30,27 @@ function S.spawn_from_throw(player, egg, customparam)
 
   local safe_pos = surface.find_non_colliding_position(entity_name, spawn_position, 16, 0.5) or spawn_position
 
+  -- If genetic payload exists, derive spawn-time safe values (clamps + quality_name).
+  -- Otherwise, keep legacy behavior (egg.quality_name etc.).
+  local spawn = nil
+  if customparam ~= nil then
+    spawn = SpawnClampPolicy.compute_spawn_values({
+      entity_name = entity_name,
+      size = customparam:get_size(),
+      speed = customparam:get_speed(),
+      quality = customparam:get_quality(),
+      max_life = customparam:get_max_life(),
+      max_growth = customparam:get_max_growth(),
+      max_satiety = customparam:get_max_satiety(),
+      traits = customparam:get_traits(),
+    })
+  end
+
   local entity = surface.create_entity({
     name = entity_name,
     position = safe_pos,
     force = force,
-    quality = egg.quality_name,
+    quality = (spawn and spawn.quality_name) or egg.quality_name,
   })
 
   if not (entity and entity.valid) then
@@ -46,6 +63,19 @@ function S.spawn_from_throw(player, egg, customparam)
 
   if customparam ~= nil then
     customparam:set_entity(entity)
+    -- Align stored params with spawn-time clamps.
+    -- (Genetic values remain the source; this just ensures consistency for runtime usage.)
+    if spawn then
+      customparam.entity_name = entity_name
+      customparam.size = spawn.size
+      customparam.speed = spawn.speed
+      customparam.max_life = spawn.max_life
+      customparam.life = spawn.max_life
+      customparam.max_growth = spawn.max_growth
+      customparam.max_satiety = spawn.max_satiety
+      -- traits are kept as genetic payload; expression is handled at spawn/use time.
+      -- If you later introduce runtime "expressed_traits", hook it here.
+    end
   end
 
   local pet_id = new_pet_id()

@@ -38,6 +38,16 @@ local function decide_egg_item_name(parent_entity)
   end
 end
 
+local function decide_egg_item_name_by_force_name(force_name)
+  if force_name == "enemy" then
+    return CONST_ITEM_NAME.DEMOLISHER_EGG
+  elseif force_name == "demolishers" then
+    return CONST_ITEM_NAME.NEW_SPIECES_DEMOLISHER_EGG
+  else
+    return CONST_ITEM_NAME.FRIEND_DEMOLISHER_EGG
+  end
+end
+
 local function stage_index(growth)
   return math.floor(growth / BREED_STAGE_STEP)
 end
@@ -106,9 +116,9 @@ function MyDemolisherBreedingService.my_demolisher_breeding()
             game_print.debug("[Breeding] skip:no_partner " .. parent_tag ..
               " growth="..tostring(growth).." stage="..tostring(stage))
           else
-            local egg_customparam = parent_cp:mutate(parent_entity.force.name, partner_cp)
+            local egg_customparam, child_force = parent_cp:mutate(parent_entity.force.name, partner_cp)
 
-            local item_name = decide_egg_item_name(parent_entity)
+            local item_name = decide_egg_item_name_by_force_name(child_force or parent_entity.force.name)
             local item_quality = QualityUtil.to_item_quality_name(egg_customparam:get_quality())
 
             NotificationService.breeding_egg_laid(parent_entity.surface, parent_entity.position)

@@ -9,7 +9,7 @@
 local util = {}
 
 -- デバッグ出力フラグ（本番では false）
-util.DEBUG_ENABLED = false
+util.DEBUG_ENABLED = true
 
 local function do_print(msg)
   if game and msg ~= nil then
