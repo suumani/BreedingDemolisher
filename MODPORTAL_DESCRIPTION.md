@@ -1,14 +1,4 @@
-# Summary
-
-(en) What if demolishers could multiply? This mod introduces a world where demolishers reproduce and continue to grow in number.
-(ja) もし、デモリッシャーが増えたら。。。あなたのそんな願いを叶えます。
-
-Stable version: v0.5.3
-Cleared playthrough confirmed: v0.3.9
-！Major recipe rework: v0.5.4
-
-
-# Description
+-- __BreedingDemolisher__/MODPORTAL_DESCRIPTION.md
 
 (en) Breeding Demolisher Mod
 What if demolishers could reproduce?
@@ -61,30 +51,12 @@ Breeding Demolisher は、デモリッシャーが卵を産み、時間ととも
 
 詳細仕様・設計思想は GitHub の README/spec を参照してください。
 
+--- Update Note (v0.5.5) ---
+
+(en) Pet breeding and genetics have been fully enabled. Egg processing and evolution have been simplified with new recipes, and moved from Aquilo to Vulcanus as part of this simplification.
+(ja) ペットの繁殖と遺伝システムを本格的に有効化しました。卵の加工・進化はアクィロ限定からヴルカヌス限定になりました。
+
 --- Update Note (v0.5.4) ---
 
-(en)
-Egg processing recipes have been reworked.
-
-- Egg freezing / unfreezing recipes have been simplified.
-- Preservation steps now focus on temperature control
-  (cold for freezing, heat/lava for unfreezing),
-  instead of heavy biological or industrial components.
-- This change is intended to make egg handling clearer,
-  more intuitive, and less tedious in long-running worlds.
-
-Existing saves are supported.
-If you already have egg processing setups,
-please review them after updating.
-
-(ja)
-卵処理レシピを見直しました。
-
-- 卵の凍結／解凍レシピを簡素化しました
-- 凍結は「低温保存」、解凍は「生息環境への復帰」を重視した構成になっています
-- 過剰だった培養・工業素材要求を整理し、
-  卵管理が直感的になるよう調整しています
-
-既存セーブデータは引き続き使用可能です。
-すでに卵処理ラインを構築している場合は、
-アップデート後に内容をご確認ください。
+(en) Egg processing recipes have been reworked.
+(ja) 卵処理レシピを見直しました。

@@ -1,40 +1,95 @@
 # Breeding Demolisher
 
-Breeding Demolisher introduces a world where demolishers can reproduce.
-Over time (and through combat), demolishers lay eggs, hatch, and increase in number.
-If left unchecked, they can become an exponentially growing threat.
+Breeding Demolisher is a mod that adds a world where demolishers can reproduce and evolve.  
+Over time—and through combat—eggs are produced, hatch, and increase the overall population.  
+If left unchecked, the threat can grow exponentially.
 
 - Mod Portal: BreedingDemolisher (Factorio 2.0)
 - Source: https://github.com/suumani/BreedingDemolisher
 
+---
+
 ## Concept
-This mod reimagines demolishers not only as enemies to defeat,
-but as a growing ecosystem that must be managed and contained.
 
-It is designed for players who enjoy high-risk, high-density combat environments.
+This mod reinterprets demolishers not only as enemies to be defeated,  
+but as a **growing ecosystem** that must be observed, managed, and sometimes cultivated.
 
-## What this mod adds
-### Natural reproduction
-- Periodic reproduction that creates eggs
-- Eggs hatch after some time
-- Population growth is controlled by a global cap and current population
-- Eggs may drop from defeated demolishers
-- Hatch quality and egg dispersion scale with evolution
-- Total demolisher population is capped at **200 (fixed)** for performance stability.
+Rather than a simple “clear the area” enemy, demolishers form a population  
+that expands, evolves, and reacts to player interaction.
 
-### Player interaction / Pets
-- Eggs can sometimes be obtained by defeating wild demolishers
-- Eggs can be hatched into “pet” demolishers
-- Pets can be hostile / neutral / friendly
-- Mature pets reproduce and lay eggs
-- Offspring may inherit traits/abilities from parents
-- Eggs produced via breeding tend to be higher quality than drop eggs
+Breeding Demolisher is designed for players who enjoy  
+high-risk, high-density combat and ecosystem management.
 
-## Supported environment
-- Factorio 2.0 (Space Age)
+---
+
+## Added Gameplay
+
+### Natural Breeding
+
+- Demolishers periodically lay eggs
+- Eggs hatch over time
+- Reproduction is controlled based on the current population and a global cap
+- Eggs may drop when demolishers are defeated
+- Hatch quality and egg dispersion scale with the evolution factor
+- The total number of demolishers is capped at **200**
+  - This cap is fixed to prioritize performance stability across a wide range of PCs
+
+---
+
+### Player Interaction / Pets
+
+- Eggs may be obtained by defeating wild demolishers
+- Eggs can be hatched into **pet demolishers**
+- Pets can be hostile, neutral, or friendly
+- Pets grow by defeating enemies
+- Mature pets can reproduce
+- Offspring inherit **genetic traits** from their parents
+- Eggs produced through breeding tend to be higher quality than dropped eggs
+- New-species demolishers act as an intermediate evolutionary stage  
+  and may eventually lead to friendly demolishers
+
+---
+
+### Breeding and Genetics (v0.5.6+)
+
+- All genetic parameters follow a unified **two-stage inheritance model**
+- Genetic data is preserved through egg transport, storage, and hatching
+- Two-parent breeding generally produces more favorable offspring
+- Single-parent breeding is possible but less advantageous
+- Faction (tameness) of offspring is determined at the egg stage
+
+Note:
+- Trait **effects** are not yet activated in v0.5.6  
+- This release focuses on genetic structure and future extensibility
+
+---
+
+## Planetary Restrictions
+
+- Demolishers are native to **Vulcanus**
+- Egg processing and evolution (size evolution, new-species evolution, freezing/unfreezing)
+  can only be performed on Vulcanus
+- Hatched demolishers can be transported to and deployed on other planets
+
+---
+
+## Supported Environment
+
+- Factorio 2.0
+- Space Age expansion required
+
+---
 
 ## Documentation
-- Detailed mechanics and design decisions: see `spec.md` (and `spec.ja.md` for Japanese)
+
+- Detailed specifications and internal design notes:
+  - `spec.md`
+  - `design_v0.5.6_mutation.md`
+- Japanese documentation:
+  - `spec.ja.md`
+
+---
 
 ## License
+
 MIT
