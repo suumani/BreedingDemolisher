@@ -1,5 +1,4 @@
 -- __BreedingDemolisher__/scripts/services/DemolisherRushService.lua
-
 -- ----------------------------
 -- デモリッシャーラッシュ用
 --
@@ -13,58 +12,108 @@
 -- - cap は進化度依存（段階テーブル）
 -- - cap計算対象から「標準3種（small/medium/big）かつ quality=nil/normal」を除外する
 --   （広大開拓により自然配置されるオリジナル個体が、繁殖イベント遭遇を阻害しないため）
+-- - cap計算範囲: 「実体（全Mod）」＋「自身のVirtual」のみ。他ModのVirtualは含まない。
 -- - 親候補は DemolisherNames.ALL_BREEDING_PARENTS（default3種 + breeding + 非致命boss）を使用する
 -- ----------------------------
 local DemolisherRushService = {}
 
 local DRand = require("scripts.util.DeterministicRandom")
 local DemolisherQuery = require("__Manis_lib__/scripts/queries/DemolisherQuery")
+local VirtualMgr      = require("__Manis_lib__/scripts/managers/VirtualEntityManager")
 local SpawnPositionService = require("scripts.services.SpawnPositionService")
 local util  = require("scripts.common.util")
 local EggMutationPolicy = require("scripts.policies.EggMutationPolicy")
 
+-- ★追加: Cap計算ロジックの共通化
+local CapCalculator = require("__Manis_lib__/scripts/logic/DemolisherCapCalculator")
+
 -- ---------------------------------------------------------------------
--- Tunables（今回の合意値）
+-- Tunables & Policy
 -- ---------------------------------------------------------------------
 local MAX_EGGS_PER_RUSH = 100
 local MIN_PARENTS = 3
 local P_MIN = 0.15
 local MIN_EGGS_TWO_RATE = 0.45
 
+-- Cap研究ポリシー
+local CAP_POLICY = {
+    TECH_NAME = "manis-demolisher-cap-down",
+    REDUCTION_STEP = 0.05, -- 1Lvあたり5%
+    CAP_FLOOR = 50         -- 下限
+}
+
 -- ---------------------------------------------------------------------
 -- cap: evolution_factor -> cap
+-- 仕様変更: 研究(manis-demolisher-cap-down)による減少補正を共通計算機で適用
 -- ---------------------------------------------------------------------
 local function calc_cap(evo)
-  -- 段階テーブル（穴なし）
-  if evo <= 0.05 then return 40 end
-  if evo <= 0.15 then return 55 end
-  if evo <= 0.25 then return 70 end
-  if evo <= 0.35 then return 85 end
-  if evo <= 0.45 then return 100 end
-  if evo <= 0.55 then return 115 end
-  if evo <= 0.65 then return 130 end
-  if evo <= 0.75 then return 145 end
-  if evo <= 0.85 then return 160 end
-  if evo <= 0.95 then return 175 end
-  if evo <= 0.98 then return 190 end
-  return 200
+  local base_cap = 200
+
+  -- 段階テーブル（進化度に応じたベースライン）
+  if evo <= 0.05 then base_cap = 40
+  elseif evo <= 0.15 then base_cap = 55
+  elseif evo <= 0.25 then base_cap = 70
+  elseif evo <= 0.35 then base_cap = 85
+  elseif evo <= 0.45 then base_cap = 100
+  elseif evo <= 0.55 then base_cap = 115
+  elseif evo <= 0.65 then base_cap = 130
+  elseif evo <= 0.75 then base_cap = 145
+  elseif evo <= 0.85 then base_cap = 160
+  elseif evo <= 0.95 then base_cap = 175
+  elseif evo <= 0.98 then base_cap = 190
+  end
+
+  -- 研究レベルの取得 (仕様統一: tech.levelをそのまま使う)
+  local force = game.forces.player
+  local level = 0
+  if force and force.technologies then
+      local tech = force.technologies[CAP_POLICY.TECH_NAME]
+      if tech then
+          level = math.max(0, tech.level)
+      end
+  end
+
+  -- 共通計算機で算出 (base, level, step, floor, [max])
+  return CapCalculator.calculate(base_cap, level, CAP_POLICY.REDUCTION_STEP, CAP_POLICY.CAP_FLOOR)
+end
+
+-- ---------------------------------------------------------------------
+-- 仮想データ用の除外判定ヘルパー (countのフィルタとして使用)
+-- ---------------------------------------------------------------------
+-- true を返すと「カウント対象（除外されない）」
+local function virtual_count_filter(entry)
+    local data = entry.data
+    if not data then return false end
+
+    -- ★修正: DemolisherQueryに判定を委譲 (実体判定との乖離を防ぐ)
+    -- 「標準3種かつNormal」なら除外 (= return false)
+    if DemolisherQuery.is_default_small_medium_big_normal_virtual(data.name, data.quality) then
+        return false
+    end
+    return true
 end
 
 -- ---------------------------------------------------------------------
 -- cap計算対象数（counted population）
--- - DemolisherQuery.is_default_small_medium_big_normal(entity) を使い除外判定する
 -- ---------------------------------------------------------------------
 local function count_counted_population(surface)
-  local all = DemolisherQuery.find_demolishers(surface)
   local cnt = 0
+
+  -- 1. 実体 (Physical)
+  local all = DemolisherQuery.find_demolishers(surface)
   for _, e in pairs(all) do
     if e and e.valid then
-      -- 標準3種×quality nil/normal は cap 対象外
+      -- 除外対象（標準3種かつNormal）でなければカウント
       if not DemolisherQuery.is_default_small_medium_big_normal(e) then
         cnt = cnt + 1
       end
     end
   end
+
+  -- 2. 仮想 (Virtual)
+  -- フィルタ関数を通してカウント (filterには entry が渡る仕様)
+  cnt = cnt + VirtualMgr.count(surface, virtual_count_filter)
+
   return cnt
 end
 
@@ -97,12 +146,11 @@ local function calc_min_eggs_since_first_kill()
   elseif hours < 128 then
     return 6
   else
-    return 2 -- ゲーム攻略上の最終ラッシュはせいぜい128時間までと想定
+    return 2
   end
 end
 
 -- 進化度に応じた抽選対象数 k（5～20想定）
--- k = 5 + evo*10 + (evo >= 0.99 ? 5 : 0)
 local function calc_candidate_count(evo)
   local k = 5 + (evo * 10)
   if evo >= 0.99 then
@@ -176,16 +224,16 @@ local function find_nearest_silo_pos(surface)
 end
 
 function DemolisherRushService.demolisher_rush(surface, evolution_factor)
-  -- respawn_queueがないケースの保険（運用次第で不要なら消してOK）
+  -- respawn_queueがないケースの保険
   storage.respawn_queue = storage.respawn_queue or {}
 
-  -- cap（進化度依存）
+  -- cap（進化度 + 研究依存）
   local cap = calc_cap(evolution_factor)
 
-  -- cap計算対象数（除外ルール込み）
+  -- cap計算対象数（実体 + 仮想）
   local counted = count_counted_population(surface)
   if counted >= cap then
-    util.print("[vulcanus] demolishers abound...")
+    util.print("[vulcanus] demolishers abound... (Pop:" .. counted .. " / Cap:" .. cap .. ")")
     return
   end
 
@@ -193,13 +241,14 @@ function DemolisherRushService.demolisher_rush(surface, evolution_factor)
   local remaining_capacity = cap - counted
   local egg_budget = math.min(MAX_EGGS_PER_RUSH, remaining_capacity)
   if egg_budget <= 0 then
-    util.print("[vulcanus] demolishers abound...")
+    util.print("[vulcanus] demolishers abound... (Pop:" .. counted .. " / Cap:" .. cap .. ")")
     return
   end
 
   local nearest_silo_pos = find_nearest_silo_pos(surface)
 
   -- 親候補（default3種 + breeding + 非致命boss）
+  -- ※親候補は実体から選ぶ（仮想空間にいる個体は産卵しない）
   local parent_pool = DemolisherQuery.find_breeding_parent_demolishers(surface)
   if not parent_pool or #parent_pool == 0 then
     return
@@ -220,7 +269,7 @@ function DemolisherRushService.demolisher_rush(surface, evolution_factor)
   local spawn_parents = pick_spawn_parents(candidates, spawn_prob)
 
   local enqueued_eggs = 0
-  local egg_seq = 0 -- respawn_tick用（キュー投入順に1分刻み）
+  local egg_seq = 0 -- respawn_tick用
 
   -- 通常分の産卵
   for _, parent in pairs(spawn_parents) do
@@ -254,7 +303,7 @@ function DemolisherRushService.demolisher_rush(surface, evolution_factor)
     end
   end
 
-  -- 最低保証（長時間プレイで「連続0」を防ぐ）
+  -- 最低保証
   local min_eggs = calc_min_eggs_since_first_kill()
   if min_eggs > egg_budget then
     min_eggs = egg_budget

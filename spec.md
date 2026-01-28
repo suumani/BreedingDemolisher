@@ -1,3 +1,7 @@
+# __BreedingDemolisher__/spec.md
+
+# Breeding Demolisher — （spec v.0.5.8）
+
 # Breeding Demolisher — Specification (spec)
 
 This document records the **design intent, specifications, and agreed decisions** of the Breeding Demolisher mod.  
@@ -54,6 +58,12 @@ Notes:
 - Non-standard demolishers added by this mod or related mods are included in cap calculations
 - Standard demolishers with no quality customization are considered part of natural map generation
   and are neither targets nor controllable entities of this mod
+
+Additional rule:
+- Cap calculations include:
+  - All physical demolishers on the surface (from any mod)
+  - Virtual demolishers created by Breeding Demolisher itself
+- Virtual demolishers created by other mods are excluded by design
 
 ### 3.3 Cap Scaling by Evolution
 - The cap increases stepwise with the evolution factor
@@ -138,6 +148,56 @@ Mutation thresholds:
 - Gigantic / crazy-king and other **FATAL-class** demolishers are added by related mods
 - Due to extreme size, mobility, and terrain impact, they are excluded from breeding and mutation
 - Such entities must be managed through events, scenarios, or dedicated spawn logic
+
+---
+
+## 3.11 Virtual Entities and Uncharted Areas
+
+### Purpose
+To ensure stability on large or partially unexplored maps,
+Breeding Demolisher supports **virtual demolishers**.
+
+These represent demolishers that exist logically
+but are located in **uncharted or ungenerated chunks**.
+
+### Behavior
+- Virtual demolishers:
+  - Do not physically exist on the map
+  - Are stored as structured data in `storage`
+  - Are materialized automatically when the chunk is generated
+
+### Reasons
+- Prevent sudden mass spawns when new areas are explored
+- Avoid UPS spikes caused by delayed generation
+- Allow breeding pressure to persist beyond explored regions
+
+### Cap Interaction
+- For Breeding Demolisher:
+  - **Counted population = physical demolishers + this mod’s own virtual demolishers**
+  - Virtual demolishers from other mods are intentionally excluded
+- This limitation is a deliberate design choice for simplicity and safety
+
+---
+
+## 3.12 Research-based Cap Reduction
+
+Breeding Demolisher supports gradual population control
+through the infinite research:
+
+- **manis-demolisher-cap-down**
+
+### Effect
+- Each completed research level reduces the effective cap by **5%**
+- The reduction is linear and cumulative
+- A minimum cap floor is enforced
+
+### Cap Floor
+- For Breeding Demolisher, the minimum effective cap is **50**
+- This ensures breeding events continue to occur
+  even in long-running or late-game saves
+
+This research is optional but recommended for large factories
+or long-term planetary management.
 
 ---
 

@@ -24,6 +24,8 @@ require("scripts.gui.selected_demolisher_gui")
 require("scripts.commands.bd_debug_commands")
 require("scripts.events.on_selected_entity_changed")
 
+-- チャンク生成時の実体化イベント
+require("scripts.events.on_chunk_generated")
 
 local SaveRestoreService = require("scripts.services.SaveRestoreService")
 local ForceInitializer = require("scripts.services.ForceInitializer")

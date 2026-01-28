@@ -1,5 +1,6 @@
-# Breeding Demolisher
+# __BreedingDemolisher__/README.md
 
+# Breeding Demolisher (v.0.5.8)
 Breeding Demolisher is a mod that adds a world where demolishers can reproduce and evolve.  
 Over time—and through combat—eggs are produced, hatch, and increase the overall population.  
 If left unchecked, the threat can grow exponentially.

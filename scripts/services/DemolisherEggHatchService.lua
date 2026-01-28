@@ -12,7 +12,8 @@ local DemolisherEggHatchService = {}
 -- ----------------------------
 local QualityRoller = require("__Manis_lib__/scripts/rollers/QualityRoller")
 local DemolisherQuery = require("__Manis_lib__/scripts/queries/DemolisherQuery")
-local DRand = require("scripts.util.DeterministicRandom") -- 当面維持
+local VirtualMgr      = require("__Manis_lib__/scripts/managers/VirtualEntityManager")
+local DRand = require("scripts.util.DeterministicRandom")
 local TownCenter  = require("scripts.services.TownCenterResolver")
 
 local function choose_cardinal_direction(from_pos, to_pos)
@@ -26,6 +27,9 @@ local function choose_cardinal_direction(from_pos, to_pos)
 end
 
 local function has_player_buildings_near(surface, pos, r)
+  -- チャンク未生成(Void)の場合は建物なしとみなす
+  if not surface.is_chunk_generated(pos) then return false end
+
   local area = { {pos.x - r, pos.y - r}, {pos.x + r, pos.y + r} }
   return surface.count_entities_filtered{
     area = area,
@@ -51,7 +55,11 @@ local function adjust_position_if_too_close_to_origin(position)
 end
 
 local function should_rot_egg(surface, position)
-  local neighbors = DemolisherQuery.find_demolishers_range(surface, {
+  -- チャンク未生成の場合は近隣判定ができないため、腐らせない(false)とする
+  -- あるいは仮想データも含めて検索する必要があるが、ここでは簡易的に物理のみチェック
+  if not surface.is_chunk_generated(position) then return false end
+
+  local neighbors = DemolisherQuery.find_breeding_demolishers_range(surface, {
     { x = position.x - 60, y = position.y - 60 },
     { x = position.x + 60, y = position.y + 60 },
   })
@@ -83,10 +91,33 @@ local function resolve_spawn_position(surface, position, town_center)
   return nil
 end
 
+-- Force/Qualityの安全な取得 (String化)
+local function normalize_force_quality(queued, rolled_quality)
+    local f = queued.force
+    local f_name = "enemy"
+    if type(f) == "userdata" then
+        f_name = f.name
+    elseif type(f) == "string" then
+        f_name = f
+    end
+
+    local q = rolled_quality
+    local q_name = "normal"
+    if type(q) == "userdata" then
+        q_name = q.name
+    elseif type(q) == "string" then
+        q_name = q
+    end
+
+    return f_name, q_name
+end
+
 local function spawn_demolisher(surface, queued, position, town_center)
   local dir = choose_cardinal_direction(position, town_center)
 
-  local quality = QualityRoller.choose_quality(queued.evolution_factor, DRand.random())
+  -- Quality決定 (Rollerは userdata を返す可能性があるため正規化する)
+  local raw_quality = QualityRoller.choose_quality(queued.evolution_factor, DRand.random())
+  local force_name, quality_name = normalize_force_quality(queued, raw_quality)
 
   local entity_name = queued.entity_name
   if surface.name == "vulcanus" then
@@ -99,13 +130,28 @@ local function spawn_demolisher(surface, queued, position, town_center)
     end
   end
 
-  return surface.create_entity{
-    name = entity_name,
-    position = position,
-    force = queued.force,
-    quality = quality,
-    direction = dir
-  }
+  -- ■ Void対応修正: チャンク生成済みなら実体化、未生成なら仮想キューへ
+  if surface.is_chunk_generated(position) then
+    local ent = surface.create_entity{
+      name      = entity_name,
+      position  = position,
+      force     = force_name,   -- Stringで渡す
+      quality   = quality_name, -- Stringで渡す
+      direction = dir
+    }
+    return { success = (ent ~= nil), entity = ent, virtual = false }
+  else
+    -- ★修正: 第2引数(id)に nil を渡す (新規発行)
+    -- ★修正: データ構造をBossMod等と統一 (is_fatal, String化)
+    VirtualMgr.enqueue(surface, nil, position, {
+      name     = entity_name,
+      quality  = quality_name,
+      force    = force_name,
+      category = "combat",
+      is_fatal = false
+    })
+    return { success = true, entity = nil, virtual = true }
+  end
 end
 
 -- ----------------------------

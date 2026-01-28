@@ -7,9 +7,6 @@
 local S = {}
 
 function S.init_all()
-  if storage == nil then
-    storage = {}
-  end
 
   storage.respawn_queue = storage.respawn_queue or {}
 
@@ -56,6 +53,7 @@ function S.init_all()
     }
       ]]
   end
+
 end
 
 return S

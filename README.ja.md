@@ -1,4 +1,6 @@
-# Breeding Demolisher
+# __BreedingDemolisher__/README.ja.md
+
+# Breeding Demolisher (v.0.5.8)
 
 Breeding Demolisher は、デモリッシャーが繁殖し、進化する世界を追加する Mod です。  
 時間の経過や戦闘を通じて卵が生まれ、孵化し、個体数が増加していきます。  

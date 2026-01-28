@@ -36,7 +36,7 @@ end
 local function count_normal(neighbors)
   local c = 0
   for _, e in pairs(neighbors) do
-    if e.quality.name == "normal" then
+    if e.quality == nil or e.quality.name == "normal" then
       c = c + 1
     end
   end
