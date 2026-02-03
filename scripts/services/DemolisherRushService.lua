@@ -1,19 +1,15 @@
 -- __BreedingDemolisher__/scripts/services/DemolisherRushService.lua
 -- ----------------------------
--- デモリッシャーラッシュ用
+-- Responsibility:
+--   Execute one "demolisher rush" on a surface:
+--   - Evaluate cap (counted population vs cap)
+--   - Select parent candidates and enqueue conceptual eggs (respawn_queue)
+--   - Eggs hatch later by 1-min hatch service (DemolisherEggHatchService)
 --
--- 概要:
--- - 親候補から一部（進化度に応じて5～20体）を抽選対象として選ぶ
--- - 抽選対象の各個体は確率で産卵し、進化度に応じて卵数が増える
--- - 卵は親の周辺に配置され、respawn_queue に登録される
--- - ラッシュ1回あたりの増加は最大100（ただし残り枠まで）
---
--- 重要:
--- - cap は進化度依存（段階テーブル）
--- - cap計算対象から「標準3種（small/medium/big）かつ quality=nil/normal」を除外する
---   （広大開拓により自然配置されるオリジナル個体が、繁殖イベント遭遇を阻害しないため）
--- - cap計算範囲: 「実体（全Mod）」＋「自身のVirtual」のみ。他ModのVirtualは含まない。
--- - 親候補は DemolisherNames.ALL_BREEDING_PARENTS（default3種 + breeding + 非致命boss）を使用する
+-- Notes:
+--   - counted population excludes default small/medium/big (quality nil/normal) by policy
+--   - cap counts: physical(all mods) + virtual(only this mod via Manis_lib VirtualMgr)
+--   - respawn_tick must be within the current 30-min window because respawn_queue is reset every 30 minutes
 -- ----------------------------
 local DemolisherRushService = {}
 
@@ -24,8 +20,24 @@ local SpawnPositionService = require("scripts.services.SpawnPositionService")
 local util  = require("scripts.common.util")
 local EggMutationPolicy = require("scripts.policies.EggMutationPolicy")
 local Logger = require("scripts.services.Logger")
+local DemolisherNames = require("__Manis_definitions__/scripts/definition/DemolisherNames")
 
--- ★追加: Cap計算ロジックの共通化
+local function normalize_egg_entity_name_for_surface(surface, entity_name)
+  if not surface or not surface.valid then
+    return entity_name
+  end
+
+  -- Vulcanus: default eggs must be Manis-series (spec decision)
+  if surface.name == "vulcanus" then
+    if entity_name == DemolisherNames.SMALL then return DemolisherNames.MANIS_SMALL end
+    if entity_name == DemolisherNames.MEDIUM then return DemolisherNames.MANIS_MEDIUM end
+    if entity_name == DemolisherNames.BIG then return DemolisherNames.MANIS_BIG end
+  end
+
+  return entity_name
+end
+
+-- Cap calculator (pure)
 local CapCalculator = require("__Manis_lib__/scripts/logic/DemolisherCapCalculator")
 
 -- ---------------------------------------------------------------------
@@ -36,16 +48,18 @@ local MIN_PARENTS = 3
 local P_MIN = 0.15
 local MIN_EGGS_TWO_RATE = 0.45
 
--- Cap研究ポリシー
+-- Cap research policy
 local CAP_POLICY = {
-    TECH_NAME = "manis-demolisher-cap-down",
-    REDUCTION_STEP = 0.05, -- 1Lvあたり5%
-    CAP_FLOOR = 50         -- 下限
+  TECH_NAME = "manis-demolisher-cap-down",
+  REDUCTION_STEP = 0.05, -- 5% per level
+  CAP_FLOOR = 50         -- absolute minimum
 }
 
+-- respawn_queue reset policy: every 30 minutes
+local TICK_30MIN = 108000
+
 -- ---------------------------------------------------------------------
--- cap: evolution_factor -> cap
--- 仕様変更: 研究(manis-demolisher-cap-down)による減少補正を共通計算機で適用
+-- cap: evolution_factor -> {cap, floor_applied}
 -- ---------------------------------------------------------------------
 local function calc_cap_meta(evo)
   local base_cap = 200
@@ -76,47 +90,43 @@ local function calc_cap_meta(evo)
 end
 
 -- ---------------------------------------------------------------------
--- 仮想データ用の除外判定ヘルパー (countのフィルタとして使用)
+-- Virtual count filter (true => counted)
 -- ---------------------------------------------------------------------
--- true を返すと「カウント対象（除外されない）」
 local function virtual_count_filter(entry)
-    local data = entry.data
-    if not data then return false end
+  local data = entry.data
+  if not data then return false end
 
-    -- ★修正: DemolisherQueryに判定を委譲 (実体判定との乖離を防ぐ)
-    -- 「標準3種かつNormal」なら除外 (= return false)
-    if DemolisherQuery.is_default_small_medium_big_normal_virtual(data.name, data.quality) then
-        return false
-    end
-    return true
+  -- Exclude default small/medium/big normal (delegate to DemolisherQuery)
+  if DemolisherQuery.is_default_small_medium_big_normal_virtual(data.name, data.quality) then
+    return false
+  end
+  return true
 end
 
 -- ---------------------------------------------------------------------
--- cap計算対象数（counted population）
+-- Counted population (physical + this mod's virtual)
 -- ---------------------------------------------------------------------
 local function count_counted_population(surface)
   local cnt = 0
 
-  -- 1. 実体 (Physical)
+  -- 1) Physical
   local all = DemolisherQuery.find_demolishers(surface)
   for _, e in pairs(all) do
     if e and e.valid then
-      -- 除外対象（標準3種かつNormal）でなければカウント
       if not DemolisherQuery.is_default_small_medium_big_normal(e) then
         cnt = cnt + 1
       end
     end
   end
 
-  -- 2. 仮想 (Virtual)
-  -- フィルタ関数を通してカウント (filterには entry が渡る仕様)
+  -- 2) Virtual (this mod only; via shared store)
   cnt = cnt + VirtualMgr.count(surface, virtual_count_filter)
 
   return cnt
 end
 
 -- ---------------------------------------------------------------------
--- 最低保証（卵数）：経過時間（時間）に応じて増える
+-- Minimum eggs guarantee since first kill tick
 -- ---------------------------------------------------------------------
 local function calc_min_eggs_since_first_kill()
   local t0 = storage.bd_demolisher_first_kill_tick
@@ -148,7 +158,7 @@ local function calc_min_eggs_since_first_kill()
   end
 end
 
--- 進化度に応じた抽選対象数 k（5～20想定）
+-- Candidate count: 5..(about 20)
 local function calc_candidate_count(evo)
   local k = 5 + (evo * 10)
   if evo >= 0.99 then
@@ -157,12 +167,12 @@ local function calc_candidate_count(evo)
   return math.ceil(k)
 end
 
--- 卵数上限：1 + evo*4（ceil）
+-- Max eggs per parent: ceil(1 + evo*4)
 local function calc_max_eggs_per_parent(evo)
   return math.ceil(1 + (evo * 4))
 end
 
--- all_demolishers から k 体を「抽選対象」として非復元で選ぶ（部分シャッフル）
+-- Choose k candidates by partial shuffle
 local function choose_candidates(all_demolishers, k)
   local n = #all_demolishers
   if k > n then k = n end
@@ -180,12 +190,12 @@ local function choose_candidates(all_demolishers, k)
   return candidates
 end
 
--- 親ごとの最低卵数（1 or 2 抽選）
+-- Parent min eggs roll: 1 or 2
 local function roll_min_eggs()
   return (DRand.random() < MIN_EGGS_TWO_RATE) and 2 or 1
 end
 
--- 親当選：最低保証つき
+-- Pick spawn parents with minimum guarantee
 local function pick_spawn_parents(candidates, spawn_prob)
   local spawn_parents = {}
   for _, parent in pairs(candidates) do
@@ -201,7 +211,7 @@ local function pick_spawn_parents(candidates, spawn_prob)
   return spawn_parents
 end
 
--- 中心地に向けて繁殖地が拡大する（最も(0,0)に近いロケットサイロ）
+-- Nearest silo to (0,0)
 local function find_nearest_silo_pos(surface)
   local nearest = { x = 0, y = 0 }
   local silos = surface.find_entities_filtered{ type = "rocket-silo" }
@@ -221,18 +231,65 @@ local function find_nearest_silo_pos(surface)
   return nearest
 end
 
+-- ---------------------------------------------------------------------
+-- Hatch timing policy (P0):
+--   - min: immediate (0)
+--   - max: strictly before next 30-min tick (because respawn_queue is reset every 30 min)
+-- ---------------------------------------------------------------------
+local function calc_hatch_delay_ticks(now_tick)
+  local next_boundary = (math.floor(now_tick / TICK_30MIN) + 1) * TICK_30MIN
+  local max_delay = next_boundary - now_tick - 1
+  if max_delay < 0 then
+    max_delay = 0
+  end
+  return DRand.random(0, max_delay)
+end
+
+-- Enqueue one egg if spawn position exists.
+-- Returns true if enqueued.
+local function try_enqueue_egg(surface, evolution_factor, parent, nearest_silo_pos, queue)
+  local spawn_position = SpawnPositionService.getSpawnPosition(
+    surface,
+    evolution_factor,
+    parent.position,
+    nearest_silo_pos
+  )
+  if spawn_position == nil then
+    return false
+  end
+
+  local delay = calc_hatch_delay_ticks(game.tick)
+
+  local raw_name = EggMutationPolicy.pick_egg_entity_name(parent.name, evolution_factor)
+  local egg_name = normalize_egg_entity_name_for_surface(surface, raw_name)
+
+  queue[#queue + 1] = {
+    surface = parent.surface,
+    entity_name = EggMutationPolicy.pick_egg_entity_name(egg_name, evolution_factor),
+    position = spawn_position,
+    evolution_factor = evolution_factor,
+    force = parent.force,
+    respawn_tick = game.tick + delay
+  }
+
+  return true
+end
+
+-- ---------------------------------------------------------------------
+-- Entry
+-- ---------------------------------------------------------------------
 function DemolisherRushService.demolisher_rush(surface, evolution_factor)
   storage.respawn_queue = storage.respawn_queue or {}
 
-  -- cap（進化度 + 研究依存）
+  -- cap (evo + research)
   local capm = calc_cap_meta(evolution_factor)
   local cap = capm.cap
   local cap_floor_applied = capm.floor_applied == true
 
-  -- counted population（実体 + 自身Virtual）
+  -- counted population
   local counted = count_counted_population(surface)
 
-  -- OBS-POP-001（required）
+  -- OBS-POP-001 (required)
   local outcome, reason
   if counted >= cap then
     outcome = "SKIP"
@@ -251,16 +308,15 @@ function DemolisherRushService.demolisher_rush(surface, evolution_factor)
     " cap_floor_applied=", tostring(cap_floor_applied),
   })
 
-  -- cap reached -> suppress egg creation (existing behavior)
+  -- cap reached -> suppress egg creation
   if counted >= cap then
     util.print("[vulcanus] demolishers abound... (Pop:" .. counted .. " / Cap:" .. cap .. ")")
     return
   end
 
-  -- ラッシュ1回あたりの増加は最大100（ただし残り枠まで）
+  -- max increase per rush
   local remaining_capacity = cap - counted
   local egg_budget = math.min(MAX_EGGS_PER_RUSH, remaining_capacity)
-
   if egg_budget <= 0 then
     util.print("[vulcanus] demolishers abound... (Pop:" .. counted .. " / Cap:" .. cap .. ")")
     return
@@ -268,31 +324,29 @@ function DemolisherRushService.demolisher_rush(surface, evolution_factor)
 
   local nearest_silo_pos = find_nearest_silo_pos(surface)
 
-  -- 親候補（default3種 + breeding + 非致命boss）
-  -- ※親候補は実体から選ぶ（仮想空間にいる個体は産卵しない）
+  -- parent pool (physical only)
   local parent_pool = DemolisherQuery.find_breeding_parent_demolishers(surface)
   if not parent_pool or #parent_pool == 0 then
     return
   end
 
-  -- 抽選対象
+  -- candidates
   local k = calc_candidate_count(evolution_factor)
   local candidates = choose_candidates(parent_pool, k)
   if #candidates == 0 then
     return
   end
 
-  -- 確率カーブ調整（序盤底上げ）
+  -- probability curve
   local spawn_prob = math.max(P_MIN, (evolution_factor ^ 0.7) / 2)
   local max_eggs = calc_max_eggs_per_parent(evolution_factor)
 
-  -- 親当選（最低3体保証）
+  -- selected parents (min guarantee)
   local spawn_parents = pick_spawn_parents(candidates, spawn_prob)
 
   local enqueued_eggs = 0
-  local egg_seq = 0 -- respawn_tick用
 
-  -- 通常分の産卵
+  -- normal spawn
   for _, parent in pairs(spawn_parents) do
     if enqueued_eggs >= egg_budget then break end
 
@@ -302,29 +356,13 @@ function DemolisherRushService.demolisher_rush(surface, evolution_factor)
     for _ = 1, egg_n do
       if enqueued_eggs >= egg_budget then break end
 
-      local spawn_position = SpawnPositionService.getSpawnPosition(
-        surface,
-        evolution_factor,
-        parent.position,
-        nearest_silo_pos
-      )
-
-      if spawn_position ~= nil then
-        egg_seq = egg_seq + 1
-        storage.respawn_queue[#storage.respawn_queue + 1] = {
-          surface = parent.surface,
-          entity_name = EggMutationPolicy.pick_egg_entity_name(parent.name, evolution_factor),
-          position = spawn_position,
-          evolution_factor = evolution_factor,
-          force = parent.force,
-          respawn_tick = game.tick + 18000 + 3600 * egg_seq
-        }
+      if try_enqueue_egg(surface, evolution_factor, parent, nearest_silo_pos, storage.respawn_queue) then
         enqueued_eggs = enqueued_eggs + 1
       end
     end
   end
 
-  -- 最低保証
+  -- minimum guarantee
   local min_eggs = calc_min_eggs_since_first_kill()
   if min_eggs > egg_budget then
     min_eggs = egg_budget
@@ -337,23 +375,7 @@ function DemolisherRushService.demolisher_rush(surface, evolution_factor)
       if enqueued_eggs >= egg_budget then break end
 
       local parent = candidates[DRand.random(1, #candidates)]
-      local spawn_position = SpawnPositionService.getSpawnPosition(
-        surface,
-        evolution_factor,
-        parent.position,
-        nearest_silo_pos
-      )
-
-      if spawn_position ~= nil then
-        egg_seq = egg_seq + 1
-        storage.respawn_queue[#storage.respawn_queue + 1] = {
-          surface = parent.surface,
-          entity_name = EggMutationPolicy.pick_egg_entity_name(parent.name, evolution_factor),
-          position = spawn_position,
-          evolution_factor = evolution_factor,
-          force = parent.force,
-          respawn_tick = game.tick + 18000 + 3600 * egg_seq
-        }
+      if try_enqueue_egg(surface, evolution_factor, parent, nearest_silo_pos, storage.respawn_queue) then
         enqueued_eggs = enqueued_eggs + 1
       end
     end
