@@ -1,4 +1,4 @@
--- scripts/policies/vulcanus_demolisher_move_policy.lua
+-- __BreedingDemolisher__/scripts/policies/vulcanus_demolisher_move_policy.lua
 -- ----------------------------
 -- Responsibility:
 --   Vulcanusデモリッシャー移動に関する「Mod固有のポリシー」を提供する。

@@ -1,4 +1,4 @@
--- scripts/tests/infrastructure/TestConfig.lua
+-- __BreedingDemolisher__/scripts/tests/infrastructure/TestConfig.lua
 -- ------------------------------------------------------------
 -- Responsibility:
 --   Pack-level deterministic configuration store for BreedingDemolisher.

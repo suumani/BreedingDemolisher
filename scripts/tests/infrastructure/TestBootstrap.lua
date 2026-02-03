@@ -1,4 +1,4 @@
--- scripts/tests/infrastructure/TestBootstrap.lua
+-- __BreedingDemolisher__/scripts/tests/infrastructure/TestBootstrap.lua
 -- ------------------------------------------------------------
 -- Responsibility:
 --   Bootstrap utilities for BD test packs.

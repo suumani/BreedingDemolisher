@@ -1,4 +1,4 @@
--- scripts/tests/infrastructure/WorldOracle.lua
+-- __BreedingDemolisher__/scripts/tests/infrastructure/WorldOracle.lua
 -- ------------------------------------------------------------
 -- Responsibility:
 --   World-state oracle for BD tests (primary oracle).

@@ -1,4 +1,4 @@
--- scripts/tests/packs/move/PackMoveSchedule.lua
+-- __BreedingDemolisher__/scripts/tests/packs/move/PackMoveSchedule.lua
 -- ------------------------------------------------------------
 -- Responsibility:
 --   PACK-MOVE-SCHEDULE (BD / Vulcanus only):
