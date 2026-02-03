@@ -23,6 +23,7 @@ local VirtualMgr      = require("__Manis_lib__/scripts/managers/VirtualEntityMan
 local SpawnPositionService = require("scripts.services.SpawnPositionService")
 local util  = require("scripts.common.util")
 local EggMutationPolicy = require("scripts.policies.EggMutationPolicy")
+local Logger = require("scripts.services.Logger")
 
 -- ★追加: Cap計算ロジックの共通化
 local CapCalculator = require("__Manis_lib__/scripts/logic/DemolisherCapCalculator")
@@ -46,10 +47,9 @@ local CAP_POLICY = {
 -- cap: evolution_factor -> cap
 -- 仕様変更: 研究(manis-demolisher-cap-down)による減少補正を共通計算機で適用
 -- ---------------------------------------------------------------------
-local function calc_cap(evo)
+local function calc_cap_meta(evo)
   local base_cap = 200
 
-  -- 段階テーブル（進化度に応じたベースライン）
   if evo <= 0.05 then base_cap = 40
   elseif evo <= 0.15 then base_cap = 55
   elseif evo <= 0.25 then base_cap = 70
@@ -63,18 +63,16 @@ local function calc_cap(evo)
   elseif evo <= 0.98 then base_cap = 190
   end
 
-  -- 研究レベルの取得 (仕様統一: tech.levelをそのまま使う)
   local force = game.forces.player
   local level = 0
   if force and force.technologies then
-      local tech = force.technologies[CAP_POLICY.TECH_NAME]
-      if tech then
-          level = math.max(0, tech.level)
-      end
+    local tech = force.technologies[CAP_POLICY.TECH_NAME]
+    if tech then
+      level = math.max(0, tech.level)
+    end
   end
 
-  -- 共通計算機で算出 (base, level, step, floor, [max])
-  return CapCalculator.calculate(base_cap, level, CAP_POLICY.REDUCTION_STEP, CAP_POLICY.CAP_FLOOR)
+  return CapCalculator.calculate_with_meta(base_cap, level, CAP_POLICY.REDUCTION_STEP, CAP_POLICY.CAP_FLOOR)
 end
 
 -- ---------------------------------------------------------------------
@@ -224,14 +222,36 @@ local function find_nearest_silo_pos(surface)
 end
 
 function DemolisherRushService.demolisher_rush(surface, evolution_factor)
-  -- respawn_queueがないケースの保険
   storage.respawn_queue = storage.respawn_queue or {}
 
   -- cap（進化度 + 研究依存）
-  local cap = calc_cap(evolution_factor)
+  local capm = calc_cap_meta(evolution_factor)
+  local cap = capm.cap
+  local cap_floor_applied = capm.floor_applied == true
 
-  -- cap計算対象数（実体 + 仮想）
+  -- counted population（実体 + 自身Virtual）
   local counted = count_counted_population(surface)
+
+  -- OBS-POP-001（required）
+  local outcome, reason
+  if counted >= cap then
+    outcome = "SKIP"
+    reason = "CAP_REACHED"
+  else
+    outcome = "OK"
+    reason = cap_floor_applied and "FLOOR_APPLIED" or "BELOW_CAP"
+  end
+
+  Logger.info({
+    "[BreedingDemolisher][POP][CapGate][" .. outcome .. "]",
+    " reason=", reason,
+    " evo=", evolution_factor,
+    " counted_population=", counted,
+    " cap=", cap,
+    " cap_floor_applied=", tostring(cap_floor_applied),
+  })
+
+  -- cap reached -> suppress egg creation (existing behavior)
   if counted >= cap then
     util.print("[vulcanus] demolishers abound... (Pop:" .. counted .. " / Cap:" .. cap .. ")")
     return
@@ -240,6 +260,7 @@ function DemolisherRushService.demolisher_rush(surface, evolution_factor)
   -- ラッシュ1回あたりの増加は最大100（ただし残り枠まで）
   local remaining_capacity = cap - counted
   local egg_budget = math.min(MAX_EGGS_PER_RUSH, remaining_capacity)
+
   if egg_budget <= 0 then
     util.print("[vulcanus] demolishers abound... (Pop:" .. counted .. " / Cap:" .. cap .. ")")
     return
