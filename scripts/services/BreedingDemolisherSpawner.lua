@@ -2,6 +2,7 @@
 local Spawner = {}
 
 local VirtualMgr = require("__Manis_lib__/scripts/managers/VirtualEntityManager")
+local Logger = require("scripts.services.Logger")
 
 -- BossDemolisherSpawner.process_virtual_queue と同等の実装
 function Spawner.process_virtual_queue(event)
@@ -36,9 +37,26 @@ function Spawner.process_virtual_queue(event)
             direction = defines.direction.north
         }
 
-        -- 成功時のみ仮想データを削除
         if entity and entity.valid then
+            -- OBS-VIRT-001: MATERIALIZE (virtual -> physical)
+            Logger.info({
+                "[BreedingDemolisher][VIRT][Update][OK]",
+                " action=MATERIALIZE",
+                " surface=", surface.name,
+                " vid=", entry.id,
+                " position={", entry.position.x, ",", entry.position.y, "}",
+            })
+
             VirtualMgr.remove(surface, entry.id)
+
+            -- OBS-VIRT-001: REMOVE (virtual entry removed)
+            Logger.info({
+                "[BreedingDemolisher][VIRT][Update][OK]",
+                " action=REMOVE",
+                " surface=", surface.name,
+                " vid=", entry.id,
+                " position={", entry.position.x, ",", entry.position.y, "}",
+            })
         end
     end
 end
