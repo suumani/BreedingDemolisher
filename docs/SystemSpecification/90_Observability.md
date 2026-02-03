@@ -116,8 +116,8 @@ counted=128 cap=130
 
 **必須項目**
 - `outcome` : `OK | SKIP | FAIL`
-- `reason`  : `CAP_REACHED | NOT_ELIGIBLE | NO_PARTNER | FATAL_EXCLUDED`
-- `parent_species`
+- `reason`  : `CAP_REACHED | NOT_ELIGIBLE | NO_PARTNER | FATAL_EXCLUDED`（※SKIP/FAIL の場合のみ必須）
+- `parent_species`（OK の場合のみ必須、SKIP は省略可）
 - `evo`
 
 **対応仕様**
