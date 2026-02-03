@@ -12,14 +12,14 @@ data:extend({
     type = "bool-setting",
     name = "breedingdemolisher-logger-to-log",
     setting_type = "runtime-global",
-    default_value = true,
+    default_value = false,
     order = "z[breedingdemolisher]-a[logger]-b[to-log]"
   },
   {
     type = "bool-setting",
     name = "breedingdemolisher-logger-to-print",
     setting_type = "runtime-global",
-    default_value = true,
+    default_value = false,
     order = "z[breedingdemolisher]-a[logger]-c[to-print]"
   },
   {
