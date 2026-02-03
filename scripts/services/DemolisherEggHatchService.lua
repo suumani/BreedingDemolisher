@@ -15,6 +15,16 @@ local DemolisherQuery = require("__Manis_lib__/scripts/queries/DemolisherQuery")
 local VirtualMgr      = require("__Manis_lib__/scripts/managers/VirtualEntityManager")
 local DRand = require("scripts.util.DeterministicRandom")
 local TownCenter  = require("scripts.services.TownCenterResolver")
+local Logger = require("scripts.services.Logger")
+
+local function to_chunk_pos(tile_pos)
+  -- Factorio chunk size is 32 tiles
+  return { x = math.floor(tile_pos.x / 32), y = math.floor(tile_pos.y / 32) }
+end
+
+local function is_chunk_generated_at(surface, tile_pos)
+  return surface.is_chunk_generated(to_chunk_pos(tile_pos))
+end
 
 local function choose_cardinal_direction(from_pos, to_pos)
   local dx = to_pos.x - from_pos.x
@@ -28,7 +38,7 @@ end
 
 local function has_player_buildings_near(surface, pos, r)
   -- チャンク未生成(Void)の場合は建物なしとみなす
-  if not surface.is_chunk_generated(pos) then return false end
+  if not is_chunk_generated_at(surface, pos) then return false end
 
   local area = { {pos.x - r, pos.y - r}, {pos.x + r, pos.y + r} }
   return surface.count_entities_filtered{
@@ -57,7 +67,7 @@ end
 local function should_rot_egg(surface, position)
   -- チャンク未生成の場合は近隣判定ができないため、腐らせない(false)とする
   -- あるいは仮想データも含めて検索する必要があるが、ここでは簡易的に物理のみチェック
-  if not surface.is_chunk_generated(position) then return false end
+  if not is_chunk_generated_at(surface, position) then return false end
 
   local neighbors = DemolisherQuery.find_breeding_demolishers_range(surface, {
     { x = position.x - 60, y = position.y - 60 },
@@ -131,7 +141,7 @@ local function spawn_demolisher(surface, queued, position, town_center)
   end
 
   -- ■ Void対応修正: チャンク生成済みなら実体化、未生成なら仮想キューへ
-  if surface.is_chunk_generated(position) then
+  if is_chunk_generated_at(surface, position) then
     local ent = surface.create_entity{
       name      = entity_name,
       position  = position,
@@ -143,14 +153,24 @@ local function spawn_demolisher(surface, queued, position, town_center)
   else
     -- ★修正: 第2引数(id)に nil を渡す (新規発行)
     -- ★修正: データ構造をBossMod等と統一 (is_fatal, String化)
-    VirtualMgr.enqueue(surface, nil, position, {
+    local vid = VirtualMgr.enqueue(surface, nil, position, {
       name     = entity_name,
       quality  = quality_name,
       force    = force_name,
       category = "combat",
       is_fatal = false
     })
-    return { success = true, entity = nil, virtual = true }
+
+    -- OBS-VIRT-001 (required): Virtual Demolisher update log
+    Logger.info({
+      "[BreedingDemolisher][VIRT][Update][OK]",
+      " action=CREATE",
+      " surface=", surface.name,
+      " vid=", vid,
+      " position={", position.x, ",", position.y, "}",
+    })
+
+    return { success = true, entity = nil, virtual = true, vid = vid }
   end
 end
 
