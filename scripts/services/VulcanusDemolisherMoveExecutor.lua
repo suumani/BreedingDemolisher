@@ -23,6 +23,9 @@ local ModRandomProvider = require("scripts.services.ModRandomProvider")
 
 local util  = require("scripts.common.util")
 
+local TestHooks = require("scripts.tests.infrastructure.TestHooks")
+local Logger = require("scripts.services.Logger")
+
 -- ■ Adapter Factory
 local function create_adapter(surface, obj, is_virt)
     local adapter = {
@@ -243,9 +246,16 @@ function E.execute_one_step(plan)
     build_move_targets = build_move_targets,
     compute_move_rate = MovePolicy.compute_move_rate,
     can_move = MovePolicy.can_move,
+    get_evolution_factor = function(surface)
+      local ov = TestHooks.try_get_move_evo_override()
+      if type(ov) == "number" then return ov end
+      return game.forces.enemy.get_evolution_factor(surface)
+    end,
     get_rng = function() return ModRandomProvider.get() end,
     mod_name = "BreedingDemolisher",
-    log = util.debug
+    log = function(msg)
+      Logger.debug(msg)
+    end
   })
 end
 

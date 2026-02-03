@@ -52,5 +52,29 @@ function C.get_scheduler_ticks(pack_id, scheduler_key)
   local s = p and p.schedulers
   return s and s[scheduler_key] or nil
 end
+-- Move orchestration knobs (pack-level)
+function C.set_move_min_planned_total(pack_id, n)
+  local p = ensure_pack(pack_id)
+  p.move = p.move or {}
+  p.move.min_planned_total = n
+end
+
+function C.get_move_min_planned_total(pack_id)
+  local p = get_pack(pack_id)
+  local m = p and p.move
+  return m and m.min_planned_total or nil
+end
+
+function C.set_move_evo_override(pack_id, evo)
+  local p = ensure_pack(pack_id)
+  p.move = p.move or {}
+  p.move.evo_override = evo
+end
+
+function C.get_move_evo_override(pack_id)
+  local p = get_pack(pack_id)
+  local m = p and p.move
+  return m and m.evo_override or nil
+end
 
 return C

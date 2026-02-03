@@ -29,7 +29,9 @@ require("scripts.events.on_selected_entity_changed")
 require("scripts.tests.packs.population_control.PackEggEnqueueFromVulcanusParent")
 require("scripts.tests.packs.reproduction.PackEggHatchPhy")
 require("scripts.tests.packs.reproduction.PackEggHatchVir")
+require("scripts.tests.packs.move.PackMoveSchedule")
 ]]
+
 
 -- チャンク生成時の実体化イベント
 require("scripts.events.on_chunk_generated")

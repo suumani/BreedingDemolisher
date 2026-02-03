@@ -10,9 +10,16 @@ local DemolisherNames = require("__Manis_definitions__/scripts/definition/Demoli
 
 -- 進化度による移動可否（このModの閾値）
 local thresholds = {
+
+  -- Manis normal series (BreedingDemolisher primary move targets)
+  [DemolisherNames.MANIS_SMALL]  = 0.4,
+  [DemolisherNames.MANIS_MEDIUM] = 0.7,
+  [DemolisherNames.MANIS_BIG]    = 0.9,
+
+  -- default series (Space Age core)　旧セーブデータ対応
   [DemolisherNames.SMALL]  = 0.4,
   [DemolisherNames.MEDIUM] = 0.7,
-  [DemolisherNames.BIG]    = 0.9
+  [DemolisherNames.BIG]    = 0.9,
 }
 
 -- (name, evo) -> boolean

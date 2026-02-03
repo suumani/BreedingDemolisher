@@ -20,6 +20,9 @@ local MovePlanStore = require("scripts.services.VulcanusDemolisherMovePlanStore"
 local util  = require("scripts.common.util")
 local ModRng = require("scripts.services.ModRandomProvider")
 
+-- test
+local TestHooks = require("scripts.tests.infrastructure.TestHooks")
+
 local SURFACE_NAME = "vulcanus"
 local MAX_PLANNED_TOTAL = 100
 
@@ -40,8 +43,18 @@ function Orchestrator.run_once()
   local all_demolishers = DemolisherQuery.find_demolishers(surface)
   local demolisher_count = #all_demolishers
 
+  -- evo
   local evo = game.forces.enemy.get_evolution_factor(surface)
+  local evo_ov = TestHooks.try_get_move_evo_override()
+  if type(evo_ov) == "number" then evo = evo_ov end
+
+  -- planned_total
   local planned_total = math.floor(demolisher_count * evo * 0.5)
+
+  local min_ov = TestHooks.try_get_move_min_planned_total()
+  if type(min_ov) == "number" and min_ov > 0 and planned_total < min_ov then
+    planned_total = min_ov
+  end
 
   if planned_total > MAX_PLANNED_TOTAL then planned_total = MAX_PLANNED_TOTAL end
   if planned_total <= 0 then
