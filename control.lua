@@ -24,6 +24,13 @@ require("scripts.gui.selected_demolisher_gui")
 require("scripts.commands.bd_debug_commands")
 require("scripts.events.on_selected_entity_changed")
 
+
+--[[ tests (release build: comment out)
+require("scripts.tests.packs.population_control.PackEggEnqueueFromVulcanusParent")
+require("scripts.tests.packs.reproduction.PackEggHatchPhy")
+require("scripts.tests.packs.reproduction.PackEggHatchVir")
+]]
+
 -- チャンク生成時の実体化イベント
 require("scripts.events.on_chunk_generated")
 
