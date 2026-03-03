@@ -39,7 +39,7 @@ end
 -- Determine "line" by name (normal/speedstar/gigantic/king)
 local function resolve_line(name)
   if name == nil then return "normal" end
-  if name == DemolisherNames.MANIS_CRAZY_KING or name == DemolisherNames.MANIS_CRAZY_KING_ALT then
+  if name == DemolisherNames.MANIS_CRAZY_KING_SMALL or name == DemolisherNames.MANIS_CRAZY_KING_SMALL_ALT then
     return "king"
   end
   if name == DemolisherNames.MANIS_GIGANTIC_SMALL or name == DemolisherNames.MANIS_GIGANTIC_MEDIUM
@@ -63,7 +63,7 @@ local function map_name_by_line_and_class(line, target_class, is_alt)
   local alt = is_alt and true or false
 
   if line == "king" then
-    return alt and DemolisherNames.MANIS_CRAZY_KING_ALT or DemolisherNames.MANIS_CRAZY_KING
+    return alt and DemolisherNames.MANIS_CRAZY_KING_SMALL_ALT or DemolisherNames.MANIS_CRAZY_KING_SMALL
   end
 
   if line == "gigantic" then
@@ -100,7 +100,7 @@ local function is_alt_name(name)
       or name == DemolisherNames.MANIS_GIGANTIC_MEDIUM_ALT
       or name == DemolisherNames.MANIS_GIGANTIC_BIG_ALT
       or name == DemolisherNames.MANIS_GIGANTIC_BEHEMOTH_ALT
-      or name == DemolisherNames.MANIS_CRAZY_KING_ALT
+      or name == DemolisherNames.MANIS_CRAZY_KING_SMALL_ALT
 end
 
 -- Decide target class based on size (keeps your legacy thresholds).

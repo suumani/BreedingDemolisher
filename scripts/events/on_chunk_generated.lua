@@ -2,5 +2,4 @@
 local Spawner = require("scripts.services.BreedingDemolisherSpawner")
 
 script.on_event(defines.events.on_chunk_generated, function(event)
-    Spawner.process_virtual_queue(event)
 end)

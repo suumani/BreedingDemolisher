@@ -84,8 +84,8 @@ local SIZE_CAP = {
   [DemolisherNames.MANIS_GIGANTIC_BEHEMOTH_ALT] = 5000000,
 
   -- crazy-king series (fatal)
-  [DemolisherNames.MANIS_CRAZY_KING] = 10000000,
-  [DemolisherNames.MANIS_CRAZY_KING_ALT] = 10000000,
+  [DemolisherNames.MANIS_CRAZY_KING_SMALL] = 10000000,
+  [DemolisherNames.MANIS_CRAZY_KING_SMALL_ALT] = 10000000,
 }
 
 -- ------------------------------------------------------------
@@ -123,8 +123,8 @@ local SPEED_BASE_NORMAL = {
   [DemolisherNames.MANIS_GIGANTIC_BEHEMOTH_ALT] = 5.4,
 
   -- crazy-king: speed 8.6
-  [DemolisherNames.MANIS_CRAZY_KING] = 8.6,
-  [DemolisherNames.MANIS_CRAZY_KING_ALT] = 8.6,
+  [DemolisherNames.MANIS_CRAZY_KING_SMALL] = 8.6,
+  [DemolisherNames.MANIS_CRAZY_KING_SMALL_ALT] = 8.6,
 }
 
 -- ------------------------------------------------------------
@@ -181,8 +181,8 @@ local LIFE_MAX = {
   [DemolisherNames.MANIS_GIGANTIC_BEHEMOTH] = 360,
   [DemolisherNames.MANIS_GIGANTIC_BEHEMOTH_ALT] = 360,
 
-  [DemolisherNames.MANIS_CRAZY_KING] = 360,
-  [DemolisherNames.MANIS_CRAZY_KING_ALT] = 360,
+  [DemolisherNames.MANIS_CRAZY_KING_SMALL] = 360,
+  [DemolisherNames.MANIS_CRAZY_KING_SMALL_ALT] = 360,
 }
 
 local GROWTH_MAX = {
@@ -217,8 +217,8 @@ local GROWTH_MAX = {
   [DemolisherNames.MANIS_GIGANTIC_BEHEMOTH] = 125,
   [DemolisherNames.MANIS_GIGANTIC_BEHEMOTH_ALT] = 125,
 
-  [DemolisherNames.MANIS_CRAZY_KING] = 125,
-  [DemolisherNames.MANIS_CRAZY_KING_ALT] = 125,
+  [DemolisherNames.MANIS_CRAZY_KING_SMALL] = 125,
+  [DemolisherNames.MANIS_CRAZY_KING_SMALL_ALT] = 125,
 }
 
 local SATIETY_MAX = {
@@ -253,8 +253,8 @@ local SATIETY_MAX = {
   [DemolisherNames.MANIS_GIGANTIC_BEHEMOTH] = 250,
   [DemolisherNames.MANIS_GIGANTIC_BEHEMOTH_ALT] = 250,
 
-  [DemolisherNames.MANIS_CRAZY_KING] = 250,
-  [DemolisherNames.MANIS_CRAZY_KING_ALT] = 250,
+  [DemolisherNames.MANIS_CRAZY_KING_SMALL] = 250,
+  [DemolisherNames.MANIS_CRAZY_KING_SMALL_ALT] = 250,
 }
 
 -- ------------------------------------------------------------
