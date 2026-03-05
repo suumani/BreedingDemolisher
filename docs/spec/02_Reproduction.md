@@ -1,333 +1,147 @@
-# Breeding Demolisher — Reproduction (MDL Integrated)
+# Breeding Demolisher — Reproduction
+`__BreedingDemolisher__/docs/spec/02_Reproduction.md`
 
-
-Status: Draft (Revised for MDL Integration)  
-Scope: BreedingDemolisher spawn decision logic  
+Status: Draft  
+Scope: Demolisher reproduction decision logic  
 Related:
-- MDL-ARCH-000 (MDL Architecture — Demolisher Core System)
-- MDL-SPAWN-000 (MDL Spawn Engine Specification)
-- MDL-PROVIDER-000 (MDL Provider Contract Specification)
-- BD-POP-000 (Population Control — Breeding Demolisher)
+- MDL-PROVIDER-000 (MDL Provider Contract)
+- BD-POP-000 (Population Control)
 
 ---
 
-# 0. 本章の位置づけ
+# 1. 本仕様書の位置づけ
 
 ID: BD-REPRO-000
 
-本章は Breeding Demolisher における  
-**繁殖ロジック（spawn decision）** を定義する。
+本仕様書は BreedingDemolisher における  
+**繁殖判定アルゴリズム (spawn decision)** を定義する。
 
-本章は以下を前提とする。
-
-- spawn 実行は **MDL Engine が担当する**
-- BD は **spawn decision provider** として動作する
-- 卵生成および孵化システムは **本統合仕様では使用しない**
-
-本章は以下を扱う。
-
-- spawn種決定
-- mutation
-- evolution
-- derived evolution
-- fatal exclusion
+spawn 実行は **MDL Engine** が担当する。  
+本仕様書は **spawn decision のみ**を扱う。
 
 ---
 
-# 1. 繁殖イベントの基本構造
+# 2. Reproduction Algorithm
 
-### 1.1 繁殖イベントの定義
+ID: BD-REPRO-CORE
 
-ID: BD-REPRO-010
+繁殖は以下のアルゴリズムで行う。
 
-本 Mod における繁殖イベントとは  
-**デモリッシャー spawn decision の評価処理**を指す。
+<<<CODEBLOCK START>>>
 
-spawn 実行は MDL Engine によって行われる。
+every 10 minutes:
 
----
+  enumerate Vulcanus territories
 
-### 1.2 繁殖イベントの結果
+  for each territory worker:
 
-ID: BD-REPRO-011
+    units = territory.segmented_units
 
-繁殖イベントの結果は以下のいずれかである。
+    for unit in units:
 
-- spawn種が決定される
-- spawnは行われない
+        if reproduction_roll(unit) is false:
+            continue
 
-spawn実行は MDL Engine が行う。
+        if soft_cap_reached:
+            continue
 
----
+        species = determine_species(unit)
 
-### 1.3 cap との関係
+        spawn(species)
 
-ID: BD-REPRO-012
+<<<CODEBLOCK END>>>
 
-繁殖イベントは  
-`03_PopulationControl.md` に定義された soft cap の影響を受ける。
+制約:
 
-- cap 到達時、spawn decision は抑止され得る
-- 繁殖イベント自体は無効化してはならない
-
----
-
-### 1.4 評価単位
-
-ID: BD-REPRO-013
-
-繁殖イベントは **親個体を評価単位**として処理される。
-
-- 変異判定は親ごとに1回
-- 同一イベント内で複数回の変異判定は禁止
+- 繁殖判定は **unit 単位**
+- 1回の繁殖で spawn は **最大1体**
+- spawn 実行は **MDL Engine が担当**
 
 ---
 
-### 1.5 単親由来
+# 3. Spawn Decision
 
-ID: BD-REPRO-014
-
-本統合仕様では繁殖イベントは  
-**単親由来のみ**を扱う。
-
----
-
-### 1.6 不変条件
-
-ID: BD-REPRO-015
-
-以下を不変条件とする。
-
-- 1イベントにつき spawn は最大1体
-- spawn decision は idempotent であってはならない
-- 親1体につき変異判定は最大1回
-
----
-
-# 2. Spawn 種決定
-
-### 2.1 基本原則
-
-ID: BD-REPRO-020
-
-spawn種は以下の順序で決定される。
-
-1. 同種継承
-2. 変異判定
-3. 進化ルート評価
-
-spawn実行は MDL Engine が行う。
-
----
-
-### 2.2 spawn可能条件
-
-ID: BD-REPRO-021
-
-spawn decision は以下を満たす場合のみ成立する。
-
-- 親個体が繁殖対象
-- soft cap によって抑止されていない
-- spawn対象種が存在する
-
----
-
-### 2.3 spawn抑止
-
-ID: BD-REPRO-022
-
-以下の場合 spawn は行われない。
-
-- soft cap 到達
-- 親個体が繁殖対象外
-- spawn対象種が存在しない
-
----
-
-# 3. 同種継承
-
-ID: BD-REPRO-031
-
-spawn種は原則として親個体の種別を継承する。
-
-変異が成立しない限り  
-spawn種は親種と同一となる。
-
----
-
-# 4. 変異判定
-
-### 4.1 評価単位
-
-ID: BD-REPRO-040
-
-変異判定は親個体ごとに1回のみ行う。
-
----
-
-### 4.2 変異条件
-
-ID: BD-REPRO-041
-
-変異判定は以下条件を満たす場合のみ行う。
-
-- 親種が変異可能
-- evo ≥ 変異閾値
-
----
-
-### 4.3 変異率
-
-ID: BD-REPRO-042
-
-変異率は進化度に依存する。
-
-- evo < threshold → 0%
-- evo ≥ threshold → 10% 開始
-- evo = 1.0 → 30%
-
----
-
-### 4.4 線形補間
-
-ID: BD-REPRO-043
-
-threshold から evo=1.0 まで  
-変異率は線形補間で増加する。
-
----
-
-### 4.5 変異成立
-
-ID: BD-REPRO-044
-
-変異成立時
-
-- spawn種は変異先テーブルから抽選
-- 抽選は1回のみ
-
----
-
-### 4.6 変異不成立
-
-ID: BD-REPRO-045
-
-変異不成立時  
-spawn種は同種継承を適用する。
-
----
-
-# 5. 正統進化
-
-### 5.1 small → medium
-
-ID: BD-REPRO-052
-
-条件
-
-- 親種 small
-- evo ≥ 0.25
-
----
-
-### 5.2 medium → big
-
-ID: BD-REPRO-053
-
-条件
-
-- 親種 medium
-- evo ≥ 0.50
-
----
-
-### 5.3 big → behemoth
-
-ID: BD-REPRO-054
-
-条件
-
-- 親種 big
-- evo ≥ 0.75
-- behemoth 種が存在する
-
----
-
-# 6. 派生進化
-
-### 6.1 派生進化の位置づけ
-
-ID: BD-REPRO-060
-
-派生進化は副次的進化ルートである。
-
----
-
-### 6.2 派生進化条件
-
-ID: BD-REPRO-061
-
-派生種が存在する場合のみ有効。
-
----
-
-### 6.3 主系統 → 派生系
-
-ID: BD-REPRO-062
-
-条件
-
-- 親種 medium
-- evo ≥ 0.85
-
----
-
-# 7. 変異先テーブル
-
-ID: BD-REPRO-070
-
-変異成立時のみ参照する。
-
-複数候補が存在する場合
-
-- テーブル抽選
-- 抽選は1回
-
----
-
-# 8. 繁殖対象外
-
-ID: BD-REPRO-080
-
-以下の個体は繁殖対象外。
-
-- gigantic 系
-- crazy-king 系
-- その他 FATAL 系
-
----
-
-# 9. Spawn Decision
-
-ID: BD-REPRO-090
+ID: BD-REPRO-DECISION
 
 BD Provider は以下を返す。
 
+<<<CODEBLOCK START>>>
 
-spawn_entity_name
+SpawnDecisionDTO {
 
+  spawn_entity_name | nil
+  reason
 
-spawn実行は MDL Spawn Engine が担当する。
+}
+
+<<<CODEBLOCK END>>>
+
+spawn_entity_name が `nil` の場合、spawn は行われない。
 
 ---
 
-# 10. 不変条件
+# 4. Evolution Table
 
-ID: BD-REPRO-100
+ID: BD-REPRO-EVOLUTION
 
-以下を不変条件とする。
+進化条件は以下の表で定義する。
 
-- spawn結果は最大1体
-- 変異判定は親1体につき1回
-- deterministic RNG を使用
-- 存在しない種は生成しない
+| Parent Species | Evolution Threshold (evo) | Spawn Species |
+|----------------|---------------------------|---------------|
+| small          | ≥ 0.25                    | medium        |
+| medium         | ≥ 0.50                    | big           |
+| big            | ≥ 0.75                    | behemoth      |
+
+解釈規則:
+
+1. 親種が `Parent Species` に一致する行を評価する。
+2. `evolution_factor` が `Evolution Threshold` を満たす場合、spawn種は `Spawn Species` となる。
+3. 条件を満たさない場合、spawn種は親種を継承する。
+
+---
+
+# 5. Mutation Table
+
+ID: BD-REPRO-MUTATION
+
+変異条件は以下の表で定義する。
+
+| Parent Species Group           | Evolution Threshold (evo) | Mutation Target Species Group |
+|--------------------------------|---------------------------|--------------------------------|
+| manis medium demolisher 系    | ≥ 0.25                    | manis small speedstar 系      |
+| manis big demolisher 系       | ≥ 0.50                    | manis medium speedstar 系     |
+| manis behemoth demolisher 系  | ≥ 0.75                    | manis big speedstar 系        |
+
+解釈規則:
+
+1. 親種が `Parent Species Group` に属する場合、本表を評価する。
+2. `evolution_factor` が `Evolution Threshold` を満たす場合、mutation 判定を行う。
+3. mutation が成立した場合、spawn種は `Mutation Target Species Group` から選択する。
+4. mutation が成立しない場合、通常の進化ルールを適用する。
+
+---
+
+# 6. Determinism
+
+ID: BD-REPRO-DETERMINISM
+
+繁殖判定は deterministic execution を保証する。
+
+乱数は以下を seed とする。
+
+- `ctx.rng_material`
+
+---
+
+# 7. Non Goals
+
+ID: BD-REPRO-NONGOAL
+
+本仕様書は以下を扱わない。
+
+- spawn placement
+- entity create
+- job scheduling
+- world scan
+
+これらは **MDL / MJL Engine の責務**である。
