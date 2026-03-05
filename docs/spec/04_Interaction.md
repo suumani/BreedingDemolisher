@@ -1,4 +1,5 @@
 # Interaction — Breeding Demolisher
+`__BreedingDemolisher__/docs/spec/04_Interaction.md`
 
 ## 0. 本章の位置づけ
 

@@ -1,4 +1,5 @@
 # Population Control — Breeding Demolisher (MDL Integrated)
+`__BreedingDemolisher__/docs/spec/03_PopulationControl.md`
 
 Status: Draft (Revised for MDL Integration)  
 Scope: BreedingDemolisher soft population control logic  

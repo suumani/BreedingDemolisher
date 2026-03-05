@@ -1,5 +1,5 @@
 # Observability Specification — Breeding Demolisher
-`docs/SystemSpecification/90_Observability.md`
+`__BreedingDemolisher__/docs/spec/90_Observability.md`
 
 **Version:** v1.0 (confirmed)  
 **Scope:** Breeding Demolisher  

@@ -1,5 +1,5 @@
 # System Specification Overview — Breeding Demolisher
-`docs/SystemSpecification/00_Overview.md`
+`__BreedingDemolisher__/docs/spec/00_Overview.md`
 
 **Version:** v1.0 (confirmed)  
 **Scope:** Breeding Demolisher

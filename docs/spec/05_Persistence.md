@@ -1,5 +1,5 @@
 # Persistence — Breeding Demolisher
-`docs/SystemSpecification/05_Persistence.md`
+`__BreedingDemolisher__/docs/spec/05_Persistence.md`
 
 **Version:** v0.1 (draft)  
 **Scope:** Breeding Demolisher

@@ -1,4 +1,5 @@
 # Core Lifecycle — Breeding Demolisher
+`__BreedingDemolisher__/docs/spec/01_CoreLifecycle.md`
 
 ## 0. 本章の位置づけ
 - 本章は、Breeding Demolisher が扱う「デモリッシャー個体」の
