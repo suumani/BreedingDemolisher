@@ -1,432 +1,215 @@
-# Population Control — Breeding Demolisher
+# Population Control — Breeding Demolisher (MDL Integrated)
 
-## 0. 本章の位置づけ
-
-**ID: BD-POP-000**
-
-本章は、Breeding Demolisher における  
-**個体数制御（Population Control）**の仕様を定義する。
-
-対象は「繁殖・追加によって増える圧力」の制御であり、
-
-- ゲームのパフォーマンス（UPS）を安定させること
-- 長時間プレイや広大マップにおいても、
-  繁殖イベントが完全に停止しないようにすること
-
-を主目的とする。
-
-卵生成・変異確率・進化ルートそのものは  
-本章の対象外とし、`02_Reproduction.md` に委譲する。
+Status: Draft (Revised for MDL Integration)  
+Scope: BreedingDemolisher soft population control logic  
+Related:
+- MDL-ARCH-000 (MDL Architecture — Demolisher Core System)
+- MDL-POP-000 (MDL Population Observation Specification)
+- MDL-SPAWN-000 (MDL Spawn Engine Specification)
+- BD-REPRO-000 (Breeding Demolisher — Reproduction)
 
 ---
 
-## 1. 個体数制御（cap）の目的
+# 0. 本章の位置づけ
 
-### 1.1 cap の導入理由
+ID: BD-POP-000
 
-**ID: BD-POP-001**
+本章は Breeding Demolisher における  
+**増殖圧力の制御（soft population control）** を定義する。
 
-cap は、無制限な増殖によって生じる以下の問題を防ぐために導入される。
+本章は以下を前提とする。
 
-- デモリッシャー個体数増加による UPS 低下
-- 未開拓領域を含むセーブデータでの処理負荷増大
-- 長期プレイにおけるゲーム進行の破綻
+- spawn実行は **MDL Spawn Engine** が行う
+- population観測は **MDL Population Observation** が行う
+- 本章は **soft cap のロジックのみ定義する**
 
----
+本章は以下を扱わない。
 
-### 1.2 cap 設計における最重要原則
-
-**ID: BD-POP-002**
-
-cap は  
-**「繁殖・追加コンテンツとして増えるべき対象」を抑止するためのものであり、  
-標準的なマップ生成・開拓によって自然配置されるデモリッシャーの存在を妨げてはならない。**
-
-この原則に基づき、  
-cap 判定に用いる個体数（counted population）は、  
-単純な「存在個体数」とは異なる定義を持つ。
+- spawn execution
+- population observation
+- hard cap（MDL安全装置）
 
 ---
 
-## 2. cap 判定に用いる個体数（counted population）
+# 1. 個体数制御の目的
 
-### 2.1 counted population の定義
+ID: BD-POP-001
 
-**ID: BD-POP-010**
+soft cap は以下の目的で導入される。
 
-counted population とは、  
-Breeding Demolisher が cap 判定に用いる **有効個体数**である。
+- 過剰な増殖圧力を抑える
+- ゲーム進行に応じて増殖強度を調整する
+- 長期プレイにおいてバランスを維持する
 
-以下の合算として定義される。
-
-- サーフェイス上に存在する **物理デモリッシャー**
-- Breeding Demolisher 自身が管理する **仮想デモリッシャー**
+soft cap は **増殖圧力のみを抑制する装置**である。
 
 ---
 
-### 2.2 cap 判定から除外される個体
+# 2. Population Model
 
-**ID: BD-POP-011**
+ID: BD-POP-010
 
-以下の条件をすべて満たす個体は、  
-counted population の計算から **除外**される。
+soft cap 判定に使用する population は  
+**MDL Population Observation** が提供する。
 
-- デモリッシャーの種別が **標準3種（small / medium / big）**である  
-- かつ quality が **`nil` または `normal`** である
 
-これらは、
+counted_population
 
-- マップ開拓により自然配置されるオリジナル個体
-- 本 Mod が防ぐ対象でも、制御すべき対象でもない
 
-ためである。
+counted_population は以下を除外した物理個体数である。
 
----
 
-### 2.3 除外されない標準3種
+species ∈ {small, medium, big}
+quality ∈ {nil, normal}
 
-**ID: BD-POP-012**
 
-以下の場合、標準3種であっても  
-**counted population に含める**。
+理由
 
-- quality が `normal` 以外にカスタマイズされている場合
-- 本 Mod または関連 Mod により明示的に生成された個体である場合
+- 自然配置個体を増殖制御対象から除外するため
 
 ---
 
-### 2.4 本 Mod 由来個体の扱い
+# 3. Evolution-based Cap
 
-**ID: BD-POP-013**
+ID: BD-POP-020
 
-以下の個体は、すべて counted population に含める。
+soft cap は進化度（evolution factor）に応じて変化する。
 
-- manis-small / manis-medium / manis-big
-- 本 Mod が生成・管理する派生種・上位種
-- 本 Mod が管理する仮想デモリッシャー
-
----
-
-### 2.5 他 Mod 管理の仮想デモリッシャー
-
-**ID: BD-POP-014**
-
-他 Mod が独自に管理する仮想デモリッシャーは、  
-設計上 **counted population から除外**する。
-
-これは、
-
-- データ構造および責務境界の不透明化を防ぐ
-- cap 判定の単純性と安全性を維持する
-
-ための **明示的な仕様**である。
+| evo | cap |
+|---|---|
+| ≤0.05 | 40 |
+| ≤0.15 | 55 |
+| ≤0.25 | 70 |
+| ≤0.35 | 85 |
+| ≤0.45 | 100 |
+| ≤0.55 | 115 |
+| ≤0.65 | 130 |
+| ≤0.75 | 145 |
+| ≤0.85 | 160 |
+| ≤0.95 | 175 |
+| ≤0.98 | 190 |
+| >0.98 | 200 |
 
 ---
 
-## 3. 物理デモリッシャーと仮想デモリッシャーの合算
+# 4. Research Modifier
 
-### 3.1 物理デモリッシャー
-- サーフェイス上に存在する個体の扱い
+ID: BD-POP-030
 
-### 3.2 仮想デモリッシャー
-- storage 管理個体の扱い
-- counted population への加算ルール
+以下の研究が cap に影響する。
 
-### 3.3 他 Mod 管理の仮想デモリッシャー
-- 意図的に除外する理由
-- 境界線の明示
 
----
+manis-demolisher-cap-down
 
-## 4. 進行度（evolution factor）に応じた cap
 
-### 4.1 進行依存 cap の基本方針
+補正
 
-**ID: BD-POP-040**
 
-Breeding Demolisher における cap は、  
-ゲームの進行度（evolution factor）に応じて **段階的に増加**する。
+effective_cap = base_cap × (1 − 0.05 × research_level)
 
-これは、
-
-- 終盤ほど増殖圧力を高めること
-- 初期段階での過剰な負荷を避けること
-
-を両立するための設計である。
-
-※ counted population の再計算頻度・タイミングは、
-本章では規定しない。
-実装およびパフォーマンス要件に応じて決定される。
 
 ---
 
-### 4.2 evolution factor と cap の対応表
+# 5. Cap Floor
 
-**ID: BD-POP-041**
+ID: BD-POP-040
 
-counted population に適用される cap は、  
-現在の evolution factor に応じて以下のテーブルで決定される。
+研究による cap 減少には下限を適用する。
 
-| evolution factor (evo) | cap |
-|---|---:|
-| evo ≤ 0.05 | 40 |
-| evo ≤ 0.15 | 55 |
-| evo ≤ 0.25 | 70 |
-| evo ≤ 0.35 | 85 |
-| evo ≤ 0.45 | 100 |
-| evo ≤ 0.55 | 115 |
-| evo ≤ 0.65 | 130 |
-| evo ≤ 0.75 | 145 |
-| evo ≤ 0.85 | 160 |
-| evo ≤ 0.95 | 175 |
-| evo ≤ 0.98 | 190 |
-| evo > 0.98 | 200 |
 
-※ cap 到達・超過状態の観測方法（ログ・カウンタ）は
-06_Observability.md に委譲する。
+minimum cap = 50
+
+
+目的
+
+- 生態系停止を防ぐ
 
 ---
 
-### 4.3 cap 決定ルール
+# 6. Cap Evaluation
 
-**ID: BD-POP-042**
+ID: BD-POP-050
 
-cap の決定は、以下のルールに従う。
+soft cap 判定は以下で行う。
 
-- 現在の evolution factor に **最初に一致する条件**を適用する
-- evolution factor は **現在値のみ**を参照し、履歴は考慮しない
-- cap は **常に1つの値**として決定される
 
----
+counted_population ≥ effective_cap
 
-### 4.4 cap 変動時の扱い
 
-**ID: BD-POP-043**
-
-evolution factor の変化により cap が増減した場合でも、
-
-- 既存の個体数を即時に調整することは行わない
-- cap は以後の **増加イベント抑止判定**にのみ影響する
-
-cap 変動は **将来の増加可否**を制御するものであり、  
-現在の世界状態を是正するためのものではない。
+この場合 spawn decision は **抑止される**。
 
 ---
 
-### 4.5 evolution factor 取得の前提
+# 7. Cap 到達時の挙動
 
-**ID: BD-POP-044**
+ID: BD-POP-060
 
-本章における evolution factor は、  
-Factorio が提供する **敵進化度（global evolution factor）**を指す。
+soft cap 到達時
 
-- surface ごとの差異は考慮しない
-- 他 Mod による補正が存在する場合でも、
-  本 Mod は取得された値をそのまま使用する
+- spawn decision は SKIP となる
+- 既存個体は変更されない
 
----
-
-## 5. 研究による cap 補正
-
-### 5.1 cap 減少研究の位置づけ
-
-**ID: BD-POP-050**
-
-Breeding Demolisher は、  
-無限研究による **段階的な個体数制御**をサポートする。
-
-本研究は、
-
-- 大規模工場
-- 長期プレイ
-- 高進行度セーブ
-
-において、繁殖圧力を **プレイヤー主導で調整**する手段を提供する。
-
-本研究は必須ではない。
+soft cap は **是正装置ではない**。
 
 ---
 
-### 5.2 対象研究
+# 8. Cap 超過状態
 
-**ID: BD-POP-051**
+ID: BD-POP-070
 
-cap 補正に使用される研究は、以下に限定される。
+counted_population が cap を超過する場合でも
 
-- **manis-demolisher-cap-down**
+- 個体削除
+- despawn
+- forced movement
 
-他の研究効果は、cap 補正に影響してはならない。
+などの是正処理は行わない。
 
----
-
-### 5.3 減少率の適用方式
-
-**ID: BD-POP-052**
-
-研究レベル *n* に対し、  
-cap は以下の補正式で決定される。
-
-- 有効 cap ＝ 基本 cap × (1 − 0.05 × n)
-
-ここで、
-
-- 減少率は **1レベルあたり 5%**
-- 減少は **線形かつ累積**
-- 研究レベルは **現在値のみ**を参照する
-
-ものとする。
+超過状態は許容される。
 
 ---
 
-### 5.4 減少適用のタイミング
+# 9. Cap 復帰
 
-**ID: BD-POP-053**
+ID: BD-POP-080
 
-研究による cap 減少は、
+counted_population が cap 未満になった場合  
+spawn decision は自動的に再開される。
 
-- cap 判定を行う **すべてのタイミング**で適用される
-- 研究完了時に、既存個体数を即時に調整することは行わない
-
-cap 補正は **将来の増加可否判定**にのみ影響する。
+クールダウンは存在しない。
 
 ---
 
-### 5.5 cap 下限（floor）
+# 10. Spawn Engine Integration
 
-**ID: BD-POP-054**
+ID: BD-POP-090
 
-研究による cap 減少には、  
-**下限値（cap floor）**を必ず適用する。
+soft cap 判定は  
+**Provider の spawn decision ロジック内で行われる**。
 
-- 有効 cap の最小値は **50** とする
-- 有効 cap が 50 未満となる場合は、50 に切り上げる
+spawn 実行は MDL Spawn Engine が担当する。
 
-これは、
+処理順
 
-- 繁殖イベントが完全に停止すること
-- 生態系が静止する状態
 
-を防ぐための **明示的な設計**である。
+population snapshot (MDL)
+↓
+provider soft cap evaluation
+↓
+spawn decision
+↓
+spawn execution (MDL)
 
----
-
-### 5.6 cap 補正と超過状態の関係
-
-**ID: BD-POP-055**
-
-研究による cap 減少により、  
-counted population が有効 cap を上回る場合でも、
-
-- 既存個体を削除・変換することは行わない
-- 超過状態は **許容状態**として扱う
-
-この場合、新たな増加イベントのみが抑止される。
 
 ---
 
-## 6. cap 到達時の振る舞い
+# 11. 不変条件
 
-### 6.1 cap 到達時の基本原則
+ID: BD-POP-100
 
-**ID: BD-POP-060**
+以下を不変条件とする。
 
-counted population が cap に到達、または超過している場合、  
-Breeding Demolisher は **新たな増加圧力を発生させない**。
-
-このとき、cap は以下の用途にのみ用いられる。
-
-- 繁殖・追加イベントの **抑止判定**
-- 将来の増加可否を判断するための **状態指標**
-
----
-
-### 6.2 cap 到達時に「起きてはならないこと」
-
-**ID: BD-POP-061**
-
-cap 到達時、以下の挙動を **行ってはならない**。
-
-- 既存の物理デモリッシャーを削除する
-- 既存個体を強制的に despawn / virtualize する
-- 既存個体の品質・種別・進化段階を変更する
-- cap を理由に移動制御（強制移動・掃除）を発動する
-
-cap は **抑止装置であり、是正装置ではない**。
-
----
-
-### 6.3 抑止される対象イベント
-
-**ID: BD-POP-062**
-
-cap 到達時に抑止されるのは、以下の **増加イベント**に限られる。
-
-- 自然繁殖による卵生成
-- ペット繁殖による卵生成
-- その他、本 Mod が「追加個体」を生成する処理
-
----
-
-### 6.4 抑止されない挙動
-
-**ID: BD-POP-063**
-
-cap 到達時であっても、以下の挙動は **通常どおり継続**される。
-
-- 既存デモリッシャーの行動・戦闘・移動
-- 撃破・死亡・卵ドロップ（既存仕様に基づく）
-- 仮想デモリッシャーの実体化  
-  （ただし、実体化後は counted population に加算される）
-
----
-
-### 6.5 cap 超過状態の扱い
-
-**ID: BD-POP-064**
-
-cap 超過状態は **異常ではなく、許容状態**として扱う。
-
-- cap は「厳密な上限」ではない
-- cap 超過を是正するための強制処理は行わない
-- 超過状態では、新たな増加イベントのみが抑止される
-
----
-
-### 6.6 cap 復帰条件
-
-**ID: BD-POP-065**
-
-counted population が cap を下回った場合、  
-抑止されていた増加イベントは **自動的に再開**される。
-
-復帰に際し、
-
-- 追加補正
-- クールダウン
-- 強制再評価
-
-などは行わない。
-
----
-
-## （参考）設計意図メモ
-
-※本節は仕様ではない  
-※DesignNotes 相当
-
-- cap は「生態系の天井」ではなく「圧力のブレーキ」
-- 既存世界を壊さず、未来の増殖だけを抑える
-
----
-
-## 7. Population Control に関する不変条件
-
-- counted population の考え方を崩さないこと
-- 標準3種自然配置を阻害しないこと
-- 他 Mod との共存前提
-
----
-
-## 8. 本章の変更ルール
-- 本章変更が与える影響範囲
-- Reproduction / CoreLifecycle との再確認事項
+- 自然配置の標準3種は増殖制御対象ではない
+- soft cap は spawn decision のみ抑止する
+- 既存個体を変更しない
+- cap 超過は許容される
