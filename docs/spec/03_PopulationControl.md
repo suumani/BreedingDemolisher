@@ -1,216 +1,201 @@
-# Population Control — Breeding Demolisher (MDL Integrated)
+# Population Control — Breeding Demolisher
 `__BreedingDemolisher__/docs/spec/03_PopulationControl.md`
 
-Status: Draft (Revised for MDL Integration)  
-Scope: BreedingDemolisher soft population control logic  
+Status: Active  
+Scope: Territory and surface population control
+
 Related:
-- MDL-ARCH-000 (MDL Architecture — Demolisher Core System)
-- MDL-POP-000 (MDL Population Observation Specification)
-- MDL-SPAWN-000 (MDL Spawn Engine Specification)
-- BD-REPRO-000 (Breeding Demolisher — Reproduction)
+- BD-CORE-000 (Core Lifecycle)
+- BD-REPRO-000 (Reproduction)
 
 ---
 
-## 0. 本章の位置づけ
+## 1. 本仕様書の位置づけ
 
 ID: BD-POP-000
 
-本章は Breeding Demolisher における  
-**増殖圧力の制御（soft population control）** を定義する。
+本仕様書は Breeding Demolisher における  
+**デモリッシャー個体数管理（Population Control）**を定義する。
 
-本章は以下を前提とする。
+Population Control の目的は
 
-- spawn実行は **MDL Spawn Engine** が行う
-- population観測は **MDL Population Observation** が行う
-- 本章は **soft cap のロジックのみ定義する**
+- territory 内個体数の制御
+- surface 全体個体数の制御
+- reproduction による過剰生成の防止
 
-本章は以下を扱わない。
-
-- spawn execution
-- population observation
-- hard cap（MDL安全装置）
+である。
 
 ---
 
-## 1. 個体数制御の目的
-
-ID: BD-POP-001
-
-soft cap は以下の目的で導入される。
-
-- 過剰な増殖圧力を抑える
-- ゲーム進行に応じて増殖強度を調整する
-- 長期プレイにおいてバランスを維持する
-
-soft cap は **増殖圧力のみを抑制する装置**である。
-
----
-
-## 2. Population Model
+## 2. Population Scope
 
 ID: BD-POP-010
 
-soft cap 判定に使用する population は  
-**MDL Population Observation** が提供する。
+population は以下の2つのスコープで管理される。
 
-
-counted_population
-
-
-counted_population は以下を除外した物理個体数である。
-
-
-species ∈ {small, medium, big}
-quality ∈ {nil, normal}
-
-
-理由
-
-- 自然配置個体を増殖制御対象から除外するため
+- territory population
+- surface population
 
 ---
 
-## 3. Evolution-based Cap
+## 3. Territory Population
 
 ID: BD-POP-020
 
-soft cap は進化度（evolution factor）に応じて変化する。
+territory population は
 
-| evo | cap |
-|---|---|
-| ≤0.05 | 40 |
-| ≤0.15 | 55 |
-| ≤0.25 | 70 |
-| ≤0.35 | 85 |
-| ≤0.45 | 100 |
-| ≤0.55 | 115 |
-| ≤0.65 | 130 |
-| ≤0.75 | 145 |
-| ≤0.85 | 160 |
-| ≤0.95 | 175 |
-| ≤0.98 | 190 |
-| >0.98 | 200 |
+<<<CODEBLOCK START>>>
+population(territory) =
+  count(territory.units)
+<<<CODEBLOCK END>>>
+
+で定義される。
+
+count 対象は
+
+- Breeding Demolisher 管理対象 entity
+- territory に所属する physical entity
+
+である。
 
 ---
 
-## 4. Research Modifier
+## 4. Surface Population
+
+ID: BD-POP-025
+
+surface population は
+
+<<<CODEBLOCK START>>>
+population(surface) =
+  count(all managed demolishers on surface)
+<<<CODEBLOCK END>>>
+
+で定義される。
+
+対象は
+
+- Breeding Demolisher が管理する entity
+- 指定 surface 上のすべての個体
+
+である。
+
+---
+
+## 5. Population Caps
 
 ID: BD-POP-030
 
-以下の研究が cap に影響する。
+Breeding Demolisher は以下の population cap を持つ。
 
+- territory cap = **6**
+- surface cap = **200**
 
-manis-demolisher-cap-down
+これらは
 
+- reproduction spawn
+- Interaction spawn（例: pet reproduction）
 
-補正
-
-
-effective_cap = base_cap × (1 − 0.05 × research_level)
-
+の両方に適用される。
 
 ---
 
-## 5. Cap Floor
+## 6. Spawn Suppression
 
 ID: BD-POP-040
 
-研究による cap 減少には下限を適用する。
+spawn は以下の条件を満たす場合、抑止される。
 
+<<<CODEBLOCK START>>>
 
-minimum cap = 50
+if population(territory) >= 6:
+    suppress spawn
 
+if population(surface) >= 200:
+    suppress spawn
 
-目的
+<<<CODEBLOCK END>>>
 
-- 生態系停止を防ぐ
+いずれかの cap を満たした場合  
+spawn は実行してはならない。
 
 ---
 
-## 6. Cap Evaluation
+## 7. Spawn Evaluation Timing
+
+ID: BD-POP-045
+
+cap 判定は
+
+**spawn 実行直前**
+
+に行う。
+
+そのため
+
+- 同一 evaluation cycle 内でも
+- 先行 spawn によって cap が満たされた場合
+
+後続 spawn は suppress される。
+
+---
+
+## 8. Population Update
 
 ID: BD-POP-050
 
-soft cap 判定は以下で行う。
+population は以下のイベントで更新される。
 
+### Spawn
 
-counted_population ≥ effective_cap
+<<<CODEBLOCK START>>>
+territory_population += 1
+surface_population += 1
+<<<CODEBLOCK END>>>
 
+### Death
 
-この場合 spawn decision は **抑止される**。
+<<<CODEBLOCK START>>>
+territory_population -= 1
+surface_population -= 1
+<<<CODEBLOCK END>>>
 
 ---
 
-## 7. Cap 到達時の挙動
+## 9. Deterministic Behavior
 
 ID: BD-POP-060
 
-soft cap 到達時
+Population Control は
 
-- spawn decision は SKIP となる
-- 既存個体は変更されない
+- deterministic execution
+- multiplayer determinism
 
-soft cap は **是正装置ではない**。
+を保証する。
+
+population 判定は
+
+- reproduction evaluation
+- spawn execution
+
+の両段階で一貫した状態を参照する。
 
 ---
 
-## 8. Cap 超過状態
+## 10. Non Goals
 
 ID: BD-POP-070
 
-counted_population が cap を超過する場合でも
+本仕様書は以下を扱わない。
 
-- 個体削除
-- despawn
-- forced movement
+- reproduction probability
+- spawn entity selection
+- movement
+- combat behavior
 
-などの是正処理は行わない。
+これらは
 
-超過状態は許容される。
+- Reproduction
+- Interaction
 
----
-
-## 9. Cap 復帰
-
-ID: BD-POP-080
-
-counted_population が cap 未満になった場合  
-spawn decision は自動的に再開される。
-
-クールダウンは存在しない。
-
----
-
-## 10. Spawn Engine Integration
-
-ID: BD-POP-090
-
-soft cap 判定は  
-**Provider の spawn decision ロジック内で行われる**。
-
-spawn 実行は MDL Spawn Engine が担当する。
-
-処理順
-
-
-population snapshot (MDL)
-↓
-provider soft cap evaluation
-↓
-spawn decision
-↓
-spawn execution (MDL)
-
-
----
-
-## 11. 不変条件
-
-ID: BD-POP-100
-
-以下を不変条件とする。
-
-- 自然配置の標準3種は増殖制御対象ではない
-- soft cap は spawn decision のみ抑止する
-- 既存個体を変更しない
-- cap 超過は許容される
+の責務である。

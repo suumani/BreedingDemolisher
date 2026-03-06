@@ -2,9 +2,10 @@
 `__BreedingDemolisher__/docs/spec/02_Reproduction.md`
 
 Status: Draft  
-Scope: Demolisher reproduction decision logic  
+Scope: Demolisher reproduction algorithm
+
 Related:
-- MDL-PROVIDER-000 (MDL Provider Contract)
+- BD-CORE-000 (Core Lifecycle)
 - BD-POP-000 (Population Control)
 
 ---
@@ -14,118 +15,178 @@ Related:
 ID: BD-REPRO-000
 
 本仕様書は BreedingDemolisher における  
-**繁殖判定アルゴリズム (spawn decision)** を定義する。
+**デモリッシャー自然生成アルゴリズム（reproduction）**を定義する。
 
-spawn 実行は **MDL Engine** が担当する。  
-本仕様書は **spawn decision のみ**を扱う。
+reproduction は
+
+- territory 単位
+- unit 単位判定
+- territory 内部イベント
+
+として実行される。
+
+spawn は
+
+- reproduction 判定
+- population control
+
+を満たした場合に **Breeding Demolisher が直接実行する。**
 
 ---
 
-## 2. Reproduction Algorithm
+## 2. Job Execution Model
+
+ID: BD-REPRO-010
+
+reproduction は  
+**TJC (ManisTotalJobController) によって駆動される job** として実行される。
+
+Breeding Demolisher は
+
+- job scheduler
+- job queue
+
+を持たない。
+
+TJC が
+
+- planning cycle
+- execution step dispatch
+
+を担当する。
+
+---
+
+## 3. Reproduction Scope
+
+ID: BD-REPRO-020
+
+reproduction は
+
+**Vulcanus territory**
+
+を対象とする。
+
+各 territory 内の **unit** が  
+reproduction 判定対象となる。
+
+---
+
+## 4. Reproduction Algorithm
 
 ID: BD-REPRO-CORE
 
-繁殖は以下のアルゴリズムで行う。
+reproduction は以下のアルゴリズムで実行される。
 
 <<<CODEBLOCK START>>>
 
-every 10 minutes:
+for each territory:
 
-  enumerate Vulcanus territories
+  units = territory.units
 
-  for each territory worker:
+  for unit in units:
 
-    units = territory.segmented_units
+      if reproduction_roll(unit) is false:
+          continue
 
-    for unit in units:
+      if population_soft_cap_reached(territory):
+          continue
 
-        if reproduction_roll(unit) is false:
-            continue
+      entity_name = determine_spawn_entity(unit)
 
-        if soft_cap_reached:
-            continue
-
-        species = determine_species(unit)
-
-        spawn(species)
+      spawn_in_territory(territory, entity_name)
 
 <<<CODEBLOCK END>>>
 
 制約:
 
-- 繁殖判定は **unit 単位**
-- 1回の繁殖で spawn は **最大1体**
-- spawn 実行は **MDL Engine が担当**
+- reproduction 判定は **unit 単位**
+- 1回の判定で spawn は **最大1体**
+- spawn は **territory 内部イベント**
 
 ---
 
-## 3. Spawn Decision
+## 5. Reproduction Roll
 
-ID: BD-REPRO-DECISION
+ID: BD-REPRO-030
 
-BD Provider は以下を返す。
+各 unit は reproduction 判定を行う。
 
 <<<CODEBLOCK START>>>
 
-SpawnDecisionDTO {
-
-  spawn_entity_name | nil
-  reason
-
-}
+reproduction_roll(unit)
 
 <<<CODEBLOCK END>>>
 
-spawn_entity_name が `nil` の場合、spawn は行われない。
+roll が失敗した場合  
+spawn は行われない。
 
 ---
 
-## 4. Evolution Table
+## 6. Spawn Entity Determination
 
-ID: BD-REPRO-EVOLUTION
+ID: BD-REPRO-040
+
+spawn される entity は  
+**親 unit の entity name と evolution factor** によって決定される。
+
+spawn entity は  
+**Factorio entity name** として決定される。
+
+---
+
+## 7. Evolution Table
+
+ID: BD-REPRO-050
 
 進化条件は以下の表で定義する。
 
-| Parent Species | Evolution Threshold (evo) | Spawn Species |
-|----------------|---------------------------|---------------|
-| small          | ≥ 0.25                    | medium        |
-| medium         | ≥ 0.50                    | big           |
-| big            | ≥ 0.75                    | behemoth      |
+| Parent Entity | Evolution Threshold | Spawn Entity |
+|---|---|---|
+| manis-small-demolisher | ≥ 0.25 | manis-medium-demolisher |
+| manis-medium-demolisher | ≥ 0.50 | manis-big-demolisher |
+| manis-big-demolisher | ≥ 0.75 | manis-behemoth-demolisher |
 
 解釈規則:
 
-1. 親種が `Parent Species` に一致する行を評価する。
-2. `evolution_factor` が `Evolution Threshold` を満たす場合、spawn種は `Spawn Species` となる。
-3. 条件を満たさない場合、spawn種は親種を継承する。
+1. 親 entity name に一致する行を評価する
+2. `evolution_factor` が threshold を満たす場合  
+   spawn entity は `Spawn Entity`
+3. 条件を満たさない場合  
+   spawn entity は親 entity を継承する
 
 ---
 
-## 5. Mutation Table
+## 8. Mutation Table
 
-ID: BD-REPRO-MUTATION
+ID: BD-REPRO-060
 
-変異条件は以下の表で定義する。
+mutation 条件は以下の表で定義する。
 
-| Parent Species Group           | Evolution Threshold (evo) | Mutation Target Species Group |
-|--------------------------------|---------------------------|--------------------------------|
-| manis medium demolisher 系    | ≥ 0.25                    | manis small speedstar 系      |
-| manis big demolisher 系       | ≥ 0.50                    | manis medium speedstar 系     |
-| manis behemoth demolisher 系  | ≥ 0.75                    | manis big speedstar 系        |
+| Parent Entity | Evolution Threshold | Mutation Entity |
+|---|---|---|
+| manis-medium-demolisher | ≥ 0.25 | manis-small-speedstar |
+| manis-big-demolisher | ≥ 0.50 | manis-medium-speedstar |
+| manis-behemoth-demolisher | ≥ 0.75 | manis-big-speedstar |
 
 解釈規則:
 
-1. 親種が `Parent Species Group` に属する場合、本表を評価する。
-2. `evolution_factor` が `Evolution Threshold` を満たす場合、mutation 判定を行う。
-3. mutation が成立した場合、spawn種は `Mutation Target Species Group` から選択する。
-4. mutation が成立しない場合、通常の進化ルールを適用する。
+1. 親 entity が一致する行を評価する
+2. `evolution_factor` が threshold を満たす場合  
+   mutation 判定を行う
+3. mutation が成立した場合  
+   spawn entity は `Mutation Entity` となる
+4. mutation が成立しない場合  
+   evolution table を適用する
 
 ---
 
-## 6. Determinism
+## 9. Determinism
 
-ID: BD-REPRO-DETERMINISM
+ID: BD-REPRO-070
 
-繁殖判定は deterministic execution を保証する。
+reproduction 判定は  
+**deterministic execution** を保証する。
 
 乱数は以下を seed とする。
 
@@ -133,15 +194,21 @@ ID: BD-REPRO-DETERMINISM
 
 ---
 
-## 7. Non Goals
+## 10. Non Goals
 
-ID: BD-REPRO-NONGOAL
+ID: BD-REPRO-080
 
 本仕様書は以下を扱わない。
 
-- spawn placement
-- entity create
-- job scheduling
-- world scan
+- spawn placement algorithm
+- pathfinding
+- demolisher movement
+- combat behavior
+- player egg hatch
 
-これらは **MDL / MJL Engine の責務**である。
+これらは
+
+- Movement system
+- Interaction system
+
+の責務である。
