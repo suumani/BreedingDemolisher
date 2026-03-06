@@ -11,7 +11,7 @@ Related:
 
 ---
 
-# 0. 本章の位置づけ
+## 0. 本章の位置づけ
 
 ID: BD-POP-000
 
@@ -32,7 +32,7 @@ ID: BD-POP-000
 
 ---
 
-# 1. 個体数制御の目的
+## 1. 個体数制御の目的
 
 ID: BD-POP-001
 
@@ -46,7 +46,7 @@ soft cap は **増殖圧力のみを抑制する装置**である。
 
 ---
 
-# 2. Population Model
+## 2. Population Model
 
 ID: BD-POP-010
 
@@ -70,7 +70,7 @@ quality ∈ {nil, normal}
 
 ---
 
-# 3. Evolution-based Cap
+## 3. Evolution-based Cap
 
 ID: BD-POP-020
 
@@ -93,7 +93,7 @@ soft cap は進化度（evolution factor）に応じて変化する。
 
 ---
 
-# 4. Research Modifier
+## 4. Research Modifier
 
 ID: BD-POP-030
 
@@ -111,7 +111,7 @@ effective_cap = base_cap × (1 − 0.05 × research_level)
 
 ---
 
-# 5. Cap Floor
+## 5. Cap Floor
 
 ID: BD-POP-040
 
@@ -127,7 +127,7 @@ minimum cap = 50
 
 ---
 
-# 6. Cap Evaluation
+## 6. Cap Evaluation
 
 ID: BD-POP-050
 
@@ -141,7 +141,7 @@ counted_population ≥ effective_cap
 
 ---
 
-# 7. Cap 到達時の挙動
+## 7. Cap 到達時の挙動
 
 ID: BD-POP-060
 
@@ -154,7 +154,7 @@ soft cap は **是正装置ではない**。
 
 ---
 
-# 8. Cap 超過状態
+## 8. Cap 超過状態
 
 ID: BD-POP-070
 
@@ -170,7 +170,7 @@ counted_population が cap を超過する場合でも
 
 ---
 
-# 9. Cap 復帰
+## 9. Cap 復帰
 
 ID: BD-POP-080
 
@@ -181,7 +181,7 @@ spawn decision は自動的に再開される。
 
 ---
 
-# 10. Spawn Engine Integration
+## 10. Spawn Engine Integration
 
 ID: BD-POP-090
 
@@ -204,7 +204,7 @@ spawn execution (MDL)
 
 ---
 
-# 11. 不変条件
+## 11. 不変条件
 
 ID: BD-POP-100
 

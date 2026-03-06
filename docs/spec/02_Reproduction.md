@@ -9,7 +9,7 @@ Related:
 
 ---
 
-# 1. 本仕様書の位置づけ
+## 1. 本仕様書の位置づけ
 
 ID: BD-REPRO-000
 
@@ -21,7 +21,7 @@ spawn 実行は **MDL Engine** が担当する。
 
 ---
 
-# 2. Reproduction Algorithm
+## 2. Reproduction Algorithm
 
 ID: BD-REPRO-CORE
 
@@ -59,7 +59,7 @@ every 10 minutes:
 
 ---
 
-# 3. Spawn Decision
+## 3. Spawn Decision
 
 ID: BD-REPRO-DECISION
 
@@ -80,7 +80,7 @@ spawn_entity_name が `nil` の場合、spawn は行われない。
 
 ---
 
-# 4. Evolution Table
+## 4. Evolution Table
 
 ID: BD-REPRO-EVOLUTION
 
@@ -100,7 +100,7 @@ ID: BD-REPRO-EVOLUTION
 
 ---
 
-# 5. Mutation Table
+## 5. Mutation Table
 
 ID: BD-REPRO-MUTATION
 
@@ -121,7 +121,7 @@ ID: BD-REPRO-MUTATION
 
 ---
 
-# 6. Determinism
+## 6. Determinism
 
 ID: BD-REPRO-DETERMINISM
 
@@ -133,7 +133,7 @@ ID: BD-REPRO-DETERMINISM
 
 ---
 
-# 7. Non Goals
+## 7. Non Goals
 
 ID: BD-REPRO-NONGOAL
 
