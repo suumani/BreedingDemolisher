@@ -94,7 +94,9 @@ for each territory:
 
       entity_name = determine_spawn_entity(unit)
 
-      spawn_in_territory(territory, entity_name)
+      quality = determine_spawn_quality(unit)
+
+      spawn_in_territory(territory, entity_name, quality)
 
 <<<CODEBLOCK END>>>
 
@@ -132,6 +134,36 @@ spawn される entity は
 
 spawn entity は  
 **Factorio entity name** として決定される。
+
+entity 決定は  
+**quality 決定を含まない。**
+
+---
+
+## 6.5 Spawn Quality Determination
+
+ID: BD-REPRO-045
+
+spawn される demolisher は  
+**entity name とは別に quality を決定する。**
+
+spawn quality は
+
+- reproduction 実行時に決定する
+- deterministic execution でなければならない
+- spawn 実行時に entity とともに適用する
+
+quality の決定は  
+**mutation / evolution による entity 決定とは独立した責務**である。
+
+Quality が有効な場合、spawn quality は  
+仕様で定義された quality rule に従って決定する。
+
+Quality が無効な場合、spawn quality は  
+**normal** とする。
+
+spawn quality の決定結果は  
+**Factorio quality name** として扱う。
 
 ---
 
@@ -191,6 +223,13 @@ reproduction 判定は
 乱数は以下を seed とする。
 
 - `ctx.rng_material`
+
+reproduction に含まれる以下の判定は、  
+すべて deterministic でなければならない。
+
+- reproduction roll
+- mutation roll
+- spawn quality determination
 
 ---
 

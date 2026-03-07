@@ -9,6 +9,7 @@
 --   - territory 内 segmented units 安定ソート
 --   - reproduction roll
 --   - mutation roll
+--   - spawn quality roll
 --   - population suppress 判定
 --   - spawn orchestration
 --   - observability 出力
@@ -19,6 +20,7 @@
 --   - 1 territory step 内では複数 spawn 可
 --   - cap 到達時は territory step を早期打ち切る
 --   - LuaSegmentedUnit の識別は prototype.name を使用する。
+--   - quality rule 自体は domain に委譲する。
 -- ------------------------------------------------------------
 local WildReproductionExecutionService = {}
 
@@ -30,9 +32,10 @@ local TerritoryQueryService = require("scripts.domain.reproduction.TerritoryQuer
 local PopulationControlService = require("scripts.domain.reproduction.PopulationControlService")
 local SpawnEntityResolver = require("scripts.domain.reproduction.SpawnEntityResolver")
 local SpawnPlacementService = require("scripts.domain.reproduction.SpawnPlacementService")
+local SpawnQualityResolver = require("scripts.domain.reproduction.SpawnQualityResolver")
 local SpawnExecutor = require("scripts.domain.reproduction.SpawnExecutor")
 
-local P_MIN = 1 -- 0.05 testmode
+local P_MIN = 0.05
 
 local function resolve_surface(entry)
   if entry == nil then
@@ -101,6 +104,10 @@ local function mutation_roll(parent_unit, evolution_factor)
   end
 
   return DeterministicRandom.random() < p
+end
+
+local function quality_roll()
+  return DeterministicRandom.random()
 end
 
 local function get_unit_sort_key(unit)
@@ -185,11 +192,12 @@ local function log_mutation_success(parent_name, spawned_name, evolution_factor)
   })
 end
 
-local function log_spawn_success(surface_name, spawned_name)
+local function log_spawn_success(surface_name, spawned_name, quality_name)
   Logger.info({
     "[BreedingDemolisher][WILD][Spawn][OK]",
     " surface=", tostring(surface_name),
     " entity_name=", tostring(spawned_name),
+    " quality=", tostring(quality_name),
   })
 end
 
@@ -256,16 +264,22 @@ function WildReproductionExecutionService.execute_step(step_index)
 
         local spawn_position = SpawnPlacementService.resolve_spawn_position(territory, unit, entity_name)
         if spawn_position ~= nil then
+          local quality_name = SpawnQualityResolver.resolve_spawn_quality(
+            evolution_factor,
+            quality_roll()
+          )
+
           local success, _spawned_unit = SpawnExecutor.spawn(
             surface,
             territory,
             entity_name,
             spawn_position,
-            resolve_force_name()
+            resolve_force_name(),
+            quality_name
           )
           if success == true then
             spawned_count = spawned_count + 1
-            log_spawn_success(surface.name, entity_name)
+            log_spawn_success(surface.name, entity_name, quality_name)
           end
         end
       end

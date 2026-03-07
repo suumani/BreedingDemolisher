@@ -7,6 +7,7 @@
 --   - LuaSurface.create_segmented_unit 実行
 --   - territory 所属 wild segmented unit 生成
 --   - position 指定 spawn
+--   - quality 適用
 --   - success / failure 返却
 --
 -- Notes:
@@ -23,9 +24,10 @@ local SpawnExecutor = {}
 --- @param entity_name string
 --- @param spawn_position MapPosition
 --- @param force_name string|nil
+--- @param quality_name string
 --- @return boolean success
 --- @return LuaSegmentedUnit|nil spawned_unit
-function SpawnExecutor.spawn(surface, territory, entity_name, spawn_position, force_name)
+function SpawnExecutor.spawn(surface, territory, entity_name, spawn_position, force_name, quality_name)
   if surface == nil or surface.valid == false then
     error("SpawnExecutor.spawn: valid surface is required")
   end
@@ -38,12 +40,19 @@ function SpawnExecutor.spawn(surface, territory, entity_name, spawn_position, fo
   if spawn_position == nil or type(spawn_position.x) ~= "number" or type(spawn_position.y) ~= "number" then
     error("SpawnExecutor.spawn: valid spawn_position is required")
   end
+  if force_name ~= nil and (type(force_name) ~= "string" or force_name == "") then
+    error("SpawnExecutor.spawn: force_name must be nil or a non-empty string")
+  end
+  if type(quality_name) ~= "string" or quality_name == "" then
+    error("SpawnExecutor.spawn: quality_name must be a non-empty string")
+  end
 
   local unit = surface.create_segmented_unit{
     name = entity_name,
     force = force_name or "enemy",
     territory = territory,
     position = spawn_position,
+    quality = quality_name,
   }
 
   if unit == nil then
