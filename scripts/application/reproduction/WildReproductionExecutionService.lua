@@ -214,9 +214,6 @@ local function execute_unit_spawn_attempt(surface, territory, entry, unit, evolu
   )
 
   local parent_entity_name = SpawnEntityResolver.get_parent_entity_name(unit)
-  if mutation_roll_result == true and entity_name ~= parent_entity_name then
-    log_mutation_success(parent_entity_name, entity_name, evolution_factor)
-  end
 
   local suppress, reason_code = PopulationControlService.should_suppress_spawn(territory, surface)
   if suppress == true then
@@ -243,6 +240,9 @@ local function execute_unit_spawn_attempt(surface, territory, entry, unit, evolu
     quality_id
   )
   if success == true then
+    if mutation_roll_result == true and entity_name ~= parent_entity_name then
+      log_mutation_success(parent_entity_name, entity_name, evolution_factor)
+    end
     log_spawn_success(surface.name, entity_name, quality_id)
     return true, false
   end
