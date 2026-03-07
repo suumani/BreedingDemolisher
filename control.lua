@@ -6,7 +6,6 @@
 
 require("scripts.defines.constant_demolisher_parameters")
 require("scripts.defines.constant_demolisher_traits")
-require("scripts.defines.constant_quality")
 
 require("scripts.common.customparam")
 require("scripts.common.game_print")
