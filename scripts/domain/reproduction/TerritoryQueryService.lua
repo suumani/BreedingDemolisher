@@ -10,13 +10,17 @@
 --   - representative chunk 決定
 --   - representative chunk から territory 再解決
 --   - territory 内 segmented unit 取得
+--   - planning entry DTO 生成
 --
 -- Notes:
 --   - LuaTerritory / LuaChunk を保存してはならない。
 --   - representative chunk は territory.get_chunks() の
 --     辞書順最小 (x, y) を採用する。
+--   - ChunkPositionAndArea は { x, y, area } shape を前提とする。
 -- ------------------------------------------------------------
 local TerritoryQueryService = {}
+
+local WildReproductionPlanEntryDTO = require("scripts.application.reproduction.dto.WildReproductionPlanEntryDTO")
 
 local TARGET_SURFACE_NAME = "vulcanus"
 
@@ -52,10 +56,13 @@ function TerritoryQueryService.get_representative_chunk(territory)
 
   local best = nil
   for _, chunk_info in ipairs(chunks) do
-    local pos = chunk_info.position
-    if pos then
+    if chunk_info and type(chunk_info.x) == "number" and type(chunk_info.y) == "number" then
+      local pos = {
+        x = chunk_info.x,
+        y = chunk_info.y,
+      }
       if best == nil or compare_chunk_pos(pos, best) then
-        best = { x = pos.x, y = pos.y }
+        best = pos
       end
     end
   end
@@ -66,26 +73,37 @@ end
 --- get_sorted_territory_entries
 --- Responsibility:
 ---   target surface 上の territory 一覧を representative chunk 基準で
----   安定ソートし、planning 用 entry を返す。
+---   安定ソートし、planning 用 entry DTO 一覧と統計を返す。
 --- @param surface LuaSurface
---- @return table[]
+--- @return WildReproductionPlanEntryDTO[] entries
+--- @return uint territory_count
+--- @return uint representative_chunk_resolved_count
+--- @return uint representative_chunk_missing_count
 function TerritoryQueryService.get_sorted_territory_entries(surface)
   if not surface or not surface.valid then
-    return {}
+    return {}, 0, 0, 0
   end
 
   local territories = surface.get_territories()
   local entries = {}
+  local territory_count = 0
+  local representative_chunk_resolved_count = 0
+  local representative_chunk_missing_count = 0
 
   for _, territory in ipairs(territories) do
     if territory and territory.valid then
+      territory_count = territory_count + 1
+
       local rep = TerritoryQueryService.get_representative_chunk(territory)
       if rep then
-        entries[#entries + 1] = {
+        representative_chunk_resolved_count = representative_chunk_resolved_count + 1
+        entries[#entries + 1] = WildReproductionPlanEntryDTO.new({
           surface_name = surface.name,
           representative_chunk_x = rep.x,
           representative_chunk_y = rep.y,
-        }
+        })
+      else
+        representative_chunk_missing_count = representative_chunk_missing_count + 1
       end
     end
   end
@@ -100,7 +118,7 @@ function TerritoryQueryService.get_sorted_territory_entries(surface)
     return a.representative_chunk_y < b.representative_chunk_y
   end)
 
-  return entries
+  return entries, territory_count, representative_chunk_resolved_count, representative_chunk_missing_count
 end
 
 --- resolve_territory_from_representative_chunk

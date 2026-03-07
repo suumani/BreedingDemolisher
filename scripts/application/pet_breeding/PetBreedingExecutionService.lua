@@ -15,6 +15,7 @@
 --   - hatch は行わない
 --   - population cap は hatch 時に適用する
 --   - partner 不在時は parthenogenesis を行う
+--   - storage.my_demolishers は辞書 table を許容する
 -- ------------------------------------------------------------
 local PetBreedingExecutionService = {}
 
@@ -23,14 +24,20 @@ local PetBreedingEvaluator = require("scripts.domain.pet_breeding.PetBreedingEva
 local EggDropService = require("scripts.services.EggDropService")
 local NotificationService = require("scripts.services.NotificationService")
 local QualityUtil = require("scripts.util.QualityUtil")
+local CONST_ITEM_NAME = require("scripts.defines.constant_item_name")
 
 local function resolve_pet_by_id(pet_id)
+  if type(pet_id) ~= "string" or pet_id == "" then
+    error("PetBreedingExecutionService.resolve_pet_by_id: pet_id must be a non-empty string")
+  end
+
   local pets = storage.my_demolishers or {}
-  for _, pet in ipairs(pets) do
-    if pet and pet.pet_id == pet_id then
+  for _, pet in pairs(pets) do
+    if type(pet) == "table" and pet.pet_id == pet_id then
       return pet
     end
   end
+
   return nil
 end
 
@@ -53,6 +60,13 @@ local function create_reproduction_customparam(subject_cp, subject_force_name, p
 end
 
 local function emit_egg(subject_entity, child_force_name, egg_customparam)
+  if subject_entity == nil or subject_entity.valid == false then
+    error("PetBreedingExecutionService.emit_egg: valid subject_entity is required")
+  end
+  if egg_customparam == nil then
+    error("PetBreedingExecutionService.emit_egg: egg_customparam is required")
+  end
+
   local item_name = decide_egg_item_name_by_force_name(child_force_name or subject_entity.force.name)
   local item_quality = QualityUtil.to_item_quality_name(egg_customparam:get_quality())
 
@@ -77,6 +91,10 @@ local function consume_breeding_chance(subject_pet, current_stage)
   subject_pet.last_breed_stage = current_stage
 end
 
+--- execute_step
+--- Responsibility:
+---   step_index に対応する 1 pet 分の execution を行う。
+--- @param step_index uint
 function PetBreedingExecutionService.execute_step(step_index)
   if type(step_index) ~= "number" then
     error("PetBreedingExecutionService.execute_step: step_index must be a number")

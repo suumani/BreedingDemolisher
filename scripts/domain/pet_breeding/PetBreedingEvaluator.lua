@@ -21,6 +21,7 @@
 --   - execution step は 1 pet = 1 step
 --   - partner 不在時は parthenogenesis
 --   - growth stage は 20 刻み
+--   - pets は辞書 table を許容する
 -- ------------------------------------------------------------
 local PetBreedingEvaluator = {}
 
@@ -74,8 +75,8 @@ local function find_nearest_partner(pets, subject_pet, subject_entity)
   local best_entity = nil
   local best_d2 = BREED_RANGE_SQ + 1
 
-  for _, candidate_pet in ipairs(pets) do
-    if candidate_pet ~= subject_pet then
+  for _, candidate_pet in pairs(pets) do
+    if type(candidate_pet) == "table" and candidate_pet ~= subject_pet then
       local candidate_cp = candidate_pet.customparam
       if is_mature(candidate_cp) then
         local candidate_entity = get_entity(candidate_cp)
@@ -97,6 +98,12 @@ local function find_nearest_partner(pets, subject_pet, subject_entity)
   return best_pet, best_cp, best_entity
 end
 
+--- evaluate
+--- Responsibility:
+---   subject pet と pets 全体から breeding 結果を決定する。
+--- @param subject_pet table
+--- @param pets table
+--- @return table
 function PetBreedingEvaluator.evaluate(subject_pet, pets)
   if type(subject_pet) ~= "table" then
     error("PetBreedingEvaluator.evaluate: subject_pet must be a table")

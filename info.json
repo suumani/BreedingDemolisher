@@ -13,7 +13,6 @@
     "space-age >= 2.0.0",
     "Manis_lib >= 0.1.9",
     "Manis_definitions >= 0.1.0",
-    "ManisDemolisherLib >= 0.0.1",
     "DemolisherMemoryExtension >= 0.0.1"
   ]
 }

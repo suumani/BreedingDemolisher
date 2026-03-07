@@ -18,6 +18,7 @@
 --   - 1 unit からの生成は最大1体
 --   - 1 territory step 内では複数 spawn 可
 --   - cap 到達時は territory step を早期打ち切る
+--   - LuaSegmentedUnit の識別は prototype.name を使用する。
 -- ------------------------------------------------------------
 local WildReproductionExecutionService = {}
 
@@ -31,7 +32,7 @@ local SpawnEntityResolver = require("scripts.domain.reproduction.SpawnEntityReso
 local SpawnPlacementService = require("scripts.domain.reproduction.SpawnPlacementService")
 local SpawnExecutor = require("scripts.domain.reproduction.SpawnExecutor")
 
-local P_MIN = 0.05
+local P_MIN = 1 -- 0.05 testmode
 
 local function resolve_surface(entry)
   if entry == nil then
@@ -109,6 +110,22 @@ local function get_unit_sort_key(unit)
   return 0
 end
 
+local function get_unit_entity_name(unit)
+  if unit == nil or unit.valid == false then
+    return ""
+  end
+  if unit.prototype == nil then
+    return ""
+  end
+
+  local name = unit.prototype.name
+  if type(name) ~= "string" then
+    return ""
+  end
+
+  return name
+end
+
 local function get_sorted_units(territory)
   local units = TerritoryQueryService.get_segmented_units(territory)
   if units == nil or #units == 0 then
@@ -126,7 +143,7 @@ local function get_sorted_units(territory)
     if ak ~= bk then
       return ak < bk
     end
-    return tostring(a.name or "") < tostring(b.name or "")
+    return get_unit_entity_name(a) < get_unit_entity_name(b)
   end)
 
   return copied
@@ -226,8 +243,9 @@ function WildReproductionExecutionService.execute_step(step_index)
           mutation_roll_result
         )
 
-        if mutation_roll_result == true and entity_name ~= unit.name then
-          log_mutation_success(unit.name, entity_name, evolution_factor)
+        local parent_entity_name = SpawnEntityResolver.get_parent_entity_name(unit)
+        if mutation_roll_result == true and entity_name ~= parent_entity_name then
+          log_mutation_success(parent_entity_name, entity_name, evolution_factor)
         end
 
         local suppress, reason_code = PopulationControlService.should_suppress_spawn(territory, surface)

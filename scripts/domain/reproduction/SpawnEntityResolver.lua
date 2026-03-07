@@ -15,6 +15,7 @@
 --   - mutation 成立率そのものは本クラスで判定しない。
 --   - mutation_roll_result は execution 側から渡される。
 --   - BossMod 依存ゲートを持つ。
+--   - LuaSegmentedUnit の識別は prototype.name を使用する。
 -- ------------------------------------------------------------
 local SpawnEntityResolver = {}
 
@@ -68,10 +69,16 @@ local function get_parent_entity_name(parent_unit)
   if parent_unit == nil then
     error("SpawnEntityResolver: parent_unit is required")
   end
+  if parent_unit.valid == false then
+    error("SpawnEntityResolver: parent_unit must be valid")
+  end
+  if parent_unit.prototype == nil then
+    error("SpawnEntityResolver: parent_unit.prototype is required")
+  end
 
-  local name = parent_unit.name
+  local name = parent_unit.prototype.name
   if type(name) ~= "string" or name == "" then
-    error("SpawnEntityResolver: parent_unit.name must be a non-empty string")
+    error("SpawnEntityResolver: parent_unit.prototype.name must be a non-empty string")
   end
 
   return name
@@ -103,6 +110,15 @@ local function find_evolution_row(parent_entity_name, evolution_factor)
     end
   end
   return nil
+end
+
+--- get_parent_entity_name
+--- Responsibility:
+---   親 segmented unit の prototype 名を返す。
+--- @param parent_unit LuaSegmentedUnit
+--- @return string
+function SpawnEntityResolver.get_parent_entity_name(parent_unit)
+  return get_parent_entity_name(parent_unit)
 end
 
 --- has_mutation_candidate

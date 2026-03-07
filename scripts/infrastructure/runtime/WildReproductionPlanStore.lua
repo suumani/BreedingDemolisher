@@ -11,15 +11,11 @@
 --
 -- Notes:
 --   - 永続 source ではない。
---   - plan entry は最小情報のみ保持する。
---   - entry shape:
---       {
---         surface_name = string,
---         representative_chunk_x = integer,
---         representative_chunk_y = integer,
---       }
+--   - plan entry は ContractDTO のみ保持する。
 -- ------------------------------------------------------------
 local WildReproductionPlanStore = {}
+
+local WildReproductionPlanEntryDTO = require("scripts.application.reproduction.dto.WildReproductionPlanEntryDTO")
 
 local function ensure_root()
   storage.bd = storage.bd or {}
@@ -31,11 +27,27 @@ local function ensure_root()
   return storage.bd.runtime.wild_reproduction_plan
 end
 
+local function copy_entries(entries)
+  local copied = {}
+  for index, entry in ipairs(entries) do
+    copied[index] = entry
+  end
+  return copied
+end
+
+local function validate_entries(entries)
+  for index, entry in ipairs(entries) do
+    if not WildReproductionPlanEntryDTO.is_instance(entry) then
+      error("WildReproductionPlanStore.replace_plan: entry at index " .. tostring(index) .. " must be WildReproductionPlanEntryDTO")
+    end
+  end
+end
+
 --- replace_plan
 --- Responsibility:
 ---   現 cycle の plan を全置換する。
 --- @param cycle_tick uint
---- @param entries table[]
+--- @param entries WildReproductionPlanEntryDTO[]
 function WildReproductionPlanStore.replace_plan(cycle_tick, entries)
   if type(cycle_tick) ~= "number" then
     error("WildReproductionPlanStore.replace_plan: cycle_tick must be a number")
@@ -44,16 +56,18 @@ function WildReproductionPlanStore.replace_plan(cycle_tick, entries)
     error("WildReproductionPlanStore.replace_plan: entries must be a table")
   end
 
+  validate_entries(entries)
+
   local root = ensure_root()
   root.cycle_tick = cycle_tick
-  root.entries = entries
+  root.entries = copy_entries(entries)
 end
 
 --- get_entry
 --- Responsibility:
 ---   step_index に対応する entry を返す。
 --- @param step_index uint
---- @return table|nil
+--- @return WildReproductionPlanEntryDTO|nil
 function WildReproductionPlanStore.get_entry(step_index)
   if type(step_index) ~= "number" then
     error("WildReproductionPlanStore.get_entry: step_index must be a number")

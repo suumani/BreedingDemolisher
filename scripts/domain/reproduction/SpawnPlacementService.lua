@@ -12,6 +12,8 @@
 -- Notes:
 --   - parent 近傍探索は行わない
 --   - 座標は territory 内の generated chunk から選ぶ
+--   - territory.get_chunks() の要素は ChunkPositionAndArea として
+--     x / y を直接持つ shape を前提とする
 -- ------------------------------------------------------------
 local SpawnPlacementService = {}
 
@@ -37,9 +39,15 @@ local function get_generated_chunk_positions(territory)
   end
 
   for _, chunk_info in ipairs(chunks) do
-    local pos = chunk_info.position
-    if pos ~= nil and surface.is_chunk_generated(pos) then
-      generated[#generated + 1] = { x = pos.x, y = pos.y }
+    if chunk_info ~= nil and type(chunk_info.x) == "number" and type(chunk_info.y) == "number" then
+      local chunk_pos = {
+        x = chunk_info.x,
+        y = chunk_info.y,
+      }
+
+      if surface.is_chunk_generated(chunk_pos) then
+        generated[#generated + 1] = chunk_pos
+      end
     end
   end
 

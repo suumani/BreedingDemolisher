@@ -27,6 +27,24 @@ local TARGETS = {
   [PetBreedingTargetMod.get_mod_key()] = PetBreedingTargetMod,
 }
 
+local function dto_ok(reason, detail)
+  return {
+    ok = true,
+    result = "OK",
+    reason = reason,
+    detail = detail,
+  }
+end
+
+local function dto_fail(reason, detail)
+  return {
+    ok = false,
+    result = "FAIL",
+    reason = reason,
+    detail = detail,
+  }
+end
+
 local function get_event_ids()
   if EVENT_IDS ~= nil then
     return EVENT_IDS
@@ -40,11 +58,17 @@ local function get_event_ids()
   return EVENT_IDS
 end
 
-local function log_register(mod_key)
+local function log_info(event_name, dto)
   Logger.info({
-    "[BreedingDemolisher][TJC][Register][OK]",
-    " mod_key=", tostring(mod_key),
+    event = event_name,
+    dto = dto,
   })
+end
+
+local function log_register(mod_key)
+  log_info("BD_TJC_REGISTER_TARGET_MOD", dto_ok("TJC:REGISTER_TARGET_MOD", {
+    mod_key = mod_key,
+  }))
 end
 
 local function raise_planning_count_report(mod_key, count)
@@ -71,6 +95,22 @@ local function raise_execution_done_report(mod_key, step_index)
   })
 end
 
+local function coerce_planning_count(planning_dto)
+  if type(planning_dto) ~= "table" then
+    return 0
+  end
+
+  if type(planning_dto.detail) ~= "table" then
+    return 0
+  end
+
+  if type(planning_dto.detail.count) ~= "number" then
+    return 0
+  end
+
+  return planning_dto.detail.count
+end
+
 local function on_planning_request(event)
   local payload = event
   local target = TARGETS[payload.mod_key]
@@ -78,7 +118,10 @@ local function on_planning_request(event)
     return
   end
 
-  local count = target.handle_planning_request(payload.cycle_tick)
+  local planning_dto = target.handle_planning_request(payload.cycle_tick)
+  local count = coerce_planning_count(planning_dto)
+
+  log_info("BD_TJC_PLANNING_RESULT", planning_dto)
   raise_planning_count_report(payload.mod_key, count)
 end
 
@@ -91,11 +134,19 @@ local function on_execution_request(event)
 
   target.handle_execution_request(payload.step_index)
   raise_execution_done_report(payload.mod_key, payload.step_index)
+
+  log_info("BD_TJC_EXECUTION_DONE", dto_ok("TJC:EXECUTION_DONE", {
+    mod_key = payload.mod_key,
+    step_index = payload.step_index,
+  }))
 end
 
 function BreedingDemolisherTjcGateway.register()
   local ids = get_event_ids()
   if not ids then
+    log_info("BD_TJC_REGISTER_SKIPPED", dto_fail("TJC:EVENT_IDS_UNAVAILABLE", {
+      action = "REGISTER_GATEWAY",
+    }))
     return false
   end
 

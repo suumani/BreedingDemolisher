@@ -11,12 +11,11 @@
 --
 -- Notes:
 --   - 永続 source ではない。
---   - entry shape:
---       {
---         pet_id = string,
---       }
+--   - plan entry は ContractDTO のみ保持する。
 -- ------------------------------------------------------------
 local PetBreedingPlanStore = {}
+
+local PetBreedingPlanEntryDTO = require("scripts.application.pet_breeding.dto.PetBreedingPlanEntryDTO")
 
 local function ensure_root()
   storage.bd = storage.bd or {}
@@ -28,6 +27,27 @@ local function ensure_root()
   return storage.bd.runtime.pet_breeding_plan
 end
 
+local function copy_entries(entries)
+  local copied = {}
+  for index, entry in ipairs(entries) do
+    copied[index] = entry
+  end
+  return copied
+end
+
+local function validate_entries(entries)
+  for index, entry in ipairs(entries) do
+    if not PetBreedingPlanEntryDTO.is_instance(entry) then
+      error("PetBreedingPlanStore.replace_plan: entry at index " .. tostring(index) .. " must be PetBreedingPlanEntryDTO")
+    end
+  end
+end
+
+--- replace_plan
+--- Responsibility:
+---   現 cycle の plan を全置換する。
+--- @param cycle_tick uint
+--- @param entries PetBreedingPlanEntryDTO[]
 function PetBreedingPlanStore.replace_plan(cycle_tick, entries)
   if type(cycle_tick) ~= "number" then
     error("PetBreedingPlanStore.replace_plan: cycle_tick must be a number")
@@ -36,11 +56,18 @@ function PetBreedingPlanStore.replace_plan(cycle_tick, entries)
     error("PetBreedingPlanStore.replace_plan: entries must be a table")
   end
 
+  validate_entries(entries)
+
   local root = ensure_root()
   root.cycle_tick = cycle_tick
-  root.entries = entries
+  root.entries = copy_entries(entries)
 end
 
+--- get_entry
+--- Responsibility:
+---   step_index に対応する entry を返す。
+--- @param step_index uint
+--- @return PetBreedingPlanEntryDTO|nil
 function PetBreedingPlanStore.get_entry(step_index)
   if type(step_index) ~= "number" then
     error("PetBreedingPlanStore.get_entry: step_index must be a number")
@@ -50,16 +77,27 @@ function PetBreedingPlanStore.get_entry(step_index)
   return root.entries[step_index]
 end
 
+--- get_count
+--- Responsibility:
+---   現 plan の entry 数を返す。
+--- @return uint
 function PetBreedingPlanStore.get_count()
   local root = ensure_root()
   return #root.entries
 end
 
+--- get_cycle_tick
+--- Responsibility:
+---   現 plan の cycle_tick を返す。
+--- @return uint|nil
 function PetBreedingPlanStore.get_cycle_tick()
   local root = ensure_root()
   return root.cycle_tick
 end
 
+--- clear
+--- Responsibility:
+---   現 plan をクリアする。
 function PetBreedingPlanStore.clear()
   local root = ensure_root()
   root.cycle_tick = nil
