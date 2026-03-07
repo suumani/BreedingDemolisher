@@ -24,10 +24,10 @@ local SpawnExecutor = {}
 --- @param entity_name string
 --- @param spawn_position MapPosition
 --- @param force_name string|nil
---- @param quality_name string
+--- @param quality_id string
 --- @return boolean success
 --- @return LuaSegmentedUnit|nil spawned_unit
-function SpawnExecutor.spawn(surface, territory, entity_name, spawn_position, force_name, quality_name)
+function SpawnExecutor.spawn(surface, territory, entity_name, spawn_position, force_name, quality_id)
   if surface == nil or surface.valid == false then
     error("SpawnExecutor.spawn: valid surface is required")
   end
@@ -43,8 +43,11 @@ function SpawnExecutor.spawn(surface, territory, entity_name, spawn_position, fo
   if force_name ~= nil and (type(force_name) ~= "string" or force_name == "") then
     error("SpawnExecutor.spawn: force_name must be nil or a non-empty string")
   end
-  if type(quality_name) ~= "string" or quality_name == "" then
-    error("SpawnExecutor.spawn: quality_name must be a non-empty string")
+  if type(quality_id) ~= "string" or quality_id == "" then
+    error("SpawnExecutor.spawn: quality_id must be a non-empty string")
+  end
+  if prototypes == nil or prototypes.quality == nil or prototypes.quality[quality_id] == nil then
+    error("SpawnExecutor.spawn: quality_id must be an existing quality prototype name")
   end
 
   local unit = surface.create_segmented_unit{
@@ -52,7 +55,7 @@ function SpawnExecutor.spawn(surface, territory, entity_name, spawn_position, fo
     force = force_name or "enemy",
     territory = territory,
     position = spawn_position,
-    quality = quality_name,
+    quality = quality_id,
   }
 
   if unit == nil then

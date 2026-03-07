@@ -1,153 +1,117 @@
 -- __BreedingDemolisher__/scripts/domain/reproduction/SpawnQualityResolver.lua
 -- ------------------------------------------------------------
 -- Responsibility:
---   Wild Reproduction における spawn quality を決定する。
+--   Wild Reproduction における spawn quality id を決定する。
 --
 -- Scope:
---   - evolution_factor と roll_value に基づく quality 決定
---   - quality rule の保持
---   - Factorio quality name の返却
+--   - base quality steps から QualityID を解決する
+--   - prototypes.quality に基づく quality chain を構築する
+--   - quality chain をキャッシュする
 --
 -- Notes:
---   - deterministic random の生成自体は担当しない
---   - mutation / evolution による entity 決定は担当しない
---   - spawn 実行は担当しない
+--   - base steps の抽選自体は QualityRoller が担当する
+--   - extension mod や quality shift は扱わない
+--   - 返却値は create_segmented_unit に渡せる QualityID(string) である
 -- ------------------------------------------------------------
+local QualityRoller = require("scripts.domain.reproduction.QualityRoller")
+
 local SpawnQualityResolver = {}
 
---- resolve_spawn_quality
+local _cached_quality_chain = nil
+
+local function clamp(value, min_value, max_value)
+  if value < min_value then
+    return min_value
+  end
+  if value > max_value then
+    return max_value
+  end
+  return value
+end
+
+local function build_default_quality_chain()
+  return { "normal", "uncommon", "rare", "epic", "legendary" }
+end
+
+local function build_quality_chain_uncached()
+  local chain = {}
+  local seen = {}
+
+  if prototypes == nil or prototypes.quality == nil then
+    return build_default_quality_chain()
+  end
+
+  local quality_prototype = prototypes.quality["normal"]
+  if quality_prototype == nil then
+    return build_default_quality_chain()
+  end
+
+  local limit = 512
+  for _ = 1, limit do
+    if quality_prototype == nil then
+      break
+    end
+    if seen[quality_prototype.name] == true then
+      break
+    end
+
+    seen[quality_prototype.name] = true
+    chain[#chain + 1] = quality_prototype.name
+    quality_prototype = quality_prototype.next
+  end
+
+  if #chain <= 0 then
+    return build_default_quality_chain()
+  end
+
+  return chain
+end
+
+local function get_quality_chain()
+  if _cached_quality_chain ~= nil then
+    return _cached_quality_chain
+  end
+
+  local chain = build_quality_chain_uncached()
+  if type(chain) ~= "table" or #chain <= 0 then
+    chain = build_default_quality_chain()
+  end
+
+  _cached_quality_chain = chain
+  return _cached_quality_chain
+end
+
+--- clear_cache
 --- Responsibility:
----   evolution_factor と roll_value に基づいて spawn quality を決定する。
+---   quality chain cache を明示的にクリアする。
+function SpawnQualityResolver.clear_cache()
+  _cached_quality_chain = nil
+end
+
+--- resolve_spawn_quality_id
+--- Responsibility:
+---   enemy evolution factor と乱数値から spawn quality id を決定する。
 --- @param evolution_factor number
 --- @param roll_value number
---- @return string quality_name
-function SpawnQualityResolver.resolve_spawn_quality(evolution_factor, roll_value)
-  if type(evolution_factor) ~= "number" then
-    error("SpawnQualityResolver.resolve_spawn_quality: evolution_factor must be a number")
+--- @return string quality_id
+function SpawnQualityResolver.resolve_spawn_quality_id(evolution_factor, roll_value)
+  local quality_steps = QualityRoller.choose_quality_steps(evolution_factor, roll_value)
+  if type(quality_steps) ~= "number" then
+    error("SpawnQualityResolver.resolve_spawn_quality_id: quality_steps must be a number")
   end
-  if type(roll_value) ~= "number" then
-    error("SpawnQualityResolver.resolve_spawn_quality: roll_value must be a number")
-  end
-  if roll_value < 0 or roll_value >= 1 then
-    error("SpawnQualityResolver.resolve_spawn_quality: roll_value must be in [0, 1)")
+  if quality_steps < 0 then
+    error("SpawnQualityResolver.resolve_spawn_quality_id: quality_steps must be >= 0")
   end
 
-  if evolution_factor < 0.1 then
-    if roll_value < 0.01 then
-      return "rare"
-    elseif roll_value < 0.1 then
-      return "uncommon"
-    end
+  local quality_chain = get_quality_chain()
+  local quality_index = clamp(quality_steps + 1, 1, #quality_chain)
+  local quality_id = quality_chain[quality_index]
 
-  elseif evolution_factor < 0.2 then
-    if roll_value < 0.05 then
-      return "rare"
-    elseif roll_value < 0.2 then
-      return "uncommon"
-    end
-
-  elseif evolution_factor < 0.3 then
-    if roll_value < 0.1 then
-      return "rare"
-    elseif roll_value < 0.3 then
-      return "uncommon"
-    end
-
-  elseif evolution_factor < 0.4 then
-    if roll_value < 0.01 then
-      return "epic"
-    elseif roll_value < 0.16 then
-      return "rare"
-    elseif roll_value < 0.4 then
-      return "uncommon"
-    end
-
-  elseif evolution_factor < 0.5 then
-    if roll_value < 0.05 then
-      return "epic"
-    elseif roll_value < 0.25 then
-      return "rare"
-    elseif roll_value < 0.5 then
-      return "uncommon"
-    end
-
-  elseif evolution_factor < 0.6 then
-    if roll_value < 0.10 then
-      return "epic"
-    elseif roll_value < 0.3 then
-      return "rare"
-    elseif roll_value < 0.6 then
-      return "uncommon"
-    end
-
-  elseif evolution_factor < 0.7 then
-    if roll_value < 0.01 then
-      return "legendary"
-    elseif roll_value < 0.16 then
-      return "epic"
-    elseif roll_value < 0.41 then
-      return "rare"
-    elseif roll_value < 0.7 then
-      return "uncommon"
-    end
-
-  elseif evolution_factor < 0.8 then
-    if roll_value < 0.05 then
-      return "legendary"
-    elseif roll_value < 0.25 then
-      return "epic"
-    elseif roll_value < 0.55 then
-      return "rare"
-    elseif roll_value < 0.8 then
-      return "uncommon"
-    end
-
-  elseif evolution_factor < 0.9 then
-    if roll_value < 0.1 then
-      return "legendary"
-    elseif roll_value < 0.35 then
-      return "epic"
-    elseif roll_value < 0.65 then
-      return "rare"
-    elseif roll_value < 0.9 then
-      return "uncommon"
-    end
-
-  elseif evolution_factor < 0.95 then
-    if roll_value < 0.2 then
-      return "legendary"
-    elseif roll_value < 0.5 then
-      return "epic"
-    elseif roll_value < 0.75 then
-      return "rare"
-    elseif roll_value < 0.95 then
-      return "uncommon"
-    end
-
-  elseif evolution_factor < 0.98 then
-    if roll_value < 0.34 then
-      return "legendary"
-    elseif roll_value < 0.64 then
-      return "epic"
-    elseif roll_value < 0.84 then
-      return "rare"
-    elseif roll_value < 0.99 then
-      return "uncommon"
-    end
-
-  else
-    if roll_value < 0.5 then
-      return "legendary"
-    elseif roll_value < 0.85 then
-      return "epic"
-    elseif roll_value < 0.95 then
-      return "rare"
-    else
-      return "uncommon"
-    end
+  if type(quality_id) ~= "string" or quality_id == "" then
+    error("SpawnQualityResolver.resolve_spawn_quality_id: resolved quality_id must be a non-empty string")
   end
 
-  return "normal"
+  return quality_id
 end
 
 return SpawnQualityResolver

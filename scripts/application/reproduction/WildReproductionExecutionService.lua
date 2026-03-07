@@ -9,7 +9,6 @@
 --   - territory 内 segmented units 安定ソート
 --   - reproduction roll
 --   - mutation roll
---   - spawn quality roll
 --   - population suppress 判定
 --   - spawn orchestration
 --   - observability 出力
@@ -192,13 +191,63 @@ local function log_mutation_success(parent_name, spawned_name, evolution_factor)
   })
 end
 
-local function log_spawn_success(surface_name, spawned_name, quality_name)
+local function log_spawn_success(surface_name, spawned_name, quality_id)
   Logger.info({
     "[BreedingDemolisher][WILD][Spawn][OK]",
     " surface=", tostring(surface_name),
     " entity_name=", tostring(spawned_name),
-    " quality=", tostring(quality_name),
+    " quality=", tostring(quality_id),
   })
+end
+
+local function execute_unit_spawn_attempt(surface, territory, entry, unit, evolution_factor)
+  if reproduction_roll(evolution_factor) ~= true then
+    return false, false
+  end
+
+  local mutation_roll_result = mutation_roll(unit, evolution_factor)
+
+  local entity_name = SpawnEntityResolver.resolve_spawn_entity(
+    unit,
+    evolution_factor,
+    mutation_roll_result
+  )
+
+  local parent_entity_name = SpawnEntityResolver.get_parent_entity_name(unit)
+  if mutation_roll_result == true and entity_name ~= parent_entity_name then
+    log_mutation_success(parent_entity_name, entity_name, evolution_factor)
+  end
+
+  local suppress, reason_code = PopulationControlService.should_suppress_spawn(territory, surface)
+  if suppress == true then
+    log_suppress(reason_code, entry)
+    return false, true
+  end
+
+  local spawn_position = SpawnPlacementService.resolve_spawn_position(territory, unit, entity_name)
+  if spawn_position == nil then
+    return false, false
+  end
+
+  local quality_id = SpawnQualityResolver.resolve_spawn_quality_id(
+    evolution_factor,
+    quality_roll()
+  )
+
+  local success, _spawned_unit = SpawnExecutor.spawn(
+    surface,
+    territory,
+    entity_name,
+    spawn_position,
+    resolve_force_name(),
+    quality_id
+  )
+  if success == true then
+    log_spawn_success(surface.name, entity_name, quality_id)
+    return true, false
+  end
+
+  return false, false
 end
 
 --- execute_step
@@ -242,46 +291,19 @@ function WildReproductionExecutionService.execute_step(step_index)
 
   for _, unit in ipairs(units) do
     if unit ~= nil and unit.valid ~= false then
-      if reproduction_roll(evolution_factor) == true then
-        local mutation_roll_result = mutation_roll(unit, evolution_factor)
+      local spawned, should_break = execute_unit_spawn_attempt(
+        surface,
+        territory,
+        entry,
+        unit,
+        evolution_factor
+      )
 
-        local entity_name = SpawnEntityResolver.resolve_spawn_entity(
-          unit,
-          evolution_factor,
-          mutation_roll_result
-        )
-
-        local parent_entity_name = SpawnEntityResolver.get_parent_entity_name(unit)
-        if mutation_roll_result == true and entity_name ~= parent_entity_name then
-          log_mutation_success(parent_entity_name, entity_name, evolution_factor)
-        end
-
-        local suppress, reason_code = PopulationControlService.should_suppress_spawn(territory, surface)
-        if suppress == true then
-          log_suppress(reason_code, entry)
-          break
-        end
-
-        local spawn_position = SpawnPlacementService.resolve_spawn_position(territory, unit, entity_name)
-        if spawn_position ~= nil then
-          local quality_name = SpawnQualityResolver.resolve_spawn_quality(
-            evolution_factor,
-            quality_roll()
-          )
-
-          local success, _spawned_unit = SpawnExecutor.spawn(
-            surface,
-            territory,
-            entity_name,
-            spawn_position,
-            resolve_force_name(),
-            quality_name
-          )
-          if success == true then
-            spawned_count = spawned_count + 1
-            log_spawn_success(surface.name, entity_name, quality_name)
-          end
-        end
+      if spawned == true then
+        spawned_count = spawned_count + 1
+      end
+      if should_break == true then
+        break
       end
     end
   end
