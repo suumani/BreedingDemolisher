@@ -22,7 +22,7 @@
 -- ------------------------------------------------------------
 local R = {}
 
-local DRand = require("scripts.util.DeterministicRandom")
+local DRand = require("scripts.core.services.DeterministicRandom")
 
 local FORCE_ENEMY = "enemy"
 local FORCE_DEMOLISHERS = "demolishers"

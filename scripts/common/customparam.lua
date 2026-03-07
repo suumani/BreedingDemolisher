@@ -12,7 +12,7 @@ Customparam = {}
 Customparam.__index = Customparam
 
 local DemolisherNames = require("__Manis_definitions__/scripts/definition/DemolisherNames")
-local DRand = require("scripts.util.DeterministicRandom")
+local DRand = require("scripts.core.services.DeterministicRandom")
 local GeneticsMutator = require("scripts.domain.genetics.GeneticsMutator")
 
 -- ----------------------------

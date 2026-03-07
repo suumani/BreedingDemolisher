@@ -1,27 +1,36 @@
 -- __BreedingDemolisher__/scripts/services/EggThrowHatchService.lua
--- ----------------------------
+-- ------------------------------------------------------------
 -- Responsibility:
 --   Use-case: Throw an egg (cursor_stack) to hatch a demolisher.
+--
+-- Scope:
 --   - Resolve egg info (tags/quality/frozen)
---   - Resolve genetic payload (EggGenesStore; legacy optional)
---   - Spawn demolisher and register pet
+--   - Resolve genetic payload (EggGenesStore)
+--   - Spawn pet demolisher and register pet
 --   - Consume egg and print result message
--- ----------------------------
+--
+-- Notes:
+--   - tags 無し卵は「遺伝子なし孵化」として扱う
+--   - legacy queue fallback は持たない
+-- ------------------------------------------------------------
 local EggGenesStore = require("scripts.services.EggGenesStore")
 local EggStackResolver = require("scripts.services.EggStackResolver")
-local DemolisherSpawnService = require("scripts.services.DemolisherSpawnService")
+local PetHatchSpawnService = require("scripts.domain.hatch.PetHatchSpawnService")
 local HatchMessageService = require("scripts.services.HatchMessageService")
-local LegacyEggQueueService = require("scripts.services.LegacyEggQueueService") -- optional: keep if you still want legacy
 
-local S = {}
+local EggThrowHatchService = {}
 
-function S.handle(event)
+function EggThrowHatchService.handle(event)
   local player = game.get_player(event.player_index)
-  if not (player and player.character) then return end
+  if not (player and player.character) then
+    return
+  end
 
   local cursor_stack = player.cursor_stack
   local egg = EggStackResolver.try_resolve(cursor_stack)
-  if not egg then return end
+  if not egg then
+    return
+  end
 
   if egg.is_frozen then
     HatchMessageService.shattered()
@@ -34,26 +43,13 @@ function S.handle(event)
     customparam = EggGenesStore.get_customparam(egg.genes_id)
   end
 
-  -- tags無し卵は「遺伝子なし孵化」が仕様だが、旧互換を残すならここでだけ見る
-  local legacy_used = false
-  if customparam == nil and egg.genes_id == nil then
-    local legacy = LegacyEggQueueService.try_peek(egg.item_name, egg.quality_name)
-    if legacy then
-      customparam = legacy.customparam
-      legacy_used = true
-    end
+  local ok = PetHatchSpawnService.spawn_from_throw(player, egg, customparam)
+  if not ok then
+    return
   end
-
-  local ok = DemolisherSpawnService.spawn_from_throw(player, egg, customparam)
-  if not ok then return end
 
   HatchMessageService.hatched(egg.genes_id)
-
   cursor_stack.clear()
-
-  if legacy_used then
-    LegacyEggQueueService.try_pop(egg.item_name, egg.quality_name)
-  end
 end
 
-return S
+return EggThrowHatchService

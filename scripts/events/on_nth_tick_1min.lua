@@ -1,20 +1,20 @@
 -- __BreedingDemolisher__/scripts/events/on_nth_tick_1min.lua
-
+-- ------------------------------------------------------------
+-- Responsibility:
+--   Pet runtime の 1分 tick 処理を行う。
+--
+-- Scope:
+--   - pet hunger
+--   - pet aging
+--
+-- Notes:
+--   - Pet Breeding は TJC job に移管済みのため扱わない。
+--   - Wild Reproduction は扱わない。
+-- ------------------------------------------------------------
 local MyDemolisherGettingHangryService = require("scripts.services.MyDemolisherGettingHangryService")
-local MyDemolisherBreedingService = require("scripts.services.MyDemolisherBreedingService")
-local DemolisherEggHatchService = require("scripts.services.DemolisherEggHatchService")
 
-
-local function on_nth_tick_1min(event)
-  local vulcanus_surface = game.surfaces["vulcanus"]
-  if not vulcanus_surface then
-    return
-  end
-
+local function on_nth_tick_1min(_event)
   MyDemolisherGettingHangryService.my_demolisher_getting_hangry()
-  MyDemolisherBreedingService.my_demolisher_breeding()
-  DemolisherEggHatchService.spawn_wild_demolishers(vulcanus_surface)
-  game_print.debug("[BreedingDemolisher] on_nth_tick_1min fired tick=" .. game.tick)
 end
 
 script.on_nth_tick(3600, on_nth_tick_1min)

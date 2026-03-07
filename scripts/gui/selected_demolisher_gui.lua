@@ -5,9 +5,11 @@
 --   (player.selected) or selected entity.
 --   - If the entity matches a pet entry, show pet details.
 --   - Otherwise show wild details.
+--
 -- Notes:
 --   - This GUI is rebuilt on selection change for simplicity and reliability.
 --   - Pet identification is delegated to PetIdentityService (unit_number may change).
+--   - Demolisher判定はロード時に集合化した名前セットで O(1) 判定を行う。
 -- ----------------------------
 
 local M = {}
@@ -22,28 +24,47 @@ local trait_locale_keys = {
   ["bonus_growth"]    = "trait.bonus_growth",
 }
 
+-- Demolisher name set for O(1) lookup
+local DEMOLISHER_NAME_SET = {}
+do
+  for _, name in ipairs(DemolisherNames.ALL) do
+    DEMOLISHER_NAME_SET[name] = true
+  end
+end
+
 local function destroy_frame(player)
   local root = player.gui.left
   local frame = root and root["demolisher_info_frame"]
-  if frame then frame.destroy() end
+  if frame then
+    frame.destroy()
+  end
 end
 
 local function is_demolisher_entity(entity)
-  if not (entity and entity.valid) then return false end
-  return entity.name == DemolisherNames.SMALL
-      or entity.name == DemolisherNames.MEDIUM
-      or entity.name == DemolisherNames.BIG
+  if not (entity and entity.valid) then
+    return false
+  end
+
+  return DEMOLISHER_NAME_SET[entity.name] == true
 end
 
 local function get_entity_quality_name(entity)
-  if not (entity and entity.valid) then return "normal" end
+  if not (entity and entity.valid) then
+    return "normal"
+  end
+
   local q = entity.quality
-  if type(q) == "string" then return q end
-  if type(q) == "table" and q.name then return q.name end
+  if type(q) == "string" then
+    return q
+  end
+  if type(q) == "table" and q.name then
+    return q.name
+  end
+
   return "normal"
 end
 
-local function get_life_text(entity)
+local function get_life_text(_entity)
   return "Infinity"
 end
 
@@ -177,8 +198,12 @@ end
 function M.update(player, entity)
   destroy_frame(player)
 
-  if not (player and player.valid) then return end
-  if not is_demolisher_entity(entity) then return end
+  if not (player and player.valid) then
+    return
+  end
+  if not is_demolisher_entity(entity) then
+    return
+  end
 
   create_frame(player, entity)
 end

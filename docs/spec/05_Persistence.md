@@ -23,7 +23,7 @@ ID: BD-PERS-000
 
 ---
 
-## 1. Persistence 目的
+# 1. Persistence 目的
 
 ID: BD-PERS-010
 
@@ -39,15 +39,13 @@ Persistence は
 
 ---
 
-## 2. storage 規約
+# 2. storage 規約
 
 ID: BD-PERS-020
 
 永続データは
 
-
 storage
-
 
 に格納する。
 
@@ -58,7 +56,7 @@ storage
 
 ---
 
-## 3. 永続対象
+# 3. 永続対象
 
 ID: BD-PERS-030
 
@@ -66,10 +64,15 @@ ID: BD-PERS-030
 
 ### Territory Metadata
 
+保持する情報は
+
+**再解決可能な最小情報のみ**
+
 例
 
-- territory id
-- population metadata
+- territory representative chunk coordinates
+
+LuaTerritory や LuaChunk オブジェクト自体は保存しない。
 
 ---
 
@@ -79,10 +82,11 @@ ID: BD-PERS-030
 
 - growth
 - ownership
+- identity metadata
 
 ---
 
-### Egg Data
+### Egg Gene
 
 例
 
@@ -91,7 +95,7 @@ ID: BD-PERS-030
 
 ---
 
-## 4. Entity と storage
+# 4. Entity と storage
 
 ID: BD-PERS-040
 
@@ -109,7 +113,7 @@ storage は
 
 ---
 
-## 5. Restore
+# 5. Restore
 
 ID: BD-PERS-050
 
@@ -120,7 +124,7 @@ ID: BD-PERS-050
 
 ---
 
-## 6. Rebuild
+# 6. Rebuild
 
 ID: BD-PERS-060
 
@@ -135,7 +139,20 @@ ID: BD-PERS-060
 
 ---
 
-## 7. Migration
+# 7. Runtime Data
+
+ID: BD-PERS-065
+
+以下は runtime-only データであり永続 source ではない。
+
+例
+
+- reproduction planning result
+- execution plan store
+
+---
+
+# 8. Migration
 
 ID: BD-PERS-070
 
@@ -145,15 +162,13 @@ migration を実行する。
 
 結果
 
-
-OK
-SKIP
+OK  
+SKIP  
 FAIL
-
 
 ---
 
-## 8. Persistence 不変条件
+# 9. Persistence 不変条件
 
 ID: BD-PERS-080
 

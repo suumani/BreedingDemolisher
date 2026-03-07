@@ -1,59 +1,26 @@
 -- __BreedingDemolisher__/scripts/services/StorageInitializer.lua
--- ----------------------------
+-- ------------------------------------------------------------
 -- Responsibility:
 --   init() 時に必要な storage の初期化を行う。
---   現行仕様を踏襲し、storage.eggs は毎回初期化する（旧仕様領域のため）。
--- ----------------------------
-local S = {}
+--
+-- Scope:
+--   - pet state 用 storage 初期化
+--   - bd root / runtime root 初期化
+--   - pet destroyed registration mapping 初期化
+-- ------------------------------------------------------------
+local StorageInitializer = {}
 
-function S.init_all()
-
-  storage.respawn_queue = storage.respawn_queue or {}
-
-  -- ペットのデモリッシャー追加枠
+function StorageInitializer.init_all()
   storage.my_demolishers = storage.my_demolishers or {}
 
-  -- 卵管理(古いので毎回初期化)
-  storage.eggs = {}
+  storage.bd = storage.bd or {}
+  storage.bd.runtime = storage.bd.runtime or {}
 
-  -- 卵管理(正式仕様:ペット分 - 3次元)
-  if storage.my_eggs == nil then
-    storage.my_eggs = {}
+  -- register_on_object_destroyed の registration_number -> pet_id 対応
+  storage.bd.pet_destroy_reg_to_pet_id = storage.bd.pet_destroy_reg_to_pet_id or {}
 
-    storage.my_eggs[CONST_ITEM_NAME.DEMOLISHER_EGG] = {}
-    storage.my_eggs[CONST_ITEM_NAME.NEW_SPIECES_DEMOLISHER_EGG] = {}
-    storage.my_eggs[CONST_ITEM_NAME.FRIEND_DEMOLISHER_EGG] = {}
-
-    storage.my_eggs[CONST_ITEM_NAME.DEMOLISHER_EGG_MIDDLE] = {}
-    storage.my_eggs[CONST_ITEM_NAME.NEW_SPIECES_DEMOLISHER_EGG_MIDDLE] = {}
-    storage.my_eggs[CONST_ITEM_NAME.FRIEND_DEMOLISHER_EGG_MIDDLE] = {}
-
-    storage.my_eggs[CONST_ITEM_NAME.DEMOLISHER_EGG_BIG] = {}
-    storage.my_eggs[CONST_ITEM_NAME.NEW_SPIECES_DEMOLISHER_EGG_BIG] = {}
-    storage.my_eggs[CONST_ITEM_NAME.FRIEND_DEMOLISHER_EGG_BIG] = {}
-
-    for _, value in pairs(storage.my_eggs) do
-      value[CONST_QUALITY.NORMAL] = {}
-      value[CONST_QUALITY.UNCOMMON] = {}
-      value[CONST_QUALITY.RARE] = {}
-      value[CONST_QUALITY.EPIC] = {}
-      value[CONST_QUALITY.LEGENDARY] = {}
-    end
-  end
-
-  -- 遺伝管理テスト
-  if storage.genetic_data == nil then
-    --[[
-    storage.genetic_data = {
-      {id = 1, trait = "dammy"},{id = 2, trait = "dammy"},{id = 3, trait = "dammy"},{id = 4, trait = "dammy"},
-      {id = 11, trait = "dammy"},{id = 12, trait = "dammy"},{id = 13, trait = "dammy"},{id = 14, trait = "dammy"},
-      {id = 21, trait = "dammy"},{id = 22, trait = "dammy"},{id = 23, trait = "dammy"},{id = 24, trait = "dammy"},
-      {id = 31, trait = "dammy"},{id = 32, trait = "dammy"},{id = 33, trait = "dammy"},{id = 34, trait = "dammy"},
-      {id = 41, trait = "dammy"},{id = 42, trait = "dammy"},{id = 43, trait = "dammy"},{id = 44, trait = "dammy"}
-    }
-      ]]
-  end
-
+  -- pet_id -> registration_number 対応
+  storage.bd.pet_id_to_destroy_reg = storage.bd.pet_id_to_destroy_reg or {}
 end
 
-return S
+return StorageInitializer

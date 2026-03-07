@@ -16,7 +16,7 @@
 -- ------------------------------------------------------------
 local P = {}
 
-local DRand = require("scripts.util.DeterministicRandom")
+local DRand = require("scripts.core.services.DeterministicRandom")
 
 -- ----------------------------
 -- Force identifiers (strings)

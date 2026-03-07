@@ -53,8 +53,7 @@ population(territory) =
 
 count 対象は
 
-- Breeding Demolisher 管理対象 entity
-- territory に所属する physical entity
+- territory に所属する segmented_unit (demolisher)
 
 である。
 
@@ -68,15 +67,14 @@ surface population は
 
 <<<CODEBLOCK START>>>
 population(surface) =
-  count(all managed demolishers on surface)
+  count(all segmented units on surface)
 <<<CODEBLOCK END>>>
 
 で定義される。
 
 対象は
 
-- Breeding Demolisher が管理する entity
-- 指定 surface 上のすべての個体
+- 指定 surface 上のすべてのsegmented_unit entity
 
 である。
 
