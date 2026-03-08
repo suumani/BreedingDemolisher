@@ -1,281 +1,304 @@
-# System Specification Overview — Breeding Demolisher
-`__BreedingDemolisher__/docs/spec/00_Overview.md`
+# System Overview — Breeding Demolisher
+`docs/spec/00_Overview.md`
 
-Status: Active  
-Scope: Breeding Demolisher System Specification
-
-Related:
-- TJC Architecture Specification
+**Status:** Active  
+**Scope:** Breeding Demolisher
 
 ---
 
-## 0. 本書の位置づけ
+# 0. 本書の目的
 
-本書は、Breeding Demolisher における  
-**System Specification 全体の構造・規約・運用原則**を定義する。
+本書は Breeding Demolisher における  
+**SystemSpecification 全体の入口（Overview）**として機能する。
 
-- 本書は個別挙動を定義しない
-- 各 System Specification 文書の **前提・責務境界・命名規約**を定める
-- 開発・テスト・修正が迷走した場合に、最初に立ち返る文書とする
+本書は以下を整理する。
 
-本書は `docs/spec/` 配下における  
-**最上位規範文書**である。
+- Breeding Demolisher が **どのようなシステムであるか**
+- システムの **責務と境界**
+- システムの **実行モデル**
+- SystemSpecification 文書構成
 
----
+本書は **個別挙動の詳細を定義しない。**
 
-## 1. System Specification の目的
-
-System Specification は、以下を満たすために存在する。
-
-- 挙動について **合否判定が可能**であること
-- テスト・ログ・観測点が **仕様IDを根拠に説明可能**であること
-- 実装・テスト・将来修正の判断材料を **一次資料として保存**すること
-
-本ディレクトリに記載されない挙動は、  
-**仕様として未定義**である。
+繁殖条件、人口制御、各種判定などの詳細は  
+後続の SystemSpecification 文書に委譲する。
 
 ---
 
-## 2. 文書構成（確定）
+# 1. システムの全体像
 
-`docs/spec/` 配下は、原則として以下の構成を取る。
+Breeding Demolisher は、
 
-docs/spec/
+> **デモリッシャーの生態系を形成する Mod**
 
-00_Overview.md ← 本書（全体規約）  
-01_CoreLifecycle.md ← 存在条件・管理対象  
-02_Reproduction.md ← 繁殖・進化・変異  
-03_PopulationControl.md ← cap・counted population  
-04_Interaction.md ← 戦闘・ペット・通知・UI  
-05_Persistence.md ← storage・migration  
-90_Observability.md ← 観測点・ログ仕様  
+である。
 
-- **1ファイル = 1責務領域**を原則とする
-- 仕様の重複定義を行ってはならない
+ヴルカヌス上のデモリッシャーは
 
----
+- 繁殖
+- 個体増加
+- テリトリー内での自然生成
 
-## 3. 仕様ID体系（最重要）
+を行う。
 
-### 3.1 仕様IDの目的
+これにより
 
-仕様IDは以下のために付与される。
+- デモリッシャーの持続的存在
+- プレイヤー拠点への圧力
+- 生態系としての敵勢力
 
-- テストが **何を検証しているか**を明示する
-- ログ・観測点が **どの仕様を観測しているか**を示す
-- 仕様変更時に **影響範囲を追跡可能**にする
+が形成される。
 
 ---
 
-### 3.2 IDフォーマット（確定）
+# 2. プレイヤー体験
 
-BD-<CATEGORY>-<NNN>
+Breeding Demolisher は次のプレイヤー体験を提供する。
 
-例：
+- デモリッシャーの個体数が自然増加する
+- 生態系としての敵勢力が形成される
+- プレイヤーが個体群を管理・制御できる
 
-BD-CORE-010  
-BD-REPRO-040  
-BD-POP-060  
-BD-INT-045  
-BD-PERS-031  
-OBS-REP-001  
+また、本 Mod では
+
+- **野生デモリッシャーの自然繁殖**
+- **プレイヤーが飼育するペットデモリッシャー**
+
+という二種類の繁殖システムを提供する。
+
+プレイヤーは
+
+- 野生個体群の脅威
+- ペット個体群の育成
+
+という異なる関係性を持つ。
 
 ---
 
-### 3.3 CATEGORY 一覧（確定）
+# 3. システム責務
 
-| CATEGORY | 対象 |
+Breeding Demolisher の責務は次の通り。
+
+| Responsibility | Owner |
 |---|---|
-| CORE | CoreLifecycle |
-| REPRO | Reproduction |
-| POP | PopulationControl |
-| INT | Interaction |
-| PERS | Persistence |
-| OBS | Observability |
+| デモリッシャー生態管理 | Breeding Demolisher |
+| 繁殖判定 | Breeding Demolisher |
+| 人口制御 | Breeding Demolisher |
+| プレイヤーとのインタラクション | Breeding Demolisher |
+
+本 Mod は次を責務としない。
+
+- デモリッシャーAI制御
+- デモリッシャー移動ロジック
+- world generation
+- 敵AI行動制御
 
 ---
 
-### 3.4 番号帯の運用ルール
+# 4. 実行モデル
 
-- 各章は **10刻み以上の余白**を持って番号を振る
-- 90番台は **横断的・補助的仕様**（Observability 等）に予約する
-- 既存IDの意味を変更してはならない
-- ID削除は **破壊的変更**として扱う
+Breeding Demolisher の処理は  
+**ManisTotalJobController（TJC）**によって駆動される。
 
----
-
-## 4. 仕様・テスト・観測の関係
-
-- 仕様は **System Specification** に定義される
-- テストは **Spec ID** を根拠に作成される
-- 観測点（ログ）は **仕様の一部**である
-
-観測できない挙動は、  
-**テスト不能かつ仕様未完成**とみなす。
-
----
-
-## 5. Job Execution Model
-
-Breeding Demolisher のジョブ実行は  
-**ManisTotalJobController (TJC)** によって駆動される。
+```
+TJC
+↓
+territory enumeration
+↓
+reproduction decision
+↓
+spawn execution
+```
 
 Breeding Demolisher は
 
-- job scheduler
-- job queue
+- scheduler
 - tick driver
 
-を持たない。
+を持たず、
 
-ジョブの planning / execution dispatch は  
-**すべて TJC が担当する。**
-
-Breeding Demolisher は  
 **ドメインロジックのみを実装する。**
 
 ---
 
-## 6. Reproduction Job Responsibility
+# 5. デモリッシャーライフサイクル
 
-デモリッシャー自然生成に関する責務は以下の通り。
+デモリッシャーは  
+次のライフサイクルに従う。
 
-| Responsibility | Owner |
+```
+spawn
+↓
+lifecycle management
+↓
+reproduction
+↓
+population control
+```
+
+ライフサイクルの詳細は  
+`01_CoreLifecycle.md` に定義される。
+
+---
+
+# 6. 繁殖システム
+
+Breeding Demolisher の中核は  
+**Reproduction System** である。
+
+繁殖は次の二種類に分類される。
+
+```
+Wild Reproduction
+Pet Breeding
+```
+
+| System | Role |
 |---|---|
-| Job orchestration | TJC |
-| Territory enumeration | Breeding Demolisher |
-| Reproduction decision | Breeding Demolisher |
-| Spawn execution | Breeding Demolisher |
+| Wild Reproduction | 野生個体の自然増殖 |
+| Pet Breeding | プレイヤー所有個体の繁殖 |
 
-自然生成は  
-**territory 内部イベントとして処理される。**
+詳細は次の文書に定義される。
 
-spawn は
-
-- territory context 内で実行される
-- 必ず territory に所属する個体として生成される
+- `02_Reproduction.md`
+- `06_WildReproduction.md`
+- `07_PetBreeding.md`
 
 ---
 
-## 7. Mod 間通信モデル
+# 7. Population Control
 
-Manis ecosystem における Mod 間通信は  
-**event.raise を唯一の通信手段とする。**
+Breeding Demolisher は  
+個体数制御を行う。
 
-remote.call は以下の用途に限定する。
+人口制御は
 
-- event id discovery
-- capability discovery
-- configuration access
+- spawn 上限
+- counted population
+- territory context
 
-remote.call は  
-**ドメイン操作やジョブ実行に使用してはならない。**
+を基準として行われる。
+
+詳細は  
+`03_PopulationControl.md` に定義される。
 
 ---
 
-## 8. デモリッシャー識別子
+# 8. Interaction
 
-本仕様では、デモリッシャー個体は  
-**Factorio entity name によって識別される。**
+Breeding Demolisher は  
+プレイヤーとのインタラクションを提供する。
 
 例：
 
-manis-small-demolisher  
-manis-small-demolisher-alt  
-manis-medium-demolisher  
+- ペットデモリッシャー
+- 通知
+- 戦闘関係
 
-本仕様では
-
-- species
-- entity group
-- entity type
-
-などの概念は  
-**説明用途としてのみ使用する。**
-
-仕様上の識別は  
-**常に entity name によって行う。**
+詳細は  
+`04_Interaction.md` に定義される。
 
 ---
 
-## 9. Custom Entity Rule
+# 9. Persistence
 
-Breeding Demolisher が生成するデモリッシャーは  
-**常に Mod が追加した custom entity のみである。**
+Breeding Demolisher は  
+デモリッシャー状態を保存する。
 
-Factorio 標準 entity である
+保存対象は
 
-small-demolisher  
-medium-demolisher  
-big-demolisher  
+- 個体情報
+- 繁殖状態
+- 所属テリトリー
 
-などを  
-**本 Mod が直接生成することはない。**
+などである。
 
----
-
-## 10. 仮想デモリッシャー
-
-Breeding Demolisher では  
-**仮想デモリッシャー（virtual demolisher）という概念は使用しない。**
-
-すべてのデモリッシャーは
-
-- Factorio world 上の **physical entity**
-
-として存在する。
-
-旧仕様に存在した
-
-- storage-only demolisher
-- logical demolisher
-- virtual demolisher
-
-は **廃止された概念である。**
+詳細は  
+`05_Persistence.md` に定義される。
 
 ---
 
-## 11. 文書間の優先順位（確定）
+# 10. 境界と依存関係
 
-仕様に矛盾が生じた場合、以下の優先順位で判断する。
+Breeding Demolisher は  
+次のシステムと連携する。
 
-1. `spec.md` / `spec.ja.md`（ユーザ向け一次仕様）
-2. `docs/spec/*.md`
-3. `docs/design_*`
+| System | Responsibility |
+|---|---|
+| TJC | job orchestration |
+| Factorio enemy system | AI / pathfinding |
 
-挙動変更を行う場合は、
+本 Mod は次の処理を行わない。
 
-- ユーザ向け一次仕様
-- 該当する System Specification
-
-を **必ず同時に更新**しなければならない。
-
----
-
-## 12. 変更ルール
-
-- 仕様変更は必ず **理由を明示**する
-- 仕様変更に伴うテスト修正は **同時に行う**
-- テストのみの変更は原則不正とする
+- AI制御
+- 移動ロジック
+- world generation
 
 ---
 
-## 13. 未定義の扱い
+# 11. 観測性
 
-以下は明示的に扱う。
+Breeding Demolisher は  
+システム挙動を観測可能にする。
 
-- 未定義挙動は **実装依存**であり、テスト対象にしてはならない
-- 未定義挙動をテストしたい場合は、先に仕様を定義する
-- 仮仕様は `DesignNotes` にのみ記載可能
+観測情報には次が含まれる。
+
+- reproduction result
+- population state
+- lifecycle state
+
+観測仕様は  
+`90_Observability.md` に定義される。
 
 ---
 
-## 最後に
+# 12. テスト方針
 
-System Specification は、
+Breeding Demolisher のテストは  
+**仕様を基準として設計される。**
 
-「コードの説明」ではなく  
-「挙動に対する約束」である。
+テストの基本方針は  
+`TestPolicy.md` に定義される。
 
-この約束が破られたとき、  
-最初に立ち返るべき文書が本書である。
+---
+
+# 13. SystemSpecification 文書構成
+
+Breeding Demolisher の仕様は  
+以下の文書で構成される。
+
+```
+00_Overview.md
+01_CoreLifecycle.md
+02_Reproduction.md
+03_PopulationControl.md
+04_Interaction.md
+05_Persistence.md
+06_WildReproduction.md
+07_PetBreeding.md
+08_TJCIntegration.md
+90_Observability.md
+TestPolicy.md
+```
+
+---
+
+# 14. 設計意図
+
+Breeding Demolisher は、
+
+> **デモリッシャーを単なる敵ではなく、生態系として存在させる**
+
+ことを目的として設計された。
+
+このシステムは
+
+- 生態系としての敵勢力
+- 個体群の自然増殖
+- プレイヤーによる飼育
+
+を通じて
+
+**Factorio に新しい敵生態システムを導入する。**
+
+---
