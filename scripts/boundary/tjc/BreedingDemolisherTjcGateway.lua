@@ -12,6 +12,12 @@
 --   - planning_count_report 送信
 --   - execution_done_report 送信
 --   - 最小限の observability
+--
+-- Contract:
+--   - bootstrap() is called at init / configuration_changed / on_load.
+--   - on_load also re-sends register_target_mod, because TJC execution requires
+--     target-mod registration after load boundaries.
+--   - This module owns runtime event binding and TJC re-registration together.
 -- ------------------------------------------------------------
 local BreedingDemolisherTjcGateway = {}
 
@@ -56,6 +62,11 @@ local function get_event_ids()
 
   EVENT_IDS = remote.call("manis_total_job_controller", "get_event_ids")
   return EVENT_IDS
+end
+
+local function refresh_event_ids()
+  EVENT_IDS = nil
+  return get_event_ids()
 end
 
 local function log_info(event_name, dto)
@@ -141,25 +152,31 @@ local function on_execution_request(event)
   }))
 end
 
-function BreedingDemolisherTjcGateway.register()
-  local ids = get_event_ids()
-  if not ids then
-    log_info("BD_TJC_REGISTER_SKIPPED", dto_fail("TJC:EVENT_IDS_UNAVAILABLE", {
-      action = "REGISTER_GATEWAY",
-    }))
-    return false
-  end
-
+local function bind_runtime_events(ids)
   script.on_event(ids.planning_request, on_planning_request)
   script.on_event(ids.execution_request, on_execution_request)
+end
 
+local function raise_register_target_mods(ids)
   for mod_key, _target in pairs(TARGETS) do
     script.raise_event(ids.register_target_mod, {
       mod_key = mod_key,
     })
     log_register(mod_key)
   end
+end
 
+function BreedingDemolisherTjcGateway.bootstrap()
+  local ids = refresh_event_ids()
+  if not ids then
+    log_info("BD_TJC_BOOTSTRAP_SKIPPED", dto_fail("TJC:EVENT_IDS_UNAVAILABLE", {
+      action = "BOOTSTRAP_GATEWAY",
+    }))
+    return false
+  end
+
+  bind_runtime_events(ids)
+  raise_register_target_mods(ids)
   return true
 end
 

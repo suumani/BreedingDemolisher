@@ -2,6 +2,10 @@
 -- ------------------------------------------------------------
 -- Responsibility:
 --   Breeding Demolisher control stage bootstrap.
+--   - Initialize runtime state on init/configuration changed.
+--   - Restore runtime-only bindings on save load.
+--   - Reconnect and re-register TJC integration on every bootstrap boundary,
+--     including on_load, because TJC dispatch requires target-mod registration.
 -- ------------------------------------------------------------
 
 require("scripts.defines.constant_demolisher_parameters")
@@ -31,7 +35,7 @@ local function init()
   DeterministicRandom.init()
   StorageInitializer.init_all()
   ForceInitializer.ensure_demolishers_force()
-  BreedingDemolisherTjcGateway.register()
+  BreedingDemolisherTjcGateway.bootstrap()
 end
 
 script.on_init(function()
@@ -40,6 +44,7 @@ end)
 
 script.on_load(function()
   SaveRestoreService.on_load_restore()
+  BreedingDemolisherTjcGateway.bootstrap()
 end)
 
 script.on_configuration_changed(function(_event)
