@@ -10,28 +10,41 @@
 --   - pet_id 発行
 --   - storage.my_demolishers 登録
 --   - register_on_object_destroyed 登録
---   - pet chart job enqueue
 --
 -- Notes:
 --   - Wild Reproduction 用 spawn ではない。
 --   - Interaction / Hatch 専用 service として扱う。
+--   - pet chart job enqueue は上位オーケストレーション側責務。
+--   - storage shape は bootstrap 済み前提で扱い、この層では自動生成しない。
 -- ------------------------------------------------------------
-local PetChartJobService = require("scripts.services.PetChartJobService")
 local SpawnClampPolicy = require("scripts.domain.hatch.SpawnClampPolicy")
+local Customparam = require("scripts.common.customparam")
 
 local PetHatchSpawnService = {}
 
-local function ensure_storage()
-  storage.my_demolishers = storage.my_demolishers or {}
-  storage.bd_next_pet_id = storage.bd_next_pet_id or 1
-
-  storage.bd = storage.bd or {}
-  storage.bd.pet_destroy_reg_to_pet_id = storage.bd.pet_destroy_reg_to_pet_id or {}
-  storage.bd.pet_id_to_destroy_reg = storage.bd.pet_id_to_destroy_reg or {}
+local function expect_storage_shape()
+  if storage == nil then
+    error("PetHatchSpawnService: storage is nil")
+  end
+  if storage.my_demolishers == nil then
+    error("PetHatchSpawnService: storage.my_demolishers is nil. Call StorageInitializer.init_all() first.")
+  end
+  if storage.bd_next_pet_id == nil then
+    error("PetHatchSpawnService: storage.bd_next_pet_id is nil. Call StorageInitializer.init_all() first.")
+  end
+  if storage.bd == nil then
+    error("PetHatchSpawnService: storage.bd is nil. Call StorageInitializer.init_all() first.")
+  end
+  if storage.bd.pet_destroy_reg_to_pet_id == nil then
+    error("PetHatchSpawnService: storage.bd.pet_destroy_reg_to_pet_id is nil. Call StorageInitializer.init_all() first.")
+  end
+  if storage.bd.pet_id_to_destroy_reg == nil then
+    error("PetHatchSpawnService: storage.bd.pet_id_to_destroy_reg is nil. Call StorageInitializer.init_all() first.")
+  end
 end
 
 local function new_pet_id()
-  ensure_storage()
+  expect_storage_shape()
   local id = storage.bd_next_pet_id
   storage.bd_next_pet_id = id + 1
   return "P" .. tostring(id)
@@ -45,7 +58,7 @@ local function register_pet_destroy_tracking(entity, pet_id)
     error("PetHatchSpawnService.register_pet_destroy_tracking: pet_id must be a non-empty string")
   end
 
-  ensure_storage()
+  expect_storage_shape()
 
   local registration_number = script.register_on_object_destroyed(entity)
   storage.bd.pet_destroy_reg_to_pet_id[registration_number] = pet_id
@@ -55,7 +68,7 @@ local function register_pet_destroy_tracking(entity, pet_id)
 end
 
 function PetHatchSpawnService.spawn_from_throw(player, egg, customparam)
-  ensure_storage()
+  expect_storage_shape()
 
   local surface = player.surface
   local entity_name = egg.resolve_size(egg.item_name)
@@ -68,13 +81,13 @@ function PetHatchSpawnService.spawn_from_throw(player, egg, customparam)
   if customparam ~= nil then
     spawn = SpawnClampPolicy.compute_spawn_values({
       entity_name = entity_name,
-      size = customparam:get_size(),
-      speed = customparam:get_speed(),
-      quality = customparam:get_quality(),
-      max_life = customparam:get_max_life(),
-      max_growth = customparam:get_max_growth(),
-      max_satiety = customparam:get_max_satiety(),
-      traits = customparam:get_traits(),
+      size = customparam.size,
+      speed = customparam.speed,
+      quality = customparam.quality,
+      max_life = customparam.max_life,
+      max_growth = customparam.max_growth,
+      max_satiety = customparam.max_satiety,
+      traits = customparam.traits,
     })
   end
 
@@ -87,14 +100,11 @@ function PetHatchSpawnService.spawn_from_throw(player, egg, customparam)
 
   if not (entity and entity.valid) then
     game.print("No space to hatch here.")
-    return false
+    return nil
   end
 
-  -- 1280x1280 => radius 640 tiles
-  PetChartJobService.enqueue(entity.surface, entity.position, player.force.name, 640)
-
   if customparam ~= nil then
-    customparam:set_entity(entity)
+    customparam.entity = entity
     if spawn then
       customparam.entity_name = entity_name
       customparam.size = spawn.size
@@ -138,7 +148,7 @@ function PetHatchSpawnService.spawn_from_throw(player, egg, customparam)
     )
   })
 
-  return true
+  return entity
 end
 
 return PetHatchSpawnService

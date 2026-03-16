@@ -15,19 +15,31 @@
 --   - on_entity_died の代替として pet 死亡を扱う。
 --   - old egg drop / old respawn は扱わない。
 --   - pcall は event boundary にのみ配置し、失敗は Logger へ明示記録する。
+--   - storage shape は bootstrap 済み前提で扱い、この境界では自動生成しない。
 -- ------------------------------------------------------------
 local NotificationService = require("scripts.services.NotificationService")
 local Logger = require("scripts.services.Logger")
 
-local function ensure_destroy_storage()
-  storage.bd = storage.bd or {}
-  storage.bd.pet_destroy_reg_to_pet_id = storage.bd.pet_destroy_reg_to_pet_id or {}
-  storage.bd.pet_id_to_destroy_reg = storage.bd.pet_id_to_destroy_reg or {}
-  storage.my_demolishers = storage.my_demolishers or {}
+local function expect_destroy_storage()
+  if storage == nil then
+    error("on_object_destroyed: storage is nil")
+  end
+  if storage.bd == nil then
+    error("on_object_destroyed: storage.bd is nil. Call StorageInitializer.init_all() first.")
+  end
+  if storage.bd.pet_destroy_reg_to_pet_id == nil then
+    error("on_object_destroyed: storage.bd.pet_destroy_reg_to_pet_id is nil. Call StorageInitializer.init_all() first.")
+  end
+  if storage.bd.pet_id_to_destroy_reg == nil then
+    error("on_object_destroyed: storage.bd.pet_id_to_destroy_reg is nil. Call StorageInitializer.init_all() first.")
+  end
+  if storage.my_demolishers == nil then
+    error("on_object_destroyed: storage.my_demolishers is nil. Call StorageInitializer.init_all() first.")
+  end
 end
 
 local function resolve_pet_by_id(pet_id)
-  local pets = storage.my_demolishers or {}
+  local pets = storage.my_demolishers
   for _, pet in ipairs(pets) do
     if pet and pet.pet_id == pet_id then
       return pet
@@ -37,7 +49,7 @@ local function resolve_pet_by_id(pet_id)
 end
 
 local function remove_pet_from_storage(pet_id)
-  local pets = storage.my_demolishers or {}
+  local pets = storage.my_demolishers
   for i = #pets, 1, -1 do
     local pet = pets[i]
     if pet and pet.pet_id == pet_id then
@@ -56,7 +68,7 @@ local function cleanup_destroy_mapping(registration_number, pet_id)
 end
 
 local function on_object_destroyed_handler(event)
-  ensure_destroy_storage()
+  expect_destroy_storage()
 
   local registration_number = event.registration_number
   local pet_id = storage.bd.pet_destroy_reg_to_pet_id[registration_number]

@@ -8,6 +8,7 @@
 -- Notes:
 --   - pet_id is the stable identity.
 --   - linked_unit_number may change; do not treat it as truth.
+--   - storage shape is bootstrap-managed and must already exist.
 -- ----------------------------
 
 local S = {}
@@ -17,8 +18,13 @@ local RELINK_RADIUS_TILES = 80  -- small radius for "near home" relink (tiles)
 
 local function sqr(x) return x * x end
 
-local function ensure_storage()
-  storage.my_demolishers = storage.my_demolishers or {}
+local function expect_storage()
+  if storage == nil then
+    error("PetIdentityService: storage is nil")
+  end
+  if storage.my_demolishers == nil then
+    error("PetIdentityService: storage.my_demolishers is nil. Call StorageInitializer.init_all() first.")
+  end
 end
 
 -- Find by entity reference (strongest signal)
@@ -48,7 +54,7 @@ end
 -- Attempt relink by home proximity
 local function relink_by_home(entity)
   if not (entity and entity.valid) then return nil end
-  ensure_storage()
+  expect_storage()
 
   local sx = entity.position.x
   local sy = entity.position.y
@@ -75,7 +81,7 @@ end
 
 -- Public: resolve pet for an entity
 function S.resolve(entity)
-  ensure_storage()
+  expect_storage()
 
   -- 1) entity ref (best)
   local pet = find_by_entity_ref(entity)

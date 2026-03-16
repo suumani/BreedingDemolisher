@@ -8,14 +8,20 @@
 -- Notes:
 --   - 1280x1280 area => radius_tiles=640 => max_ring=ceil(640/32)=20 (approx 40x40 chunks).
 --   - This service does NOT attempt to "keep charted forever"; it finishes once per job.
+--   - storage.bd_pet_chart_jobs is bootstrap-managed and must already exist.
 -- ----------------------------
 
 local S = {}
 
 local CHUNK_SIZE = 32
 
-local function ensure_storage()
-  storage.bd_pet_chart_jobs = storage.bd_pet_chart_jobs or {}
+local function expect_storage()
+  if storage == nil then
+    error("PetChartJobService: storage is nil")
+  end
+  if storage.bd_pet_chart_jobs == nil then
+    error("PetChartJobService: storage.bd_pet_chart_jobs is nil. Call StorageInitializer.init_all() first.")
+  end
 end
 
 local function chunk_xy_from_pos(pos)
@@ -75,7 +81,7 @@ end
 
 -- radius_tiles: half-size in tiles (1280x1280 => 640)
 function S.enqueue(surface, center_pos, force_name, radius_tiles)
-  ensure_storage()
+  expect_storage()
   radius_tiles = radius_tiles or 640
 
   local surface_name = surface.name
@@ -105,7 +111,7 @@ end
 
 -- Process at most max_jobs_per_tick jobs, and at most chunks_per_job chunks per job.
 function S.process_step(max_jobs_per_tick, chunks_per_job)
-  ensure_storage()
+  expect_storage()
   max_jobs_per_tick = max_jobs_per_tick or 1
   chunks_per_job = chunks_per_job or 12
 

@@ -7,11 +7,15 @@
 --   - pet state 用 storage 初期化
 --   - bd root / runtime root 初期化
 --   - pet destroyed registration mapping 初期化
+--   - pet id sequence 初期化
+--   - pet chart job queue 初期化
 -- ------------------------------------------------------------
 local StorageInitializer = {}
 
 function StorageInitializer.init_all()
   storage.my_demolishers = storage.my_demolishers or {}
+  storage.bd_next_pet_id = storage.bd_next_pet_id or 1
+  storage.bd_pet_chart_jobs = storage.bd_pet_chart_jobs or {}
 
   storage.bd = storage.bd or {}
   storage.bd.runtime = storage.bd.runtime or {}

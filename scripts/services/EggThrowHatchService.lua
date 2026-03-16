@@ -7,6 +7,7 @@
 --   - Resolve egg info (tags/quality/frozen)
 --   - Resolve genetic payload (EggGenesStore)
 --   - Spawn pet demolisher and register pet
+--   - Enqueue pet chart job after successful hatch
 --   - Consume egg and print result message
 --
 -- Notes:
@@ -16,6 +17,7 @@
 local EggGenesStore = require("scripts.services.EggGenesStore")
 local EggStackResolver = require("scripts.services.EggStackResolver")
 local PetHatchSpawnService = require("scripts.domain.hatch.PetHatchSpawnService")
+local PetChartJobService = require("scripts.services.PetChartJobService")
 local HatchMessageService = require("scripts.services.HatchMessageService")
 
 local EggThrowHatchService = {}
@@ -43,10 +45,13 @@ function EggThrowHatchService.handle(event)
     customparam = EggGenesStore.get_customparam(egg.genes_id)
   end
 
-  local ok = PetHatchSpawnService.spawn_from_throw(player, egg, customparam)
-  if not ok then
+  local entity = PetHatchSpawnService.spawn_from_throw(player, egg, customparam)
+  if not entity then
     return
   end
+
+  -- 1280x1280 => radius 640 tiles
+  PetChartJobService.enqueue(entity.surface, entity.position, player.force.name, 640)
 
   HatchMessageService.hatched(egg.genes_id)
   cursor_stack.clear()
