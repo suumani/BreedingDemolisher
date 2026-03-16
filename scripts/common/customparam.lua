@@ -2,28 +2,22 @@
 -- ----------------------------
 -- class Customparam
 -- Responsibility:
---   Hold demolisher genetic/runtime parameters and provide basic operations.
+--   Create plain-table demolisher genetic/runtime parameters.
+--   - Does NOT use metatable.
+--   - Does NOT register globals.
 --   - Works with entity=nil (egg state).
---   - Mutation/inheritance logic is delegated to GeneticsMutator (v0.5.6+).
+--   - Mutation/inheritance logic is delegated to GeneticsMutator.
 --   - Spawn-time clamping is handled elsewhere (SpawnClampPolicy).
 -- ----------------------------
 
-Customparam = {}
-Customparam.__index = Customparam
+local Customparam = {}
 
 local DemolisherNames = require("__Manis_definitions__/scripts/definition/DemolisherNames")
 local DRand = require("scripts.core.services.DeterministicRandom")
-local GeneticsMutator = require("scripts.domain.genetics.GeneticsMutator")
 
 -- ----------------------------
 -- internal helpers
 -- ----------------------------
-local function get_valid_entity(self)
-  local e = self and self.entity
-  if e and e.valid then return e end
-  return nil
-end
-
 local function private_default_name(entity)
   if entity == nil then
     return "unknown"
@@ -78,155 +72,51 @@ function Customparam.new(
   traits,
   tick
 )
-  local self = setmetatable({}, Customparam)
+  local customparam = {
+    -- basic
+    entity = entity,
+    entity_name = entity_name or (entity and entity.name) or DemolisherNames.SMALL,
+    name = name or private_default_name(entity),
 
-  -- basic
-  self.entity = entity
-  self.entity_name = entity_name or (entity and entity.name) or DemolisherNames.SMALL
+    -- NOTE:
+    -- v0.5.6 design prefers "new is a container", but legacy/compat paths may still
+    -- call new() without genetics. Keep conservative defaults for now.
+    size = size or DRand.random(100, 500),
+    quality = quality or (DRand.random(1, 4) / 10), -- 0.1 - 0.4
+    speed = speed or (1 + DRand.random(1, 4) / 10), -- 1.1 - 1.4
 
-  self.name = name or private_default_name(entity)
+    max_life = max_life or 180,
+    life = max_life or 180,
 
-  -- NOTE:
-  -- v0.5.6 design prefers "new is a container", but legacy/compat paths may still
-  -- call new() without genetics. Keep conservative defaults for now.
-  self.size = size or DRand.random(100, 500)
-  self.quality = quality or (DRand.random(1, 4) / 10)  -- 0.1 - 0.4
-  self.speed = speed or (1 + DRand.random(1, 4) / 10)  -- 1.1 - 1.4
+    max_growth = max_growth or 50,
+    growth = 0,
 
-  self.max_life = max_life or 180
-  self.life = self.max_life
+    max_satiety = max_satiety or 100,
+    satiety = max_satiety or 100,
 
-  self.max_growth = max_growth or 50
-  self.growth = 0
+    lv = 1,
 
-  self.max_satiety = max_satiety or 100
-  self.satiety = self.max_satiety
+    -- genetic traits (may include negative in v0.5.6+)
+    traits = traits or {
+      [CONST_DEMOLISHER_TRAIT.SHORT_WARP] = 1 + DRand.random(0, 4) / 10,
+      [CONST_DEMOLISHER_TRAIT.EMERGENCY_FOOD] = 1 + DRand.random(0, 4) / 10,
+      [CONST_DEMOLISHER_TRAIT.BONUS_GROWTH] = 1 + DRand.random(0, 4) / 10
+    },
 
-  self.lv = 1
-
-  -- genetic traits (may include negative in v0.5.6+)
-  self.traits = traits or {
-    [CONST_DEMOLISHER_TRAIT.SHORT_WARP] = 1 + DRand.random(0, 4) / 10,
-    [CONST_DEMOLISHER_TRAIT.EMERGENCY_FOOD] = 1 + DRand.random(0, 4) / 10,
-    [CONST_DEMOLISHER_TRAIT.BONUS_GROWTH] = 1 + DRand.random(0, 4) / 10
+    born_tick = tick,
   }
 
-  if self.name == "unknown" then
-    self.name = "egg: size, quality, speed, max_life, max_satiety, max_growth = "
-      .. tostring(self.size)
-      .. ", " .. tostring(self.quality)
-      .. ", " .. tostring(self.speed)
-      .. ", " .. tostring(self.max_life)
-      .. ", " .. tostring(self.max_satiety)
-      .. ", " .. tostring(self.max_growth)
+  if customparam.name == "unknown" then
+    customparam.name = "egg: size, quality, speed, max_life, max_satiety, max_growth = "
+      .. tostring(customparam.size)
+      .. ", " .. tostring(customparam.quality)
+      .. ", " .. tostring(customparam.speed)
+      .. ", " .. tostring(customparam.max_life)
+      .. ", " .. tostring(customparam.max_satiety)
+      .. ", " .. tostring(customparam.max_growth)
   end
 
-  return self
+  return customparam
 end
 
--- ----------------------------
--- v0.5.6+ mutation delegation
--- ----------------------------
-function Customparam:mutate(parent_force_name, partnerparam)
-  -- parent_force_name: "enemy"|"demolishers"|"player"
-  -- partner force is resolved inside GeneticsMutator from partnerparam's entity when present.
-  local child, child_force = GeneticsMutator.mutate_to_child(self, parent_force_name, partnerparam)
-  return child, child_force
-end
-
--- ----------------------------
--- entity binding
--- ----------------------------
-function Customparam:set_entity(entity)
-  self.entity = entity
-end
-
-function Customparam:get_entity()
-  return self.entity
-end
-
--- ----------------------------
--- getters
--- ----------------------------
-function Customparam:get_name() return self.name end
-function Customparam:get_size() return self.size end
-function Customparam:get_quality() return self.quality end
-function Customparam:get_speed() return self.speed end
-function Customparam:get_life() return self.life end
-function Customparam:get_satiety() return self.satiety end
-function Customparam:get_growth() return self.growth end
-function Customparam:get_lv() return self.lv end
-function Customparam:get_traits() return self.traits end
-function Customparam:get_max_satiety() return self.max_satiety end
-function Customparam:get_max_growth() return self.max_growth end
-function Customparam:get_max_life() return self.max_life end
-
--- ----------------------------
--- operations
--- ----------------------------
-function Customparam:grow(value)
-  self.growth = self.growth + value
-  if self.growth > self.max_growth then
-    self.growth = self.max_growth
-  end
-end
-
-function Customparam:eat(value)
-  self.satiety = self.satiety + value
-  if self.satiety > self.max_satiety then
-    self.satiety = self.max_satiety
-  end
-end
-
-function Customparam:getting_hangury()
-  self.satiety = self.satiety - 1
-end
-
-function Customparam:getting_old()
-  self.life = self.life - 1
-end
-
--- ----------------------------
--- default-name helpers (safe for entity=nil)
--- ----------------------------
-function Customparam:get_dafault_name_surface()
-  local e = get_valid_entity(self)
-  return e and e.surface.name or "unknown"
-end
-
-function Customparam:get_dafault_name_size()
-  local e = get_valid_entity(self)
-  if not e then return "U" end
-
-  if e.name == DemolisherNames.BIG then
-    return "S"
-  elseif e.name == DemolisherNames.MEDIUM then
-    return "A"
-  elseif e.name == DemolisherNames.SMALL then
-    return "B"
-  else
-    return "U"
-  end
-end
-
-function Customparam:get_dafault_name_quality()
-  local e = get_valid_entity(self)
-  if not e then return "--" end
-
-  if e.quality == "legendary" then
-    return "++"
-  elseif e.quality == "epic" then
-    return "+"
-  elseif e.quality == "rare" then
-    return ""
-  elseif e.quality == "uncommon" then
-    return "-"
-  else
-    return "--"
-  end
-end
-
-function Customparam:get_dafault_name_unit_number()
-  local e = get_valid_entity(self)
-  return e and e.unit_number or 0
-end
+return Customparam

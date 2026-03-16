@@ -16,6 +16,7 @@ local M = {}
 local TwoStage = require("scripts.domain.genetics.TwoStageInheritance")
 local TraitsInherit = require("scripts.domain.genetics.TraitsInheritance")
 local ForceTrans = require("scripts.domain.genetics.ForceTransitionPolicy")
+local Customparam = require("scripts.common.customparam")
 
 local DemolisherNames = require("__Manis_definitions__/scripts/definition/DemolisherNames")
 local TraitDefs = require("scripts.domain.traits.DemolisherTraitDefinitions")
@@ -29,7 +30,7 @@ end
 
 local function safe_force_name_from_cp(cp)
   if not cp then return nil end
-  local e = cp:get_entity()
+  local e = cp.entity
   if e and e.valid and e.force then
     return e.force.name
   end
@@ -193,24 +194,24 @@ function M.mutate_to_child(cp_a, parent_force_a, cp_b, opts)
   )
 
   -- base values
-  local a_size = cp_a:get_size()
-  local a_quality = cp_a:get_quality()
-  local a_speed = cp_a:get_speed()
-  local a_life = cp_a:get_max_life()
-  local a_growth = cp_a:get_max_growth()
-  local a_satiety = cp_a:get_max_satiety()
-  local a_traits = cp_a:get_traits()
+  local a_size = cp_a.size
+  local a_quality = cp_a.quality
+  local a_speed = cp_a.speed
+  local a_life = cp_a.max_life
+  local a_growth = cp_a.max_growth
+  local a_satiety = cp_a.max_satiety
+  local a_traits = cp_a.traits
   local a_entity_name = cp_a.entity_name or DemolisherNames.SMALL
 
   local b_size, b_quality, b_speed, b_life, b_growth, b_satiety, b_traits
   if cp_b ~= nil then
-    b_size = cp_b:get_size()
-    b_quality = cp_b:get_quality()
-    b_speed = cp_b:get_speed()
-    b_life = cp_b:get_max_life()
-    b_growth = cp_b:get_max_growth()
-    b_satiety = cp_b:get_max_satiety()
-    b_traits = cp_b:get_traits()
+    b_size = cp_b.size
+    b_quality = cp_b.quality
+    b_speed = cp_b.speed
+    b_life = cp_b.max_life
+    b_growth = cp_b.max_growth
+    b_satiety = cp_b.max_satiety
+    b_traits = cp_b.traits
   end
 
   -- numeric parameters
@@ -239,12 +240,7 @@ function M.mutate_to_child(cp_a, parent_force_a, cp_b, opts)
   local new_entity_name = map_name_by_line_and_class(line, target_class, alt)
 
   -- Construct child Customparam (entity=nil)
-  local ctor = _G.Customparam and _G.Customparam.new
-  if not ctor then
-    error("Customparam.new is not available in _G.")
-  end
-
-  local child = ctor(
+  local child = Customparam.new(
     nil,
     new_entity_name,
     nil,

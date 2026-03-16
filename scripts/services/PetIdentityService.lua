@@ -26,11 +26,9 @@ local function find_by_entity_ref(entity)
   if not (entity and entity.valid) then return nil end
   for _, pet in pairs(storage.my_demolishers) do
     local cp = pet.customparam
-    if cp and cp.get_entity then
-      local e = cp:get_entity()
-      if e and e.valid and e == entity then
-        return pet
-      end
+    local e = cp and cp.entity
+    if e and e.valid and e == entity then
+      return pet
     end
   end
   return nil
@@ -64,8 +62,8 @@ local function relink_by_home(entity)
       if (dx * dx + dy * dy) <= r2 then
         -- Relink
         pet.linked_unit_number = entity.unit_number
-        if pet.customparam and pet.customparam.set_entity then
-          pet.customparam:set_entity(entity)
+        if pet.customparam then
+          pet.customparam.entity = entity
         end
         return pet
       end
@@ -87,8 +85,8 @@ function S.resolve(entity)
   pet = find_by_linked_unit_number(entity)
   if pet then
     -- ensure entity ref is refreshed
-    if pet.customparam and pet.customparam.set_entity then
-      pet.customparam:set_entity(entity)
+    if pet.customparam then
+      pet.customparam.entity = entity
     end
     return pet
   end

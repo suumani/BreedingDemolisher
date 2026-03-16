@@ -10,19 +10,10 @@
 
 local EggGenesStore   = require("scripts.services.EggGenesStore")
 local DemolisherNames = require("__Manis_definitions__/scripts/definition/DemolisherNames")
-
--- Load customparam module (it defines global Customparam in this codebase).
-local ok_customparam, customparam_mod = pcall(require, "scripts.common.customparam")
+local Customparam     = require("scripts.common.customparam")
 
 local function get_player(cmd)
   return cmd.player_index and game.get_player(cmd.player_index) or nil
-end
-
-local function resolve_customparam_module()
-  -- Some modules return a table; some define a global. Support both.
-  if type(customparam_mod) == "table" then return customparam_mod end
-  if type(_G.Customparam) == "table" then return _G.Customparam end
-  return nil
 end
 
 local function give_stack(player, item_name, quality_name)
@@ -56,18 +47,6 @@ commands.add_command(
     local player = get_player(cmd)
     if not (player and player.valid) then return end
 
-    player.print(
-      "ok_customparam=" .. tostring(ok_customparam) ..
-      " type(require_ret)=" .. type(customparam_mod) ..
-      " type(_G.Customparam)=" .. type(_G.Customparam)
-    )
-
-    if not ok_customparam then
-      player.print("require error: " .. tostring(customparam_mod))
-      return
-    end
-
-    local Customparam = resolve_customparam_module()
     if not (Customparam and Customparam.new) then
       player.print("Customparam.new is not available.")
       return

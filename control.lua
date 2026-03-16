@@ -3,7 +3,6 @@
 -- Responsibility:
 --   Breeding Demolisher control stage bootstrap.
 --   - Initialize runtime state on init/configuration changed.
---   - Restore runtime-only bindings on save load.
 --   - Reconnect and re-register TJC integration on every bootstrap boundary,
 --     including on_load, because TJC dispatch requires target-mod registration.
 --   - Protect bootstrap boundaries by pcall and write minimal boot logs on failure.
@@ -12,7 +11,6 @@
 require("scripts.defines.constant_demolisher_parameters")
 require("scripts.defines.constant_demolisher_traits")
 
-require("scripts.common.customparam")
 require("scripts.common.game_print")
 require("scripts.common.util")
 
@@ -27,7 +25,6 @@ require("scripts.gui.selected_demolisher_gui")
 require("scripts.commands.bd_debug_commands")
 
 local DeterministicRandom = require("scripts.core.services.DeterministicRandom")
-local SaveRestoreService = require("scripts.services.SaveRestoreService")
 local ForceInitializer = require("scripts.services.ForceInitializer")
 local StorageInitializer = require("scripts.services.StorageInitializer")
 local BreedingDemolisherTjcGateway = require("scripts.boundary.tjc.BreedingDemolisherTjcGateway")
@@ -51,7 +48,6 @@ local function on_init_handler()
 end
 
 local function on_load_handler()
-  SaveRestoreService.on_load_restore()
   BreedingDemolisherTjcGateway.bootstrap()
 end
 
