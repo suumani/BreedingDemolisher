@@ -5,88 +5,77 @@
 --   Pet Breeding execution 1 step 分の plan entry 契約を表現する。
 --
 -- Scope:
---   - immutable contract data
+--   - plain-table ContractDTO
 --   - constructor validation
+--   - shape validation
 --   - copy-on-write update API
---   - instance check
 --
 -- Notes:
 --   - Planner → Store → Executor 間で共有される ContractDTO。
---   - top-level immutable を強制する。
+--   - metatable には依存しない。
+--   - 契約判定は validate() のみを基準とする。
 -- ------------------------------------------------------------
 local PetBreedingPlanEntryDTO = {}
 
-local INTERNAL_KEY = "__pet_breeding_plan_entry_dto_internal__"
-
-local function validate_string(value, field_name)
+local function validate_string(value, field_name, caller_name)
   if type(value) ~= "string" or value == "" then
-    error("PetBreedingPlanEntryDTO.new: " .. field_name .. " must be a non-empty string")
+    error(caller_name .. ": " .. field_name .. " must be a non-empty string")
   end
 end
 
-local function validate_args(args)
+local function validate_no_extra_keys(value, allowed_keys, caller_name)
+  for key, _ in pairs(value) do
+    if not allowed_keys[key] then
+      error(caller_name .. ": unexpected field '" .. tostring(key) .. "'")
+    end
+  end
+end
+
+--- validate
+--- Responsibility:
+---   PetBreedingPlanEntryDTO の契約 shape を検証する。
+--- @param value table
+function PetBreedingPlanEntryDTO.validate(value)
+  local caller_name = "PetBreedingPlanEntryDTO.validate"
+
+  if type(value) ~= "table" then
+    error(caller_name .. ": value must be a table")
+  end
+
+  validate_string(value.pet_id, "pet_id", caller_name)
+
+  validate_no_extra_keys(value, {
+    pet_id = true,
+  }, caller_name)
+end
+
+--- new
+--- Responsibility:
+---   validated plain-table ContractDTO を生成する。
+--- @param args table
+--- @return table
+function PetBreedingPlanEntryDTO.new(args)
   if type(args) ~= "table" then
     error("PetBreedingPlanEntryDTO.new: args must be a table")
   end
 
-  validate_string(args.pet_id, "pet_id")
-end
-
-local INSTANCE_MT = {
-  __index = function(self, key)
-    if PetBreedingPlanEntryDTO[key] ~= nil then
-      return PetBreedingPlanEntryDTO[key]
-    end
-
-    local internal = rawget(self, INTERNAL_KEY)
-    if internal ~= nil then
-      return internal[key]
-    end
-
-    return nil
-  end,
-  __newindex = function()
-    error("PetBreedingPlanEntryDTO is immutable")
-  end,
-  __metatable = "locked",
-}
-
---- new
---- Responsibility:
----   validated immutable ContractDTO を生成する。
---- @param args table
---- @return PetBreedingPlanEntryDTO
-function PetBreedingPlanEntryDTO.new(args)
-  validate_args(args)
-
-  local self = {}
-  rawset(self, INTERNAL_KEY, {
+  local dto = {
     pet_id = args.pet_id,
-  })
+  }
 
-  return setmetatable(self, INSTANCE_MT)
-end
-
---- is_instance
---- Responsibility:
----   ContractDTO instance であることを判定する。
---- @param value any
---- @return boolean
-function PetBreedingPlanEntryDTO.is_instance(value)
-  if type(value) ~= "table" then
-    return false
-  end
-
-  return rawget(value, INTERNAL_KEY) ~= nil
+  PetBreedingPlanEntryDTO.validate(dto)
+  return dto
 end
 
 --- with_pet_id
 --- Responsibility:
 ---   pet_id を更新した copy-on-write DTO を返す。
---- @param self PetBreedingPlanEntryDTO
+--- @param self table
 --- @param pet_id string
---- @return PetBreedingPlanEntryDTO
+--- @return table
 function PetBreedingPlanEntryDTO.with_pet_id(self, pet_id)
+  PetBreedingPlanEntryDTO.validate(self)
+
   return PetBreedingPlanEntryDTO.new({
     pet_id = pet_id,
   })

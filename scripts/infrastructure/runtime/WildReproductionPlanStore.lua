@@ -1,7 +1,7 @@
 -- __BreedingDemolisher__/scripts/infrastructure/runtime/WildReproductionPlanStore.lua
 -- ------------------------------------------------------------
 -- Responsibility:
---   Runtime-only で Wild Reproduction plan を保持する。
+--   storage 上で Wild Reproduction plan を保持する。
 --
 -- Scope:
 --   - cycle_tick ごとの plan 全置換
@@ -10,8 +10,9 @@
 --   - clear
 --
 -- Notes:
---   - 永続 source ではない。
---   - plan entry は ContractDTO のみ保持する。
+--   - storage に保存されるため save/load を跨ぎうる。
+--   - plan entry は validate 済み ContractDTO shape のみ保持する。
+--   - metatable ベースの DTO 判定は行わない。
 -- ------------------------------------------------------------
 local WildReproductionPlanStore = {}
 
@@ -30,15 +31,21 @@ end
 local function copy_entries(entries)
   local copied = {}
   for index, entry in ipairs(entries) do
-    copied[index] = entry
+    WildReproductionPlanEntryDTO.validate(entry)
+    copied[index] = WildReproductionPlanEntryDTO.new({
+      surface_name = entry.surface_name,
+      representative_chunk_x = entry.representative_chunk_x,
+      representative_chunk_y = entry.representative_chunk_y,
+    })
   end
   return copied
 end
 
 local function validate_entries(entries)
   for index, entry in ipairs(entries) do
-    if not WildReproductionPlanEntryDTO.is_instance(entry) then
-      error("WildReproductionPlanStore.replace_plan: entry at index " .. tostring(index) .. " must be WildReproductionPlanEntryDTO")
+    local ok, err = pcall(WildReproductionPlanEntryDTO.validate, entry)
+    if not ok then
+      error("WildReproductionPlanStore.replace_plan: invalid entry at index " .. tostring(index) .. ": " .. tostring(err))
     end
   end
 end
@@ -47,7 +54,7 @@ end
 --- Responsibility:
 ---   現 cycle の plan を全置換する。
 --- @param cycle_tick uint
---- @param entries WildReproductionPlanEntryDTO[]
+--- @param entries table[]
 function WildReproductionPlanStore.replace_plan(cycle_tick, entries)
   if type(cycle_tick) ~= "number" then
     error("WildReproductionPlanStore.replace_plan: cycle_tick must be a number")
@@ -67,7 +74,7 @@ end
 --- Responsibility:
 ---   step_index に対応する entry を返す。
 --- @param step_index uint
---- @return WildReproductionPlanEntryDTO|nil
+--- @return table|nil
 function WildReproductionPlanStore.get_entry(step_index)
   if type(step_index) ~= "number" then
     error("WildReproductionPlanStore.get_entry: step_index must be a number")
