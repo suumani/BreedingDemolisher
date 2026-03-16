@@ -10,6 +10,7 @@
 --   - This GUI is rebuilt on selection change for simplicity and reliability.
 --   - Pet identification is delegated to PetIdentityService (unit_number may change).
 --   - Demolisher判定はロード時に集合化した名前セットで O(1) 判定を行う。
+--   - quality 表示は customparam の遺伝値ではなく、spawn 後個体の実 quality 名を表示する。
 -- ----------------------------
 
 local M = {}
@@ -54,10 +55,20 @@ local function get_entity_quality_name(entity)
   end
 
   local q = entity.quality
+  if q == nil then
+    return "normal"
+  end
+
   if type(q) == "string" then
     return q
   end
+
   if type(q) == "table" and q.name then
+    return q.name
+  end
+
+  -- Factorio runtime object case
+  if q.name ~= nil then
     return q.name
   end
 
@@ -194,7 +205,7 @@ local function my_demolisher_frame(main_frame, entity, my_demolisher)
   }
 
   local life = cp.life or 0
-  local quality = cp.quality or 0
+  local quality_name = get_entity_quality_name(entity)
   local satiety = cp.satiety or 0
   local speed = cp.speed or 0
   local growth = cp.growth or 0
@@ -203,7 +214,7 @@ local function my_demolisher_frame(main_frame, entity, my_demolisher)
   local traits = cp.traits
 
   basic_info_table.add{ type = "label", caption = {"item-description.demolisher-lifetime", life} }
-  basic_info_table.add{ type = "label", caption = {"item-description.demolisher-quality", quality} }
+  basic_info_table.add{ type = "label", caption = {"item-description.demolisher-quality", quality_name} }
 
   basic_info_table.add{ type = "label", caption = {"item-description.demolisher-satiety", satiety, 100} }
   basic_info_table.add{ type = "label", caption = {"item-description.demolisher-speed", speed} }
