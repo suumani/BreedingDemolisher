@@ -6,6 +6,7 @@
 --   - Restore runtime-only bindings on save load.
 --   - Reconnect and re-register TJC integration on every bootstrap boundary,
 --     including on_load, because TJC dispatch requires target-mod registration.
+--   - Protect bootstrap boundaries by pcall and write minimal boot logs on failure.
 -- ------------------------------------------------------------
 
 require("scripts.defines.constant_demolisher_parameters")
@@ -31,6 +32,13 @@ local ForceInitializer = require("scripts.services.ForceInitializer")
 local StorageInitializer = require("scripts.services.StorageInitializer")
 local BreedingDemolisherTjcGateway = require("scripts.boundary.tjc.BreedingDemolisherTjcGateway")
 
+local BOOT_TAG = "BreedingDemolisher"
+local BOOT_PHASE_TAG = "BOOT"
+
+local function boot_log_error(context, err)
+  log("[" .. BOOT_TAG .. "][ERROR][" .. BOOT_PHASE_TAG .. "] " .. tostring(context) .. ": " .. tostring(err))
+end
+
 local function init()
   DeterministicRandom.init()
   StorageInitializer.init_all()
@@ -38,15 +46,36 @@ local function init()
   BreedingDemolisherTjcGateway.bootstrap()
 end
 
-script.on_init(function()
+local function on_init_handler()
   init()
+end
+
+local function on_load_handler()
+  SaveRestoreService.on_load_restore()
+  BreedingDemolisherTjcGateway.bootstrap()
+end
+
+local function on_configuration_changed_handler(_event)
+  init()
+end
+
+script.on_init(function()
+  local ok, err = pcall(on_init_handler)
+  if not ok then
+    boot_log_error("on_init", err)
+  end
 end)
 
 script.on_load(function()
-  SaveRestoreService.on_load_restore()
-  BreedingDemolisherTjcGateway.bootstrap()
+  local ok, err = pcall(on_load_handler)
+  if not ok then
+    boot_log_error("on_load", err)
+  end
 end)
 
-script.on_configuration_changed(function(_event)
-  init()
+script.on_configuration_changed(function(event)
+  local ok, err = pcall(on_configuration_changed_handler, event)
+  if not ok then
+    boot_log_error("on_configuration_changed", err)
+  end
 end)

@@ -7,12 +7,15 @@
 -- Scope:
 --   - enemy kill による pet growth 更新
 --   - enemy kill による pet satiety 更新
+--   - event boundary protection by pcall
 --
 -- Notes:
 --   - pet death handling は on_object_destroyed 側で扱う。
 --   - wild demolisher 撃破時の旧 egg drop / old respawn は扱わない。
+--   - pcall は event boundary にのみ配置し、失敗は Logger へ明示記録する。
 -- ------------------------------------------------------------
 local DemolisherNames = require("__Manis_definitions__/scripts/definition/DemolisherNames")
+local Logger = require("scripts.services.Logger")
 
 local DEMOLISHER_NAME_SET = {}
 do
@@ -60,7 +63,7 @@ local function handle_enemy_except_demolisher_dead(entity)
   end
 end
 
-script.on_event(defines.events.on_entity_died, function(event)
+local function on_entity_died_handler(event)
   local entity = event.entity
   if not entity or not entity.valid or not entity.surface then
     return
@@ -71,4 +74,17 @@ script.on_event(defines.events.on_entity_died, function(event)
   end
 
   handle_enemy_except_demolisher_dead(entity)
+end
+
+script.on_event(defines.events.on_entity_died, function(event)
+  local ok, err = pcall(on_entity_died_handler, event)
+  if not ok then
+    Logger.error({
+      event = "on_entity_died",
+      error = tostring(err),
+      tick = game and game.tick or nil,
+      entity_name = event and event.entity and event.entity.valid and event.entity.name or nil,
+      unit_number = event and event.entity and event.entity.valid and event.entity.unit_number or nil,
+    })
+  end
 end)

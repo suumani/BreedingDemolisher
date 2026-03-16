@@ -43,10 +43,10 @@ end
 
 local function validate_entries(entries)
   for index, entry in ipairs(entries) do
-    local ok, err = pcall(WildReproductionPlanEntryDTO.validate, entry)
-    if not ok then
-      error("WildReproductionPlanStore.replace_plan: invalid entry at index " .. tostring(index) .. ": " .. tostring(err))
+    if type(entry) ~= "table" then
+      error("WildReproductionPlanStore.replace_plan: entry at index " .. tostring(index) .. " must be a table")
     end
+    WildReproductionPlanEntryDTO.validate(entry)
   end
 end
 

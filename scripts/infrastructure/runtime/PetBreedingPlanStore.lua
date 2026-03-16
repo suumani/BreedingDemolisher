@@ -41,10 +41,10 @@ end
 
 local function validate_entries(entries)
   for index, entry in ipairs(entries) do
-    local ok, err = pcall(PetBreedingPlanEntryDTO.validate, entry)
-    if not ok then
-      error("PetBreedingPlanStore.replace_plan: invalid entry at index " .. tostring(index) .. ": " .. tostring(err))
+    if type(entry) ~= "table" then
+      error("PetBreedingPlanStore.replace_plan: entry at index " .. tostring(index) .. " must be a table")
     end
+    PetBreedingPlanEntryDTO.validate(entry)
   end
 end
 

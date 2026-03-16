@@ -9,12 +9,15 @@
 --   - pet killed notification
 --   - storage.my_demolishers からの削除
 --   - destroyed registration mapping の掃除
+--   - event boundary protection by pcall
 --
 -- Notes:
 --   - on_entity_died の代替として pet 死亡を扱う。
 --   - old egg drop / old respawn は扱わない。
+--   - pcall は event boundary にのみ配置し、失敗は Logger へ明示記録する。
 -- ------------------------------------------------------------
 local NotificationService = require("scripts.services.NotificationService")
+local Logger = require("scripts.services.Logger")
 
 local function ensure_destroy_storage()
   storage.bd = storage.bd or {}
@@ -52,7 +55,7 @@ local function cleanup_destroy_mapping(registration_number, pet_id)
   end
 end
 
-script.on_event(defines.events.on_object_destroyed, function(event)
+local function on_object_destroyed_handler(event)
   ensure_destroy_storage()
 
   local registration_number = event.registration_number
@@ -71,4 +74,16 @@ script.on_event(defines.events.on_object_destroyed, function(event)
 
   remove_pet_from_storage(pet_id)
   cleanup_destroy_mapping(registration_number, pet_id)
+end
+
+script.on_event(defines.events.on_object_destroyed, function(event)
+  local ok, err = pcall(on_object_destroyed_handler, event)
+  if not ok then
+    Logger.error({
+      event = "on_object_destroyed",
+      error = tostring(err),
+      tick = game and game.tick or nil,
+      registration_number = event and event.registration_number or nil,
+    })
+  end
 end)
