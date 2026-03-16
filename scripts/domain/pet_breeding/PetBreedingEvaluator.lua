@@ -35,15 +35,15 @@ PetBreedingEvaluator.RESULT_PARTHENOGENESIS = "parthenogenesis"
 PetBreedingEvaluator.RESULT_REPRODUCTION = "reproduction"
 
 local function is_mature(cp)
-  return cp ~= nil and cp.get_growth ~= nil and cp:get_growth() >= BREED_MIN_GROWTH
+  return cp ~= nil and (cp.growth or 0) >= BREED_MIN_GROWTH
 end
 
 local function get_entity(cp)
-  if cp == nil or cp.get_entity == nil then
+  if cp == nil then
     return nil
   end
 
-  local entity = cp:get_entity()
+  local entity = cp.entity
   if entity and entity.valid then
     return entity
   end
@@ -52,10 +52,10 @@ local function get_entity(cp)
 end
 
 local function get_growth(cp)
-  if cp == nil or cp.get_growth == nil then
+  if cp == nil then
     return 0
   end
-  return cp:get_growth()
+  return cp.growth or 0
 end
 
 local function stage_index(growth)

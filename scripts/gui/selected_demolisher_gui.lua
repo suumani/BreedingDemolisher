@@ -19,9 +19,9 @@ local PetIdentityService = require("scripts.services.PetIdentityService")
 
 -- traits table -> localization key mapping
 local trait_locale_keys = {
-  ["short_warp"]      = "trait.short_warp",
-  ["emergency_food"]  = "trait.emergency_food",
-  ["bonus_growth"]    = "trait.bonus_growth",
+  ["short_warp"]     = "trait.short_warp",
+  ["emergency_food"] = "trait.emergency_food",
+  ["bonus_growth"]   = "trait.bonus_growth",
 }
 
 -- Demolisher name set for O(1) lookup
@@ -66,6 +66,59 @@ end
 
 local function get_life_text(_entity)
   return "Infinity"
+end
+
+local function get_default_name_surface(cp)
+  local e = cp and cp.entity
+  if e and e.valid then
+    return e.surface.name
+  end
+  return "unknown"
+end
+
+local function get_default_name_size(cp)
+  local e = cp and cp.entity
+  if not (e and e.valid) then
+    return "U"
+  end
+
+  if e.name == DemolisherNames.BIG then
+    return "S"
+  elseif e.name == DemolisherNames.MEDIUM then
+    return "A"
+  elseif e.name == DemolisherNames.SMALL then
+    return "B"
+  else
+    return "U"
+  end
+end
+
+local function get_default_name_quality(cp)
+  local e = cp and cp.entity
+  if not (e and e.valid) then
+    return "--"
+  end
+
+  local qname = get_entity_quality_name(e)
+  if qname == "legendary" then
+    return "++"
+  elseif qname == "epic" then
+    return "+"
+  elseif qname == "rare" then
+    return ""
+  elseif qname == "uncommon" then
+    return "-"
+  else
+    return "--"
+  end
+end
+
+local function get_default_name_unit_number(cp)
+  local e = cp and cp.entity
+  if e and e.valid and e.unit_number then
+    return e.unit_number
+  end
+  return 0
 end
 
 local function wild_demolisher_frame(main_frame, entity)
@@ -114,10 +167,10 @@ local function my_demolisher_frame(main_frame, entity, my_demolisher)
     type = "label",
     caption = {
       "item-description.demolisher-default-name",
-      cp:get_dafault_name_surface(),
-      cp:get_dafault_name_size(),
-      cp:get_dafault_name_quality(),
-      cp:get_dafault_name_unit_number(),
+      get_default_name_surface(cp),
+      get_default_name_size(cp),
+      get_default_name_quality(cp),
+      get_default_name_unit_number(cp),
     }
   }
   name_label.style.font = "default-large-bold"
@@ -140,21 +193,29 @@ local function my_demolisher_frame(main_frame, entity, my_demolisher)
     column_count = 2
   }
 
-  basic_info_table.add{ type = "label", caption = {"item-description.demolisher-lifetime", cp:get_life()} }
-  basic_info_table.add{ type = "label", caption = {"item-description.demolisher-quality", cp:get_quality()} }
+  local life = cp.life or 0
+  local quality = cp.quality or 0
+  local satiety = cp.satiety or 0
+  local speed = cp.speed or 0
+  local growth = cp.growth or 0
+  local lv = cp.lv or 0
+  local size = cp.size or 0
+  local traits = cp.traits
 
-  basic_info_table.add{ type = "label", caption = {"item-description.demolisher-satiety", cp:get_satiety(), 100} }
-  basic_info_table.add{ type = "label", caption = {"item-description.demolisher-speed", 1} }
+  basic_info_table.add{ type = "label", caption = {"item-description.demolisher-lifetime", life} }
+  basic_info_table.add{ type = "label", caption = {"item-description.demolisher-quality", quality} }
 
-  local growth = cp:get_growth()
+  basic_info_table.add{ type = "label", caption = {"item-description.demolisher-satiety", satiety, 100} }
+  basic_info_table.add{ type = "label", caption = {"item-description.demolisher-speed", speed} }
+
   if growth > 20 then
     basic_info_table.add{ type = "label", caption = {"item-description.demolisher-growth-breedable", growth, 50} }
   else
     basic_info_table.add{ type = "label", caption = {"item-description.demolisher-growth-immature", growth, 50} }
   end
-  basic_info_table.add{ type = "label", caption = {"item-description.demolisher-lv", cp:get_lv()} }
+  basic_info_table.add{ type = "label", caption = {"item-description.demolisher-lv", lv} }
 
-  basic_info_table.add{ type = "label", caption = {"item-description.demolisher-size", entity.max_health + cp:get_size()} }
+  basic_info_table.add{ type = "label", caption = {"item-description.demolisher-size", entity.max_health + size} }
 
   main_frame.add{ type = "label", caption = {"item-description.demolisher-growth-description"} }
   main_frame.add{ type = "label", caption = {"item-description.demolisher-hangry-description"} }
@@ -165,7 +226,6 @@ local function my_demolisher_frame(main_frame, entity, my_demolisher)
   }
   traits_label.style.font = "default-bold"
 
-  local traits = cp:get_traits()
   if traits then
     for key, value in pairs(traits) do
       local locale_key = trait_locale_keys[key]

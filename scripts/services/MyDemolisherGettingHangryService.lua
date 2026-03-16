@@ -1,36 +1,45 @@
 -- __BreedingDemolisher__/scripts/services/MyDemolisherGettingHangryService.lua
 -- ----------------------------
--- ペット産卵する
+-- Responsibility:
+--   Advance pet hunger/aging state once per tick cadence and kill pets that reach death conditions.
 -- ----------------------------
 
 local MyDemolisherGettingHangryService = {}
 
--- ----------------------------
--- ペットおなかが減る
--- ----------------------------
 function MyDemolisherGettingHangryService.my_demolisher_getting_hangry()
+  if storage == nil then
+    error("MyDemolisherGettingHangryService: storage is nil")
+  end
+  if storage.my_demolishers == nil then
+    error("MyDemolisherGettingHangryService: storage.my_demolishers is nil. Call StorageInitializer.init_all() first.")
+  end
 
-	-- ペットが居なければ終了
-	if #storage.my_demolishers == 0 then
-		return
-	end
-	
-	for _, value in pairs(storage.my_demolishers) do
-		-- 腹減り
-		value.customparam:getting_hangury()
-		-- 満腹度が-1以下になったら死亡
-		if value.customparam:get_satiety() < 0 then
-			if value.customparam:get_entity() ~= nil and value.customparam:get_entity().valid then value.customparam:get_entity().die() end
-		end
-		-- 寿命減り
-		value.customparam:getting_old()
-		-- 寿命が-1以下になったら死亡
-		if value.customparam:get_life() < 0 then
-			if value.customparam:get_entity() ~= nil and value.customparam:get_entity().valid then
-				value.customparam:get_entity().die()
-			end
-		end
-	end
+  if #storage.my_demolishers == 0 then
+    return
+  end
+
+  for _, value in pairs(storage.my_demolishers) do
+    local cp = value.customparam
+    if cp == nil then
+      error("MyDemolisherGettingHangryService: pet.customparam is nil")
+    end
+
+    cp.satiety = (cp.satiety or 0) - 1
+    if cp.satiety < 0 then
+      local entity = cp.entity
+      if entity ~= nil and entity.valid then
+        entity.die()
+      end
+    end
+
+    cp.life = (cp.life or 0) - 1
+    if cp.life < 0 then
+      local entity = cp.entity
+      if entity ~= nil and entity.valid then
+        entity.die()
+      end
+    end
+  end
 end
 
 return MyDemolisherGettingHangryService

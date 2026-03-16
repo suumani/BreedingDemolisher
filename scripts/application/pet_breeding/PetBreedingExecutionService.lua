@@ -21,6 +21,7 @@ local PetBreedingExecutionService = {}
 
 local PetBreedingPlanStore = require("scripts.infrastructure.runtime.PetBreedingPlanStore")
 local PetBreedingEvaluator = require("scripts.domain.pet_breeding.PetBreedingEvaluator")
+local GeneticsMutator = require("scripts.domain.genetics.GeneticsMutator")
 local EggDropService = require("scripts.services.EggDropService")
 local NotificationService = require("scripts.services.NotificationService")
 local QualityUtil = require("scripts.util.QualityUtil")
@@ -52,11 +53,13 @@ local function decide_egg_item_name_by_force_name(force_name)
 end
 
 local function create_parthenogenesis_customparam(subject_cp, subject_force_name)
-  return subject_cp:mutate(subject_force_name, nil)
+  local child = GeneticsMutator.mutate_to_child(subject_cp, subject_force_name, nil)
+  return child
 end
 
 local function create_reproduction_customparam(subject_cp, subject_force_name, partner_cp)
-  return subject_cp:mutate(subject_force_name, partner_cp)
+  local child = GeneticsMutator.mutate_to_child(subject_cp, subject_force_name, partner_cp)
+  return child
 end
 
 local function emit_egg(subject_entity, child_force_name, egg_customparam)
@@ -68,7 +71,7 @@ local function emit_egg(subject_entity, child_force_name, egg_customparam)
   end
 
   local item_name = decide_egg_item_name_by_force_name(child_force_name or subject_entity.force.name)
-  local item_quality = QualityUtil.to_item_quality_name(egg_customparam:get_quality())
+  local item_quality = QualityUtil.to_item_quality_name(egg_customparam.quality)
 
   NotificationService.breeding_egg_laid(subject_entity.surface, subject_entity.position)
   EggDropService.drop_egg(

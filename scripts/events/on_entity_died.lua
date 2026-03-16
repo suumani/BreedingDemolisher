@@ -13,6 +13,7 @@
 --   - pet death handling は on_object_destroyed 側で扱う。
 --   - wild demolisher 撃破時の旧 egg drop / old respawn は扱わない。
 --   - pcall は event boundary にのみ配置し、失敗は Logger へ明示記録する。
+--   - storage shape は bootstrap 済み前提で扱い、この境界では自動生成しない。
 -- ------------------------------------------------------------
 local DemolisherNames = require("__Manis_definitions__/scripts/definition/DemolisherNames")
 local Logger = require("scripts.services.Logger")
@@ -21,6 +22,15 @@ local DEMOLISHER_NAME_SET = {}
 do
   for _, n in ipairs(DemolisherNames.ALL) do
     DEMOLISHER_NAME_SET[n] = true
+  end
+end
+
+local function expect_storage()
+  if storage == nil then
+    error("on_entity_died: storage is nil")
+  end
+  if storage.my_demolishers == nil then
+    error("on_entity_died: storage.my_demolishers is nil. Call StorageInitializer.init_all() first.")
   end
 end
 
@@ -33,7 +43,7 @@ local function handle_enemy_except_demolisher_dead(entity)
     return
   end
 
-  local pets = storage.my_demolishers or {}
+  local pets = storage.my_demolishers
   if #pets == 0 then
     return
   end
@@ -43,27 +53,39 @@ local function handle_enemy_except_demolisher_dead(entity)
 
   for _, pet in ipairs(pets) do
     local cp = pet.customparam
-    if cp and cp.get_entity then
-      local pet_entity = cp:get_entity()
-      if pet_entity and pet_entity.valid then
-        local dx = entity.position.x - pet_entity.position.x
-        local dy = entity.position.y - pet_entity.position.y
-        local d2 = dx * dx + dy * dy
-        if d2 < nearest_dist2 then
-          nearest_dist2 = d2
-          nearest_pet = pet
-        end
+    local pet_entity = cp and cp.entity
+    if pet_entity and pet_entity.valid then
+      local dx = entity.position.x - pet_entity.position.x
+      local dy = entity.position.y - pet_entity.position.y
+      local d2 = dx * dx + dy * dy
+      if d2 < nearest_dist2 then
+        nearest_dist2 = d2
+        nearest_pet = pet
       end
     end
   end
 
   if nearest_pet and nearest_pet.customparam then
-    nearest_pet.customparam:grow(entity.max_health / 20000)
-    nearest_pet.customparam:eat(0.1)
+    local cp = nearest_pet.customparam
+    cp.growth = (cp.growth or 0) + (entity.max_health / 20000)
+
+    local max_growth = cp.max_growth
+    if max_growth ~= nil and cp.growth > max_growth then
+      cp.growth = max_growth
+    end
+
+    cp.satiety = (cp.satiety or 0) + 0.1
+
+    local max_satiety = cp.max_satiety
+    if max_satiety ~= nil and cp.satiety > max_satiety then
+      cp.satiety = max_satiety
+    end
   end
 end
 
 local function on_entity_died_handler(event)
+  expect_storage()
+
   local entity = event.entity
   if not entity or not entity.valid or not entity.surface then
     return
