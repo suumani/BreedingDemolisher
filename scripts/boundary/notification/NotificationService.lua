@@ -3,8 +3,6 @@
 -- Responsibility:
 --   Centralized user-facing notifications (localized).
 -- ----------------------------
-local util = require("scripts.common.util")
-
 local N = {}
 
 local function pos_text(pos)
@@ -12,7 +10,7 @@ local function pos_text(pos)
 end
 
 function N.breeding_egg_laid(surface, pos)
-  util.print({
+  game.print({
     "bd.message.breeding_egg_laid",
     tostring(surface.name),
     pos_text(pos)
@@ -20,7 +18,7 @@ function N.breeding_egg_laid(surface, pos)
 end
 
 function N.pet_killed(surface, pos, pet_id)
-  util.print({
+  game.print({
     "bd.message.pet_killed",
     tostring(surface.name),
     pos_text(pos),
@@ -29,7 +27,7 @@ function N.pet_killed(surface, pos, pet_id)
 end
 
 function N.egg_drop_generic(surface, pos)
-  util.print({
+  game.print({
     "bd.message.egg_drop_generic",
     tostring(surface.name),
     pos_text(pos)
@@ -37,7 +35,7 @@ function N.egg_drop_generic(surface, pos)
 end
 
 function N.egg_drop_pet(surface, pos)
-  util.print({
+  game.print({
     "bd.message.egg_drop_pet",
     tostring(surface.name),
     pos_text(pos)

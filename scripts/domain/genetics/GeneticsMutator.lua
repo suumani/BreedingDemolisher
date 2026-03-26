@@ -1,7 +1,7 @@
 -- __BreedingDemolisher__/scripts/domain/genetics/GeneticsMutator.lua
 -- ------------------------------------------------------------
 -- Responsibility:
---   Orchestrate v0.5.6 genetics for producing a child Customparam.
+--   Orchestrate v0.5.6 genetics for producing a child params.
 --   - Decide egg force via ForceTransitionPolicy
 --   - Apply TwoStageInheritance to all numeric parameters
 --   - Apply TraitsInheritance to traits (union+max, mutate, optional add)
@@ -16,14 +16,11 @@ local M = {}
 local TwoStage = require("scripts.domain.genetics.TwoStageInheritance")
 local TraitsInherit = require("scripts.domain.genetics.TraitsInheritance")
 local ForceTrans = require("scripts.domain.genetics.ForceTransitionPolicy")
-local Customparam = require("scripts.common.customparam")
+local DemolisherParamsFactory = require("scripts.domain.pet.DemolisherParamsFactory")
 
 local DemolisherNames = require("__Manis_definitions__/scripts/definition/DemolisherNames")
 local TraitDefs = require("scripts.domain.traits.DemolisherTraitDefinitions")
 
--- ------------------------------------------------------------
--- internal helpers
--- ------------------------------------------------------------
 local function resolve_research_level()
   return 0
 end
@@ -37,7 +34,6 @@ local function safe_force_name_from_cp(cp)
   return nil
 end
 
--- Determine "line" by name (normal/speedstar/gigantic/king)
 local function resolve_line(name)
   if name == nil then return "normal" end
   if name == DemolisherNames.MANIS_CRAZY_KING_SMALL or name == DemolisherNames.MANIS_CRAZY_KING_SMALL_ALT then
@@ -58,8 +54,6 @@ local function resolve_line(name)
   return "normal"
 end
 
--- Replace size class within the same line.
--- target_class: "small"|"medium"|"big"|"behemoth"
 local function map_name_by_line_and_class(line, target_class, is_alt)
   local alt = is_alt and true or false
 
@@ -81,7 +75,6 @@ local function map_name_by_line_and_class(line, target_class, is_alt)
     return alt and DemolisherNames.MANIS_SPEEDSTAR_BEHEMOTH_ALT or DemolisherNames.MANIS_SPEEDSTAR_BEHEMOTH
   end
 
-  -- normal line (default + manis + behemoth)
   if target_class == "small" then return alt and DemolisherNames.MANIS_SMALL_ALT or DemolisherNames.MANIS_SMALL end
   if target_class == "medium" then return alt and DemolisherNames.MANIS_MEDIUM_ALT or DemolisherNames.MANIS_MEDIUM end
   if target_class == "big" then return alt and DemolisherNames.MANIS_BIG_ALT or DemolisherNames.MANIS_BIG end
@@ -104,7 +97,6 @@ local function is_alt_name(name)
       or name == DemolisherNames.MANIS_CRAZY_KING_SMALL_ALT
 end
 
--- Decide target class based on size (keeps your legacy thresholds).
 local function resolve_size_class_by_size(size)
   if size > 300000 then
     return "behemoth"
@@ -118,13 +110,10 @@ local function resolve_size_class_by_size(size)
   return "small"
 end
 
--- ------------------------------------------------------------
--- configs (centralized)
--- ------------------------------------------------------------
 local CFG = {
   size = {
     pull_ratio = 0.10,
-    mutation_amplitude = 1000, -- conservative; tune later
+    mutation_amplitude = 1000,
     force_drift = { enemy = 0.00, demolishers = 0.03, player = 0.06 },
     two_parent_bonus = 0.02,
     single_parent_drift = 0.00,
@@ -166,14 +155,6 @@ local CFG = {
   },
 }
 
--- ------------------------------------------------------------
--- Public API
--- ------------------------------------------------------------
-
--- mutate_to_child(cp_a, parent_force_a, cp_b, opts)
--- opts:
---   trait_pool: array of trait ids for random addition (optional)
---   parent_force_b: override (optional)
 function M.mutate_to_child(cp_a, parent_force_a, cp_b, opts)
   opts = opts or {}
 
@@ -181,7 +162,6 @@ function M.mutate_to_child(cp_a, parent_force_a, cp_b, opts)
   local parent_count = (cp_b ~= nil) and 2 or 1
   local research_level = resolve_research_level()
 
-  -- If partner force is unknown, fall back to same as parent A for stability.
   if parent_count >= 2 and parent_force_b == nil then
     parent_force_b = parent_force_a
   end
@@ -193,7 +173,6 @@ function M.mutate_to_child(cp_a, parent_force_a, cp_b, opts)
     research_level
   )
 
-  -- base values
   local a_size = cp_a.size
   local a_quality = cp_a.quality
   local a_speed = cp_a.speed
@@ -214,7 +193,6 @@ function M.mutate_to_child(cp_a, parent_force_a, cp_b, opts)
     b_traits = cp_b.traits
   end
 
-  -- numeric parameters
   local child_size = TwoStage.inherit_two_stage(a_size, b_size, parent_count, child_force, CFG.size)
   local child_quality = TwoStage.inherit_two_stage(a_quality, b_quality, parent_count, child_force, CFG.quality)
   local child_speed = TwoStage.inherit_two_stage(a_speed, b_speed, parent_count, child_force, CFG.speed)
@@ -223,7 +201,6 @@ function M.mutate_to_child(cp_a, parent_force_a, cp_b, opts)
   local child_max_growth = TwoStage.inherit_two_stage(a_growth, b_growth, parent_count, child_force, CFG.max_growth)
   local child_max_satiety = TwoStage.inherit_two_stage(a_satiety, b_satiety, parent_count, child_force, CFG.max_satiety)
 
-  -- traits
   local child_traits = TraitsInherit.inherit_two_stage(
     a_traits,
     b_traits,
@@ -233,26 +210,22 @@ function M.mutate_to_child(cp_a, parent_force_a, cp_b, opts)
     nil
   )
 
-  -- entity name evolution: keep line, change size class
   local line = resolve_line(a_entity_name)
   local alt = is_alt_name(a_entity_name)
   local target_class = resolve_size_class_by_size(child_size)
   local new_entity_name = map_name_by_line_and_class(line, target_class, alt)
 
-  -- Construct child Customparam (entity=nil)
-  local child = Customparam.new(
-    nil,
-    new_entity_name,
-    nil,
-    child_size,
-    child_quality,
-    child_speed,
-    child_max_life,
-    child_max_growth,
-    child_max_satiety,
-    child_traits,
-    game.tick
-  )
+  local child = DemolisherParamsFactory.new_child_params({
+    entity_name = new_entity_name,
+    size = child_size,
+    quality = child_quality,
+    speed = child_speed,
+    max_life = child_max_life,
+    max_growth = child_max_growth,
+    max_satiety = child_max_satiety,
+    traits = child_traits,
+    born_tick = game.tick,
+  })
 
   return child, child_force
 end

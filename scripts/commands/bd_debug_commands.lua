@@ -10,7 +10,7 @@
 -- ------------------------------------------------------------
 local EggGenesStore = require("scripts.infrastructure.runtime.EggGenesStore")
 local DemolisherNames = require("__Manis_definitions__/scripts/definition/DemolisherNames")
-local Customparam = require("scripts.common.customparam")
+local DemolisherParamsFactory = require("scripts.domain.pet.DemolisherParamsFactory")
 local CONST_DEMOLISHER_PARAMETER = require("scripts.defines.constant_demolisher_parameters")
 local CONST_ITEM_NAME = require("scripts.defines.constant_item_name")
 local CONST_QUALITY = require("scripts.defines.constant_quality")
@@ -54,8 +54,8 @@ commands.add_command(
       return
     end
 
-    if not (Customparam and Customparam.new) then
-      player.print("Customparam.new is not available.")
+    if not (DemolisherParamsFactory and DemolisherParamsFactory.new_egg_params) then
+      player.print("DemolisherParamsFactory.new_egg_params is not available.")
       return
     end
 
@@ -66,15 +66,12 @@ commands.add_command(
 
     local q = CONST_QUALITY.NORMAL
 
-    local customparam = Customparam.new(
-      nil,
-      DemolisherNames.SMALL,
-      nil, nil, nil, nil, nil,
-      CONST_DEMOLISHER_PARAMETER.DEFAULT_MAX_GROWTH,
-      CONST_DEMOLISHER_PARAMETER.DEFAULT_MAX_SATIETY,
-      nil,
-      game.tick
-    )
+    local customparam = DemolisherParamsFactory.new_egg_params({
+      entity_name = DemolisherNames.SMALL,
+      max_growth = CONST_DEMOLISHER_PARAMETER.DEFAULT_MAX_GROWTH,
+      max_satiety = CONST_DEMOLISHER_PARAMETER.DEFAULT_MAX_SATIETY,
+      born_tick = game.tick,
+    })
 
     if customparam == nil then
       player.print("Customparam is nil. Cannot create a genetic egg.")

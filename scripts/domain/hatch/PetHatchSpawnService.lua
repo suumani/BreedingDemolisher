@@ -18,7 +18,7 @@
 --   - storage shape は bootstrap 済み前提で扱い、この層では自動生成しない。
 -- ------------------------------------------------------------
 local SpawnClampPolicy = require("scripts.domain.hatch.SpawnClampPolicy")
-local Customparam = require("scripts.common.customparam")
+local DemolisherParamsFactory = require("scripts.domain.pet.DemolisherParamsFactory")
 local CONST_DEMOLISHER_PARAMETER = require("scripts.defines.constant_demolisher_parameters")
 
 local PetHatchSpawnService = {}
@@ -116,6 +116,7 @@ function PetHatchSpawnService.spawn_from_throw(player, egg, customparam)
       customparam.life = spawn.max_life
       customparam.max_growth = spawn.max_growth
       customparam.max_satiety = spawn.max_satiety
+      customparam.satiety = spawn.max_satiety
     end
   end
 
@@ -138,15 +139,13 @@ function PetHatchSpawnService.spawn_from_throw(player, egg, customparam)
     force = entity.force,
     unit_number = entity.unit_number,
 
-    customparam = customparam or Customparam.new(
-      entity,
-      entity_name,
-      nil, nil, nil, nil, nil,
-      CONST_DEMOLISHER_PARAMETER.DEFAULT_MAX_GROWTH,
-      CONST_DEMOLISHER_PARAMETER.DEFAULT_MAX_SATIETY,
-      nil,
-      game.tick
-    )
+    customparam = customparam or DemolisherParamsFactory.new_randomized({
+      entity = entity,
+      entity_name = entity_name,
+      max_growth = CONST_DEMOLISHER_PARAMETER.DEFAULT_MAX_GROWTH,
+      max_satiety = CONST_DEMOLISHER_PARAMETER.DEFAULT_MAX_SATIETY,
+      born_tick = game.tick,
+    })
   })
 
   return entity
