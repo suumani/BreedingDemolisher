@@ -20,11 +20,12 @@
 --   - cap 到達時は territory step を早期打ち切る
 --   - LuaSegmentedUnit の識別は prototype.name を使用する。
 --   - quality rule 自体は domain に委譲する。
+--   - 実行結果は ResultDTO で返す。
 -- ------------------------------------------------------------
 local WildReproductionExecutionService = {}
 
 local DeterministicRandom = require("scripts.core.services.DeterministicRandom")
-local Logger = require("scripts.services.Logger")
+local Logger = require("scripts.infrastructure.logging.Logger")
 
 local WildReproductionPlanStore = require("scripts.infrastructure.runtime.WildReproductionPlanStore")
 local TerritoryQueryService = require("scripts.domain.reproduction.TerritoryQueryService")
@@ -35,6 +36,24 @@ local SpawnQualityResolver = require("scripts.domain.reproduction.SpawnQualityRe
 local SpawnExecutor = require("scripts.domain.reproduction.SpawnExecutor")
 
 local P_MIN = 0.05
+
+local function dto_ok(reason, detail)
+  return {
+    ok = true,
+    result = "OK",
+    reason = reason,
+    detail = detail,
+  }
+end
+
+local function dto_skip(reason, detail)
+  return {
+    ok = true,
+    result = "SKIP",
+    reason = reason,
+    detail = detail,
+  }
+end
 
 local function resolve_surface(entry)
   if entry == nil then
@@ -157,46 +176,52 @@ end
 
 local function log_step_start(entry, unit_count)
   Logger.info({
-    "[BreedingDemolisher][WILD][Step][START]",
-    " surface=", tostring(entry.surface_name),
-    " representative_chunk={", tostring(entry.representative_chunk_x), ",", tostring(entry.representative_chunk_y), "}",
-    " unit_count=", tostring(unit_count),
+    event = "WILD_REPRODUCTION_STEP_START",
+    surface = entry.surface_name,
+    representative_chunk_x = entry.representative_chunk_x,
+    representative_chunk_y = entry.representative_chunk_y,
+    unit_count = unit_count,
   })
 end
 
 local function log_step_end(entry, spawned_count)
   Logger.info({
-    "[BreedingDemolisher][WILD][Step][END]",
-    " surface=", tostring(entry.surface_name),
-    " representative_chunk={", tostring(entry.representative_chunk_x), ",", tostring(entry.representative_chunk_y), "}",
-    " spawned_count=", tostring(spawned_count),
+    event = "WILD_REPRODUCTION_STEP_END",
+    surface = entry.surface_name,
+    representative_chunk_x = entry.representative_chunk_x,
+    representative_chunk_y = entry.representative_chunk_y,
+    spawned_count = spawned_count,
   })
 end
 
 local function log_suppress(reason_code, entry)
   Logger.info({
-    "[BreedingDemolisher][WILD][Suppress][OK]",
-    " reason=", tostring(reason_code),
-    " surface=", tostring(entry.surface_name),
-    " representative_chunk={", tostring(entry.representative_chunk_x), ",", tostring(entry.representative_chunk_y), "}",
+    event = "WILD_REPRODUCTION_SUPPRESS",
+    result = "OK",
+    reason = reason_code,
+    surface = entry.surface_name,
+    representative_chunk_x = entry.representative_chunk_x,
+    representative_chunk_y = entry.representative_chunk_y,
   })
 end
 
 local function log_mutation_success(parent_name, spawned_name, evolution_factor)
   Logger.info({
-    "[BreedingDemolisher][WILD][Mutation][OK]",
-    " parent_entity=", tostring(parent_name),
-    " spawned_entity=", tostring(spawned_name),
-    " evolution_factor=", tostring(evolution_factor),
+    event = "WILD_REPRODUCTION_MUTATION",
+    result = "OK",
+    parent_entity = parent_name,
+    spawned_entity = spawned_name,
+    evolution_factor = evolution_factor,
   })
 end
 
 local function log_spawn_success(surface_name, spawned_name, quality_id)
   Logger.info({
-    "[BreedingDemolisher][WILD][Spawn][OK]",
-    " surface=", tostring(surface_name),
-    " entity_name=", tostring(spawned_name),
-    " quality=", tostring(quality_id),
+    event = "WILD_REPRODUCTION_SPAWN",
+    result = "OK",
+    surface = surface_name,
+    entity_name = spawned_name,
+    quality = quality_id,
   })
 end
 
@@ -254,6 +279,7 @@ end
 --- Responsibility:
 ---   step_index に対応する 1 territory 分の execution を行う。
 --- @param step_index uint
+--- @return table ResultDTO
 function WildReproductionExecutionService.execute_step(step_index)
   if type(step_index) ~= "number" then
     error("WildReproductionExecutionService.execute_step: step_index must be a number")
@@ -261,12 +287,17 @@ function WildReproductionExecutionService.execute_step(step_index)
 
   local entry = WildReproductionPlanStore.get_entry(step_index)
   if entry == nil then
-    return
+    return dto_skip("WILD_REPRODUCTION_EXECUTION:NO_ENTRY", {
+      step_index = step_index,
+    })
   end
 
   local surface = resolve_surface(entry)
   if surface == nil or surface.valid == false then
-    return
+    return dto_skip("WILD_REPRODUCTION_EXECUTION:SURFACE_UNAVAILABLE", {
+      step_index = step_index,
+      surface_name = entry.surface_name,
+    })
   end
 
   local territory = TerritoryQueryService.resolve_territory_from_representative_chunk(
@@ -275,7 +306,12 @@ function WildReproductionExecutionService.execute_step(step_index)
     entry.representative_chunk_y
   )
   if territory == nil then
-    return
+    return dto_skip("WILD_REPRODUCTION_EXECUTION:TERRITORY_UNAVAILABLE", {
+      step_index = step_index,
+      surface_name = entry.surface_name,
+      representative_chunk_x = entry.representative_chunk_x,
+      representative_chunk_y = entry.representative_chunk_y,
+    })
   end
 
   local units = get_sorted_units(territory)
@@ -283,7 +319,13 @@ function WildReproductionExecutionService.execute_step(step_index)
 
   if #units == 0 then
     log_step_end(entry, 0)
-    return
+    return dto_skip("WILD_REPRODUCTION_EXECUTION:NO_UNITS", {
+      step_index = step_index,
+      surface_name = entry.surface_name,
+      representative_chunk_x = entry.representative_chunk_x,
+      representative_chunk_y = entry.representative_chunk_y,
+      spawned_count = 0,
+    })
   end
 
   local evolution_factor = resolve_enemy_evolution_factor(surface)
@@ -309,6 +351,13 @@ function WildReproductionExecutionService.execute_step(step_index)
   end
 
   log_step_end(entry, spawned_count)
+  return dto_ok("WILD_REPRODUCTION_EXECUTION:EXECUTED", {
+    step_index = step_index,
+    surface_name = entry.surface_name,
+    representative_chunk_x = entry.representative_chunk_x,
+    representative_chunk_y = entry.representative_chunk_y,
+    spawned_count = spawned_count,
+  })
 end
 
 return WildReproductionExecutionService

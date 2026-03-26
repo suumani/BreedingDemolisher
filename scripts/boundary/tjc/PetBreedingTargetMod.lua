@@ -1,17 +1,19 @@
 -- __BreedingDemolisher__/scripts/boundary/tjc/PetBreedingTargetMod.lua
 -- ------------------------------------------------------------
 -- Responsibility:
---   Pet Breeding job の TJC 向け target module として、
---   mod_key と planning / execution の委譲入口を提供する。
+--   Pet Breeding job の TJC 向け target module。
+--   - mod_key を定義する。
+--   - planning_request を PlanningService へ委譲する。
+--   - execution_request を ExecutionService へ委譲する。
 --
 -- Scope:
 --   - mod_key 定義
---   - planning_request の処理委譲
---   - execution_request の処理委譲
+--   - planning_request の委譲
+--   - execution_request の委譲
 --
 -- Notes:
---   - script.on_event 登録は行わない。
---   - 実イベント接続は BreedingDemolisherTjcGateway が担う。
+--   - script.on_event の登録は行わない。
+--   - 実イベント接続は BreedingDemolisherTjcGateway が担当する。
 -- ------------------------------------------------------------
 local PetBreedingTargetMod = {}
 
@@ -29,7 +31,7 @@ function PetBreedingTargetMod.handle_planning_request(cycle_tick)
 end
 
 function PetBreedingTargetMod.handle_execution_request(step_index)
-  PetBreedingExecutionService.execute_step(step_index)
+  return PetBreedingExecutionService.execute_step(step_index)
 end
 
 return PetBreedingTargetMod

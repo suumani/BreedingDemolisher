@@ -1,9 +1,12 @@
--- __BreedingDemolisher__/scripts/services/MyDemolisherGettingHangryService.lua
--- ----------------------------
+-- __BreedingDemolisher__/scripts/domain/pet/MyDemolisherGettingHangryService.lua
+-- ------------------------------------------------------------
 -- Responsibility:
---   Advance pet hunger/aging state once per tick cadence and kill pets that reach death conditions.
--- ----------------------------
-
+--   pet の hunger / aging 状態を定期更新し、
+--   死亡条件に達した pet を死亡させる。
+--
+-- Notes:
+--   - storage shape は bootstrap 済み前提で扱い、このクラスでは自動生成しない。
+-- ------------------------------------------------------------
 local MyDemolisherGettingHangryService = {}
 
 function MyDemolisherGettingHangryService.my_demolisher_getting_hangry()
@@ -11,7 +14,7 @@ function MyDemolisherGettingHangryService.my_demolisher_getting_hangry()
     error("MyDemolisherGettingHangryService: storage is nil")
   end
   if storage.my_demolishers == nil then
-    error("MyDemolisherGettingHangryService: storage.my_demolishers is nil. Call StorageInitializer.init_all() first.")
+    error("MyDemolisherGettingHangryService: storage.my_demolishers is nil. Call StorageBootstrap.bootstrap() first.")
   end
 
   if #storage.my_demolishers == 0 then

@@ -9,6 +9,8 @@
 --     4: epic
 --     5+: legendary
 -- ----------------------------
+local CONST_QUALITY = require("scripts.defines.constant_quality")
+
 local Q = {}
 
 function Q.to_item_quality_name(q)

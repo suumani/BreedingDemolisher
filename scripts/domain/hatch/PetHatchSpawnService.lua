@@ -19,6 +19,7 @@
 -- ------------------------------------------------------------
 local SpawnClampPolicy = require("scripts.domain.hatch.SpawnClampPolicy")
 local Customparam = require("scripts.common.customparam")
+local CONST_DEMOLISHER_PARAMETER = require("scripts.defines.constant_demolisher_parameters")
 
 local PetHatchSpawnService = {}
 
@@ -27,19 +28,19 @@ local function expect_storage_shape()
     error("PetHatchSpawnService: storage is nil")
   end
   if storage.my_demolishers == nil then
-    error("PetHatchSpawnService: storage.my_demolishers is nil. Call StorageInitializer.init_all() first.")
+    error("PetHatchSpawnService: storage.my_demolishers is nil. Call StorageBootstrap.bootstrap() first.")
   end
   if storage.bd_next_pet_id == nil then
-    error("PetHatchSpawnService: storage.bd_next_pet_id is nil. Call StorageInitializer.init_all() first.")
+    error("PetHatchSpawnService: storage.bd_next_pet_id is nil. Call StorageBootstrap.bootstrap() first.")
   end
   if storage.bd == nil then
-    error("PetHatchSpawnService: storage.bd is nil. Call StorageInitializer.init_all() first.")
+    error("PetHatchSpawnService: storage.bd is nil. Call StorageBootstrap.bootstrap() first.")
   end
   if storage.bd.pet_destroy_reg_to_pet_id == nil then
-    error("PetHatchSpawnService: storage.bd.pet_destroy_reg_to_pet_id is nil. Call StorageInitializer.init_all() first.")
+    error("PetHatchSpawnService: storage.bd.pet_destroy_reg_to_pet_id is nil. Call StorageBootstrap.bootstrap() first.")
   end
   if storage.bd.pet_id_to_destroy_reg == nil then
-    error("PetHatchSpawnService: storage.bd.pet_id_to_destroy_reg is nil. Call StorageInitializer.init_all() first.")
+    error("PetHatchSpawnService: storage.bd.pet_id_to_destroy_reg is nil. Call StorageBootstrap.bootstrap() first.")
   end
 end
 
@@ -99,7 +100,9 @@ function PetHatchSpawnService.spawn_from_throw(player, egg, customparam)
   })
 
   if not (entity and entity.valid) then
-    game.print("No space to hatch here.")
+    if player ~= nil and player.valid then
+      player.print("No space to hatch here.")
+    end
     return nil
   end
 
@@ -123,7 +126,6 @@ function PetHatchSpawnService.spawn_from_throw(player, egg, customparam)
   local home_pos = { x = entity.position.x, y = entity.position.y }
 
   table.insert(storage.my_demolishers, {
-    -- stable identity
     pet_id = pet_id,
     home_surface_name = home_surface_name,
     home_pos = home_pos,
@@ -131,7 +133,6 @@ function PetHatchSpawnService.spawn_from_throw(player, egg, customparam)
     born_tick = game.tick,
     destroyed_registration_number = destroyed_registration_number,
 
-    -- legacy / compat fields
     surface = entity.surface,
     entity_name = entity.name,
     force = entity.force,

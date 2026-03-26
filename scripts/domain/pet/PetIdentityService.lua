@@ -1,35 +1,38 @@
--- __BreedingDemolisher__/scripts/services/PetIdentityService.lua
--- ----------------------------
+-- __BreedingDemolisher__/scripts/domain/pet/PetIdentityService.lua
+-- ------------------------------------------------------------
 -- Responsibility:
---   Resolve pet identity for demolishers.
---   - Primary: entity reference equality (best during selection/hover)
---   - Secondary: linked_unit_number (legacy bridge)
---   - Recovery: relink by home proximity when link is lost
+--   demolisher entity から pet identity を解決する。
+--   - 第一優先で entity 参照一致により解決する。
+--   - 次に linked_unit_number により解決する。
+--   - link 消失時は home 近傍により relink を試みる。
+--
 -- Notes:
---   - pet_id is the stable identity.
---   - linked_unit_number may change; do not treat it as truth.
---   - storage shape is bootstrap-managed and must already exist.
--- ----------------------------
+--   - pet_id が stable identity である。
+--   - linked_unit_number は変化しうるため、真の identity として扱わない。
+--   - storage shape は bootstrap 済み前提で扱い、このクラスでは自動生成しない。
+-- ------------------------------------------------------------
+local PetIdentityService = {}
 
-local S = {}
+local RELINK_RADIUS_TILES = 80
 
--- Tunables (can be promoted to config later)
-local RELINK_RADIUS_TILES = 80  -- small radius for "near home" relink (tiles)
-
-local function sqr(x) return x * x end
+local function sqr(x)
+  return x * x
+end
 
 local function expect_storage()
   if storage == nil then
     error("PetIdentityService: storage is nil")
   end
   if storage.my_demolishers == nil then
-    error("PetIdentityService: storage.my_demolishers is nil. Call StorageInitializer.init_all() first.")
+    error("PetIdentityService: storage.my_demolishers is nil. Call StorageBootstrap.bootstrap() first.")
   end
 end
 
--- Find by entity reference (strongest signal)
 local function find_by_entity_ref(entity)
-  if not (entity and entity.valid) then return nil end
+  if not (entity and entity.valid) then
+    return nil
+  end
+
   for _, pet in pairs(storage.my_demolishers) do
     local cp = pet.customparam
     local e = cp and cp.entity
@@ -37,23 +40,29 @@ local function find_by_entity_ref(entity)
       return pet
     end
   end
+
   return nil
 end
 
--- Find by linked_unit_number (legacy bridge)
 local function find_by_linked_unit_number(entity)
-  if not (entity and entity.valid and entity.unit_number) then return nil end
+  if not (entity and entity.valid and entity.unit_number) then
+    return nil
+  end
+
   for _, pet in pairs(storage.my_demolishers) do
     if pet.linked_unit_number == entity.unit_number then
       return pet
     end
   end
+
   return nil
 end
 
--- Attempt relink by home proximity
 local function relink_by_home(entity)
-  if not (entity and entity.valid) then return nil end
+  if not (entity and entity.valid) then
+    return nil
+  end
+
   expect_storage()
 
   local sx = entity.position.x
@@ -66,7 +75,6 @@ local function relink_by_home(entity)
       local dx = sx - pet.home_pos.x
       local dy = sy - pet.home_pos.y
       if (dx * dx + dy * dy) <= r2 then
-        -- Relink
         pet.linked_unit_number = entity.unit_number
         if pet.customparam then
           pet.customparam.entity = entity
@@ -79,26 +87,23 @@ local function relink_by_home(entity)
   return nil
 end
 
--- Public: resolve pet for an entity
-function S.resolve(entity)
+function PetIdentityService.resolve(entity)
   expect_storage()
 
-  -- 1) entity ref (best)
   local pet = find_by_entity_ref(entity)
-  if pet then return pet end
+  if pet then
+    return pet
+  end
 
-  -- 2) linked unit_number (bridge)
   pet = find_by_linked_unit_number(entity)
   if pet then
-    -- ensure entity ref is refreshed
     if pet.customparam then
       pet.customparam.entity = entity
     end
     return pet
   end
 
-  -- 3) relink by home
   return relink_by_home(entity)
 end
 
-return S
+return PetIdentityService

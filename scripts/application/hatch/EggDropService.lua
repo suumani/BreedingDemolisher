@@ -1,4 +1,4 @@
--- __BreedingDemolisher__/scripts/services/EggDropService.lua
+-- __BreedingDemolisher__/scripts/application/hatch/EggDropService.lua
 -- ----------------------------
 -- Responsibility:
 --   Drop an egg item onto the ground and attach genes_id via item-with-tags.
@@ -7,12 +7,11 @@
 -- Notes:
 --   - Does not delete genes (GC is out of scope).
 -- ----------------------------
-local EggGenesStore = require("scripts.services.EggGenesStore")
+local EggGenesStore = require("scripts.infrastructure.runtime.EggGenesStore")
 
 local M = {}
 
 function M.drop_egg(surface, position, item_name, item_quality, customparam)
-  -- genes_id is issued only when genetics exists
   local genes_id = nil
   if customparam ~= nil then
     genes_id = EggGenesStore.register(customparam)

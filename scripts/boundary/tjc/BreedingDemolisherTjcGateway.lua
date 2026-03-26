@@ -1,27 +1,28 @@
 -- __BreedingDemolisher__/scripts/boundary/tjc/BreedingDemolisherTjcGateway.lua
 -- ------------------------------------------------------------
 -- Responsibility:
---   Breeding Demolisher 内の複数 target job を、
---   単一の TJC event handler で受けて mod_key に応じて振り分ける。
---
--- Scope:
---   - TJC event id discovery
---   - register_target_mod 送信
---   - planning_request 受信
---   - execution_request 受信
---   - planning_count_report 送信
---   - execution_done_report 送信
---   - 最小限の observability
+--   Breeding Demolisher の TJC 境界窓口。
+--   - TJC の event id を runtime で解決する。
+--   - planning / execution request を mod_key に応じて
+--     対応する TargetMod へ委譲する。
+--   - planning_count_report / execution_done_report を送信する。
+--   - bootstrap 時に runtime event binding と
+--     target mod registration を行う。
 --
 -- Contract:
---   - bootstrap() is called at init / configuration_changed / on_load.
---   - on_load also re-sends register_target_mod, because TJC execution requires
---     target-mod registration after load boundaries.
---   - This module owns runtime event binding and TJC re-registration together.
+--   - bootstrap() は on_init / on_configuration_changed / on_load から呼ばれる。
+--   - on_load でも register_target_mod を再送する。
+--   - 本クラスは runtime event binding と TJC 再登録を担当する。
+--
+-- Notes:
+--   - planning_request / execution_request は TJC 共通 event を購読するため、
+--     他 mod 宛ての payload が到着しうる。
+--   - mod_key が BD 管轄外の場合は異常ではないため、無言で無視する。
+--   - payload 構造不正のみ INVALID としてログ出力する。
 -- ------------------------------------------------------------
 local BreedingDemolisherTjcGateway = {}
 
-local Logger = require("scripts.services.Logger")
+local Logger = require("scripts.infrastructure.logging.Logger")
 
 local WildReproductionTargetMod = require("scripts.boundary.tjc.WildReproductionTargetMod")
 local PetBreedingTargetMod = require("scripts.boundary.tjc.PetBreedingTargetMod")
@@ -32,24 +33,6 @@ local TARGETS = {
   [WildReproductionTargetMod.get_mod_key()] = WildReproductionTargetMod,
   [PetBreedingTargetMod.get_mod_key()] = PetBreedingTargetMod,
 }
-
-local function dto_ok(reason, detail)
-  return {
-    ok = true,
-    result = "OK",
-    reason = reason,
-    detail = detail,
-  }
-end
-
-local function dto_fail(reason, detail)
-  return {
-    ok = false,
-    result = "FAIL",
-    reason = reason,
-    detail = detail,
-  }
-end
 
 local function get_event_ids()
   if EVENT_IDS ~= nil then
@@ -69,17 +52,60 @@ local function refresh_event_ids()
   return get_event_ids()
 end
 
-local function log_info(event_name, dto)
+local function log_register(mod_key)
   Logger.info({
-    event = event_name,
-    dto = dto,
+    event = "BD_TJC_REGISTER_TARGET_MOD",
+    result = "OK",
+    reason = "TJC:REGISTER_TARGET_MOD",
+    mod_key = mod_key,
   })
 end
 
-local function log_register(mod_key)
-  log_info("BD_TJC_REGISTER_TARGET_MOD", dto_ok("TJC:REGISTER_TARGET_MOD", {
+local function log_invalid_payload(event_name, reason, detail)
+  Logger.info({
+    event = event_name,
+    result = "FAIL",
+    reason = reason,
+    error = detail and detail.error or nil,
+    mod_key = detail and detail.mod_key or nil,
+    mod_key_type = detail and detail.mod_key_type or nil,
+    payload_type = detail and detail.payload_type or nil,
+    cycle_tick = detail and detail.cycle_tick or nil,
+    cycle_tick_type = detail and detail.cycle_tick_type or nil,
+    step_index = detail and detail.step_index or nil,
+    step_index_type = detail and detail.step_index_type or nil,
+  })
+end
+
+local function log_planning_result(mod_key, cycle_tick, planning_dto, count)
+  Logger.info({
+    event = "BD_TJC_PLANNING_RESULT",
     mod_key = mod_key,
-  }))
+    cycle_tick = cycle_tick,
+    ok = planning_dto and planning_dto.ok or nil,
+    result = planning_dto and planning_dto.result or nil,
+    reason = planning_dto and planning_dto.reason or nil,
+    count = count,
+  })
+end
+
+local function log_execution_done(mod_key, step_index)
+  Logger.info({
+    event = "BD_TJC_EXECUTION_DONE",
+    result = "OK",
+    reason = "TJC:EXECUTION_DONE",
+    mod_key = mod_key,
+    step_index = step_index,
+  })
+end
+
+local function log_bootstrap_skipped()
+  Logger.info({
+    event = "BD_TJC_BOOTSTRAP_SKIPPED",
+    result = "FAIL",
+    reason = "TJC:EVENT_IDS_UNAVAILABLE",
+    action = "BOOTSTRAP_GATEWAY",
+  })
 end
 
 local function raise_planning_count_report(mod_key, count)
@@ -122,34 +148,76 @@ local function coerce_planning_count(planning_dto)
   return planning_dto.detail.count
 end
 
-local function on_planning_request(event)
-  local payload = event
+local function resolve_target_from_payload(payload, event_name)
+  if type(payload) ~= "table" then
+    log_invalid_payload(event_name, "TJC:INVALID_PAYLOAD", {
+      error = "payload_not_table",
+      payload_type = type(payload),
+    })
+    return nil
+  end
+
+  if type(payload.mod_key) ~= "string" or payload.mod_key == "" then
+    log_invalid_payload(event_name, "TJC:INVALID_PAYLOAD", {
+      error = "mod_key_invalid",
+      mod_key_type = type(payload.mod_key),
+      mod_key = payload.mod_key,
+    })
+    return nil
+  end
+
   local target = TARGETS[payload.mod_key]
   if target == nil then
+    return nil
+  end
+
+  return target
+end
+
+local function on_planning_request(event)
+  local payload = event
+  local target = resolve_target_from_payload(payload, "BD_TJC_PLANNING_REQUEST_INVALID")
+  if target == nil then
+    return
+  end
+
+  if type(payload.cycle_tick) ~= "number" then
+    log_invalid_payload("BD_TJC_PLANNING_REQUEST_INVALID", "TJC:INVALID_PAYLOAD", {
+      error = "cycle_tick_invalid",
+      mod_key = payload.mod_key,
+      cycle_tick_type = type(payload.cycle_tick),
+      cycle_tick = payload.cycle_tick,
+    })
     return
   end
 
   local planning_dto = target.handle_planning_request(payload.cycle_tick)
   local count = coerce_planning_count(planning_dto)
 
-  log_info("BD_TJC_PLANNING_RESULT", planning_dto)
+  log_planning_result(payload.mod_key, payload.cycle_tick, planning_dto, count)
   raise_planning_count_report(payload.mod_key, count)
 end
 
 local function on_execution_request(event)
   local payload = event
-  local target = TARGETS[payload.mod_key]
+  local target = resolve_target_from_payload(payload, "BD_TJC_EXECUTION_REQUEST_INVALID")
   if target == nil then
+    return
+  end
+
+  if type(payload.step_index) ~= "number" then
+    log_invalid_payload("BD_TJC_EXECUTION_REQUEST_INVALID", "TJC:INVALID_PAYLOAD", {
+      error = "step_index_invalid",
+      mod_key = payload.mod_key,
+      step_index_type = type(payload.step_index),
+      step_index = payload.step_index,
+    })
     return
   end
 
   target.handle_execution_request(payload.step_index)
   raise_execution_done_report(payload.mod_key, payload.step_index)
-
-  log_info("BD_TJC_EXECUTION_DONE", dto_ok("TJC:EXECUTION_DONE", {
-    mod_key = payload.mod_key,
-    step_index = payload.step_index,
-  }))
+  log_execution_done(payload.mod_key, payload.step_index)
 end
 
 local function bind_runtime_events(ids)
@@ -169,9 +237,7 @@ end
 function BreedingDemolisherTjcGateway.bootstrap()
   local ids = refresh_event_ids()
   if not ids then
-    log_info("BD_TJC_BOOTSTRAP_SKIPPED", dto_fail("TJC:EVENT_IDS_UNAVAILABLE", {
-      action = "BOOTSTRAP_GATEWAY",
-    }))
+    log_bootstrap_skipped()
     return false
   end
 

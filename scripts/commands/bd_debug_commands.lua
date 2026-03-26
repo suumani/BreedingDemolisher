@@ -1,16 +1,19 @@
 -- __BreedingDemolisher__/scripts/commands/bd_debug_commands.lua
--- ----------------------------
+-- ------------------------------------------------------------
 -- Responsibility:
---   Debug commands for BreedingDemolisher development/testing.
---   - Give a genetic egg (item-with-tags) with bd_genes_id attached.
+--   BreedingDemolisher 開発 / テスト用の debug command を定義する。
+--   - genetic egg (item-with-tags) を付与する。
+--
 -- Notes:
---   - Uses EggGenesStore (genes payload stored in storage).
---   - Does NOT delete genes (no GC).
--- ----------------------------
-
-local EggGenesStore   = require("scripts.services.EggGenesStore")
+--   - genes payload は EggGenesStore に保存する。
+--   - genes の GC は行わない。
+-- ------------------------------------------------------------
+local EggGenesStore = require("scripts.infrastructure.runtime.EggGenesStore")
 local DemolisherNames = require("__Manis_definitions__/scripts/definition/DemolisherNames")
-local Customparam     = require("scripts.common.customparam")
+local Customparam = require("scripts.common.customparam")
+local CONST_DEMOLISHER_PARAMETER = require("scripts.defines.constant_demolisher_parameters")
+local CONST_ITEM_NAME = require("scripts.defines.constant_item_name")
+local CONST_QUALITY = require("scripts.defines.constant_quality")
 
 local function get_player(cmd)
   return cmd.player_index and game.get_player(cmd.player_index) or nil
@@ -18,16 +21,19 @@ end
 
 local function give_stack(player, item_name, quality_name)
   local inv = player.get_main_inventory()
-  if not inv then return nil end
+  if not inv then
+    return nil
+  end
 
   local inserted = inv.insert({
     name = item_name,
     count = 1,
     quality = quality_name,
   })
-  if inserted ~= 1 then return nil end
+  if inserted ~= 1 then
+    return nil
+  end
 
-  -- stack_size=1 前提なので単純走査でOK
   for i = 1, #inv do
     local s = inv[i]
     if s and s.valid_for_read and s.name == item_name
@@ -35,17 +41,18 @@ local function give_stack(player, item_name, quality_name)
       return s
     end
   end
+
   return nil
 end
 
--- /bd_debug_give_genetic_egg [item_name]
--- If item_name omitted -> friend demolisher egg (base)
 commands.add_command(
   "bd_debug_give_genetic_egg",
   "Give a genetic demolisher egg with tags (debug).",
   function(cmd)
     local player = get_player(cmd)
-    if not (player and player.valid) then return end
+    if not (player and player.valid) then
+      return
+    end
 
     if not (Customparam and Customparam.new) then
       player.print("Customparam.new is not available.")
@@ -60,13 +67,11 @@ commands.add_command(
     local q = CONST_QUALITY.NORMAL
 
     local customparam = Customparam.new(
-      nil,                    -- entity (will be set on hatch)
+      nil,
       DemolisherNames.SMALL,
       nil, nil, nil, nil, nil,
-      (CONST_DEMOLISHER_PARAMETER
-        and CONST_DEMOLISHER_PARAMETER.DEFAULT_MAX_GROWTH) or 100,
-      (CONST_DEMOLISHER_PARAMETER
-        and CONST_DEMOLISHER_PARAMETER.DEFAULT_MAX_SATIETY) or 100,
+      CONST_DEMOLISHER_PARAMETER.DEFAULT_MAX_GROWTH,
+      CONST_DEMOLISHER_PARAMETER.DEFAULT_MAX_SATIETY,
       nil,
       game.tick
     )

@@ -16,7 +16,7 @@
 --   - storage shape は bootstrap 済み前提で扱い、この境界では自動生成しない。
 -- ------------------------------------------------------------
 local DemolisherNames = require("__Manis_definitions__/scripts/definition/DemolisherNames")
-local Logger = require("scripts.services.Logger")
+local Logger = require("scripts.infrastructure.logging.Logger")
 
 local DEMOLISHER_NAME_SET = {}
 do
@@ -30,7 +30,7 @@ local function expect_storage()
     error("on_entity_died: storage is nil")
   end
   if storage.my_demolishers == nil then
-    error("on_entity_died: storage.my_demolishers is nil. Call StorageInitializer.init_all() first.")
+    error("on_entity_died: storage.my_demolishers is nil. Call StorageBootstrap.bootstrap() first.")
   end
 end
 
@@ -49,7 +49,7 @@ local function handle_enemy_except_demolisher_dead(entity)
   end
 
   local nearest_pet = nil
-  local nearest_dist2 = 900 -- 30 tiles squared
+  local nearest_dist2 = 900
 
   for _, pet in ipairs(pets) do
     local cp = pet.customparam
@@ -102,7 +102,7 @@ script.on_event(defines.events.on_entity_died, function(event)
   local ok, err = pcall(on_entity_died_handler, event)
   if not ok then
     Logger.error({
-      event = "on_entity_died",
+      event = "ON_ENTITY_DIED_FAILED",
       error = tostring(err),
       tick = game and game.tick or nil,
       entity_name = event and event.entity and event.entity.valid and event.entity.name or nil,

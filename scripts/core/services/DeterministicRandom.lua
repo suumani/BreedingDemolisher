@@ -1,67 +1,64 @@
 -- __BreedingDemolisher__/scripts/core/services/DeterministicRandom.lua
 -- ------------------------------------------------------------
--- 責務:
---   Factorio公式の同期乱数(LuaRandomGenerator)を使い、
---   math.random互換APIを提供する。
+-- Responsibility:
+--   Factorio 公式の同期乱数 (LuaRandomGenerator) を使い、
+--   math.random 互換 API を提供する。
 --
--- 方針:
---   - グローバルRNGは map seed に依存させる。
---   - storage は Mod ごとに独立だが、bd 内の一貫性のため
---     RNG は storage.bd 配下に保持する。
---
--- Policy alignment:
---   - init() is mandatory in bootstrap (ImmediateInitializer).
---   - Runtime must NOT silently self-heal missing init; missing init is a precondition violation (error()).
+-- Policy:
+--   - グローバル RNG は map seed に依存させる。
+--   - RNG は storage.bd 配下に保持する。
+--   - init() は bootstrap で必ず呼ばれる。
+--   - runtime は missing init / missing storage root を自己修復しない。
+--     前提違反として error() する。
 -- ------------------------------------------------------------
 local DeterministicRandom = {}
 
-local function bd_root()
-  if not storage then
+local function expect_bd_root()
+  if storage == nil then
     error("DeterministicRandom: storage is not available.")
   end
-  storage.bd = storage.bd or {}
+  if storage.bd == nil then
+    error("DeterministicRandom: storage.bd is nil. Call StorageBootstrap.bootstrap() before DeterministicRandom.init().")
+  end
   return storage.bd
 end
 
 --- init()
---- 責務:
----   storage に同期乱数生成器を確実に用意する
----   （on_init/on_configuration_changedから呼ぶ）
+--- Responsibility:
+---   bootstrap 時に同期乱数生成器を初期化する。
 function DeterministicRandom.init()
-  local bd = bd_root()
+  local bd = expect_bd_root()
 
-  if not bd._det_rand_rng then
-    -- seed無し → map seed に基づく RNG
+  if bd._det_rand_rng == nil then
     bd._det_rand_rng = game.create_random_generator()
   end
 end
 
 --- _rng()
---- 責務:
+--- Responsibility:
 ---   初期化済みの RNG を取得する。
----   未初期化は前提違反として error()（黙って生成しない）。
+---   未初期化は前提違反として error() する。
 local function _rng()
-  local bd = bd_root()
+  local bd = expect_bd_root()
 
-  if not bd._det_rand_rng then
-    error("DeterministicRandom: RNG is not initialized. Call DeterministicRandom.init() in ImmediateInitializer.")
+  if bd._det_rand_rng == nil then
+    error("DeterministicRandom: RNG is not initialized. Call BreedingDemolisherBootstrap.run_full_bootstrap() first.")
   end
   return bd._det_rand_rng
 end
 
 --- create_generator(seed)
---- 責務:
----   seed 指定のローカルRNG(LuaRandomGenerator)を生成して返す。
+--- Responsibility:
+---   seed 指定のローカル RNG (LuaRandomGenerator) を生成して返す。
 --- Notes:
----   - storage を汚さない（局所用途）。
----   - rng() は [0,1) の実数を返す。
+---   - storage は変更しない。
 function DeterministicRandom.create_generator(seed)
   return game.create_random_generator(seed)
 end
 
 --- random([min], [max])
---- 責務:
----   math.random互換。
+--- Responsibility:
+---   math.random 互換。
 ---   - random() -> [0, 1) の実数
 ---   - random(max) / random(min,max) -> 整数（両端含む）
 function DeterministicRandom.random(a, b)

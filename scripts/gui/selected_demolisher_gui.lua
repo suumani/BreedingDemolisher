@@ -16,7 +16,7 @@
 local M = {}
 
 local DemolisherNames = require("__Manis_definitions__/scripts/definition/DemolisherNames")
-local PetIdentityService = require("scripts.services.PetIdentityService")
+local PetIdentityService = require("scripts.domain.pet.PetIdentityService")
 
 -- traits table -> localization key mapping
 local trait_locale_keys = {

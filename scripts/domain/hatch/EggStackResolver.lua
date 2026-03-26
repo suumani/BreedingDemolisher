@@ -1,9 +1,10 @@
--- __BreedingDemolisher__/scripts/services/EggStackResolver.lua
+-- __BreedingDemolisher__/scripts/domain/hatch/EggStackResolver.lua
 -- ----------------------------
 -- Responsibility:
 --   Parse cursor_stack and return normalized egg info for hatching.
 -- ----------------------------
 local DemolisherNames = require("__Manis_definitions__/scripts/definition/DemolisherNames")
+local CONST_QUALITY = require("scripts.defines.constant_quality")
 
 local R = {}
 
@@ -37,7 +38,7 @@ local function resolve_size(item_name)
 end
 
 local function resolve_force(item_name, player)
-  if item_name:find("new%-spieces", 1, false) then
+  if item_name:find("new%-spieces%-", 1, false) then
     return "demolishers"
   elseif item_name:find("friend", 1, true) then
     return player.force

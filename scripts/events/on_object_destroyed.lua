@@ -17,24 +17,24 @@
 --   - pcall は event boundary にのみ配置し、失敗は Logger へ明示記録する。
 --   - storage shape は bootstrap 済み前提で扱い、この境界では自動生成しない。
 -- ------------------------------------------------------------
-local NotificationService = require("scripts.services.NotificationService")
-local Logger = require("scripts.services.Logger")
+local NotificationService = require("scripts.boundary.notification.NotificationService")
+local Logger = require("scripts.infrastructure.logging.Logger")
 
 local function expect_destroy_storage()
   if storage == nil then
     error("on_object_destroyed: storage is nil")
   end
   if storage.bd == nil then
-    error("on_object_destroyed: storage.bd is nil. Call StorageInitializer.init_all() first.")
+    error("on_object_destroyed: storage.bd is nil. Call StorageBootstrap.bootstrap() first.")
   end
   if storage.bd.pet_destroy_reg_to_pet_id == nil then
-    error("on_object_destroyed: storage.bd.pet_destroy_reg_to_pet_id is nil. Call StorageInitializer.init_all() first.")
+    error("on_object_destroyed: storage.bd.pet_destroy_reg_to_pet_id is nil. Call StorageBootstrap.bootstrap() first.")
   end
   if storage.bd.pet_id_to_destroy_reg == nil then
-    error("on_object_destroyed: storage.bd.pet_id_to_destroy_reg is nil. Call StorageInitializer.init_all() first.")
+    error("on_object_destroyed: storage.bd.pet_id_to_destroy_reg is nil. Call StorageBootstrap.bootstrap() first.")
   end
   if storage.my_demolishers == nil then
-    error("on_object_destroyed: storage.my_demolishers is nil. Call StorageInitializer.init_all() first.")
+    error("on_object_destroyed: storage.my_demolishers is nil. Call StorageBootstrap.bootstrap() first.")
   end
 end
 
@@ -92,7 +92,7 @@ script.on_event(defines.events.on_object_destroyed, function(event)
   local ok, err = pcall(on_object_destroyed_handler, event)
   if not ok then
     Logger.error({
-      event = "on_object_destroyed",
+      event = "ON_OBJECT_DESTROYED_FAILED",
       error = tostring(err),
       tick = game and game.tick or nil,
       registration_number = event and event.registration_number or nil,

@@ -14,6 +14,7 @@
 -- Notes:
 --   - storage.my_demolishers は辞書 table を許容する。
 --   - planning count は plan entry 数を意味する。
+--   - storage shape は bootstrap 済み前提で扱い、この層では自動生成しない。
 -- ------------------------------------------------------------
 local PetBreedingPlanningService = {}
 
@@ -47,8 +48,19 @@ local function build_detail(cycle_tick, total_pet_count, planned_pet_count, coun
   }
 end
 
+local function expect_storage_shape()
+  if storage == nil then
+    error("PetBreedingPlanningService: storage is nil")
+  end
+  if storage.my_demolishers == nil then
+    error("PetBreedingPlanningService: storage.my_demolishers is nil. Call StorageBootstrap.bootstrap() first.")
+  end
+end
+
 local function get_sorted_pet_entries()
-  local pets = storage.my_demolishers or {}
+  expect_storage_shape()
+
+  local pets = storage.my_demolishers
   local entries = {}
   local total_pet_count = 0
   local planned_pet_count = 0

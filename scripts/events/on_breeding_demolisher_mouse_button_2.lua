@@ -3,7 +3,7 @@
 -- Responsibility:
 --   Bind custom input event to EggThrowHatchService.
 -- ----------------------------
-local EggThrowHatchService = require("scripts.services.EggThrowHatchService")
+local EggThrowHatchService = require("scripts.application.hatch.EggThrowHatchService")
 
 script.on_event("on_breeding_demolisher_mouse_button_2", function(event)
   EggThrowHatchService.handle(event)

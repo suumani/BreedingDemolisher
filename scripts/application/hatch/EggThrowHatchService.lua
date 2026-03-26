@@ -1,4 +1,4 @@
--- __BreedingDemolisher__/scripts/services/EggThrowHatchService.lua
+-- __BreedingDemolisher__/scripts/application/hatch/EggThrowHatchService.lua
 -- ------------------------------------------------------------
 -- Responsibility:
 --   Use-case: Throw an egg (cursor_stack) to hatch a demolisher.
@@ -14,11 +14,11 @@
 --   - tags 無し卵は「遺伝子なし孵化」として扱う
 --   - legacy queue fallback は持たない
 -- ------------------------------------------------------------
-local EggGenesStore = require("scripts.services.EggGenesStore")
-local EggStackResolver = require("scripts.services.EggStackResolver")
+local EggGenesStore = require("scripts.infrastructure.runtime.EggGenesStore")
+local EggStackResolver = require("scripts.domain.hatch.EggStackResolver")
 local PetHatchSpawnService = require("scripts.domain.hatch.PetHatchSpawnService")
-local PetChartJobService = require("scripts.services.PetChartJobService")
-local HatchMessageService = require("scripts.services.HatchMessageService")
+local PetChartJobService = require("scripts.core.pet_chart.PetChartJobService")
+local HatchMessageService = require("scripts.boundary.hatch.HatchMessageService")
 
 local EggThrowHatchService = {}
 
@@ -50,7 +50,6 @@ function EggThrowHatchService.handle(event)
     return
   end
 
-  -- 1280x1280 => radius 640 tiles
   PetChartJobService.enqueue(entity.surface, entity.position, player.force.name, 640)
 
   HatchMessageService.hatched(egg.genes_id)

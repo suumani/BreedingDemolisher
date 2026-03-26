@@ -13,8 +13,8 @@
 --   - Wild Reproduction は扱わない。
 --   - pcall は event boundary にのみ配置し、失敗は Logger へ明示記録する。
 -- ------------------------------------------------------------
-local MyDemolisherGettingHangryService = require("scripts.services.MyDemolisherGettingHangryService")
-local Logger = require("scripts.services.Logger")
+local MyDemolisherGettingHangryService = require("scripts.domain.pet.MyDemolisherGettingHangryService")
+local Logger = require("scripts.infrastructure.logging.Logger")
 
 local function on_nth_tick_1min_handler(_event)
   MyDemolisherGettingHangryService.my_demolisher_getting_hangry()
@@ -24,7 +24,7 @@ script.on_nth_tick(3600, function(event)
   local ok, err = pcall(on_nth_tick_1min_handler, event)
   if not ok then
     Logger.error({
-      event = "on_nth_tick_1min",
+      event = "ON_NTH_TICK_1MIN_FAILED",
       error = tostring(err),
       tick = game and game.tick or nil,
       nth_tick = 3600,

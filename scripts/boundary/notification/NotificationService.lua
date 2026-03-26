@@ -1,4 +1,4 @@
--- __BreedingDemolisher__/scripts/services/NotificationService.lua
+-- __BreedingDemolisher__/scripts/boundary/notification/NotificationService.lua
 -- ----------------------------
 -- Responsibility:
 --   Centralized user-facing notifications (localized).
