@@ -1,6 +1,6 @@
 {
   "name": "BreedingDemolisher",
-  "version": "0.6.8",
+  "version": "1.0.0",
   "factorio_version": "2.0",
   "title": "Breeding Demolisher",
   "author": "suumani",
@@ -11,10 +11,10 @@
     "elevated-rails >= 2.0.0",
     "quality >= 2.0.0",
     "space-age >= 2.0.0",
-    "Manis_lib >= 0.1.9",
-    "Manis_definitions >= 0.1.0",
-    "DemolisherMemoryExtension >= 0.0.1",
-    "ManisTotalJobController >= 0.0.1",
-    "ManisDemolisherLib >= 0.0.4"
+    "Manis_lib >= 1.0.0",
+    "Manis_definitions >= 1.0.0",
+    "DemolisherMemoryExtension >= 1.0.0",
+    "ManisTotalJobController >= 1.0.0",
+    "ManisDemolisherLib >= 1.0.0"
   ]
 }
