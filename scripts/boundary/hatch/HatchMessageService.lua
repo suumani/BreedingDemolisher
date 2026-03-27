@@ -8,14 +8,14 @@
 local HatchMessageService = {}
 
 function HatchMessageService.shattered()
-  game.print("shattered...")
+  game.print({ "bd.message.hatch_shattered" })
 end
 
 function HatchMessageService.hatched(genes_id)
   if genes_id ~= nil then
-    game.print("Hatched (genetic: " .. tostring(genes_id) .. ")")
+    game.print({ "bd.message.hatch_hatched_with_genes", tostring(genes_id) })
   else
-    game.print("Hatched (wild)")
+    game.print({ "bd.message.hatch_hatched_unknown_genes" })
   end
 end
 
