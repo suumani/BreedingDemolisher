@@ -12,6 +12,7 @@
 --   - population suppress 判定
 --   - spawn orchestration
 --   - observability 出力
+--   - wild reproduction 30分統計への成功件数加算
 --
 -- Notes:
 --   - execution step は 1 territory = 1 step
@@ -28,6 +29,7 @@ local DeterministicRandom = require("scripts.core.services.DeterministicRandom")
 local Logger = require("scripts.infrastructure.logging.Logger")
 
 local WildReproductionPlanStore = require("scripts.infrastructure.runtime.WildReproductionPlanStore")
+local WildReproductionStatsStore = require("scripts.infrastructure.runtime.WildReproductionStatsStore")
 local TerritoryQueryService = require("scripts.domain.reproduction.TerritoryQueryService")
 local PopulationControlService = require("scripts.domain.reproduction.PopulationControlService")
 local SpawnEntityResolver = require("scripts.domain.reproduction.SpawnEntityResolver")
@@ -348,6 +350,10 @@ function WildReproductionExecutionService.execute_step(step_index)
         break
       end
     end
+  end
+
+  if spawned_count > 0 then
+    WildReproductionStatsStore.add(spawned_count)
   end
 
   log_step_end(entry, spawned_count)
