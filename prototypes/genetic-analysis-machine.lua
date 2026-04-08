@@ -20,6 +20,7 @@ data:extend({
         type = "container",
         name = "genetic-analysis-machine",
         icon = "__BreedingDemolisher__/graphics/icon/genetic-analysis-machine.png",
+        enabled = false,
         icon_size = 64,
         flags = {"placeable-neutral", "placeable-player", "player-creation"},
         minable = {mining_time = 0.5, result = "genetic-analysis-machine"},

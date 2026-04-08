@@ -12,6 +12,7 @@
 --   - territory が再解決できない entry は skip する。
 --   - segmented unit の生成は LuaSurface.create_segmented_unit を使用する。
 --   - quality は enemy evolution factor と deterministic random に基づき再抽選する。
+--   - spawn position には撃破時に保存した座標を使用する。
 -- ------------------------------------------------------------
 local DelayedWildRespawnService = {}
 
@@ -67,7 +68,13 @@ local function resolve_respawn_quality_id(surface)
   return quality_id, evolution_factor, roll_value, quality_steps
 end
 
-local function spawn_segmented_unit(surface, territory, entity_name, quality_id)
+local function is_valid_position(position)
+  return type(position) == "table"
+    and type(position.x) == "number"
+    and type(position.y) == "number"
+end
+
+local function spawn_segmented_unit(surface, territory, entity_name, position, quality_id)
   if surface == nil or surface.valid == false then
     return nil
   end
@@ -75,6 +82,9 @@ local function spawn_segmented_unit(surface, territory, entity_name, quality_id)
     return nil
   end
   if type(entity_name) ~= "string" or entity_name == "" then
+    return nil
+  end
+  if is_valid_position(position) ~= true then
     return nil
   end
   if type(quality_id) ~= "string" or quality_id == "" then
@@ -85,6 +95,10 @@ local function spawn_segmented_unit(surface, territory, entity_name, quality_id)
     name = entity_name,
     force = "enemy",
     territory = territory,
+    position = {
+      x = position.x,
+      y = position.y,
+    },
     quality = quality_id,
   }
 end
@@ -116,13 +130,28 @@ local function process_due_entry(entry)
     return
   end
 
+  if is_valid_position(entry.position) ~= true then
+    Logger.warn({
+      event = "BD_DELAYED_WILD_RESPAWN_SKIP",
+      reason = "POSITION_UNAVAILABLE",
+      surface = surface.name,
+      entity_name = entry.entity_name,
+      chunk_x = entry.chunk_x,
+      chunk_y = entry.chunk_y,
+      due_tick = entry.due_tick,
+    })
+    return
+  end
+
   local quality_id, evolution_factor, roll_value, quality_steps = resolve_respawn_quality_id(surface)
-  local unit = spawn_segmented_unit(surface, territory, entry.entity_name, quality_id)
+  local unit = spawn_segmented_unit(surface, territory, entry.entity_name, entry.position, quality_id)
 
   Logger.info({
     event = "BD_DELAYED_WILD_RESPAWN_RESULT",
     surface = surface.name,
     entity_name = entry.entity_name,
+    position_x = entry.position.x,
+    position_y = entry.position.y,
     chunk_x = entry.chunk_x,
     chunk_y = entry.chunk_y,
     due_tick = entry.due_tick,

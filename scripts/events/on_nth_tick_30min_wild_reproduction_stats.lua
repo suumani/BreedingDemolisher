@@ -8,12 +8,24 @@
 --
 -- Notes:
 --   - 件数が0でも必ず表示する。
+--   - vulcanus の (0, 0) chunk が generated になるまでは何もしない。
+--   - 未到着期間は統計表示対象外とし、統計もリセットしない。
 --   - 本イベントは TJC や job chain に依存しない。
 -- ------------------------------------------------------------
 local Logger = require("scripts.infrastructure.logging.Logger")
 local WildReproductionStatsStore = require("scripts.infrastructure.runtime.WildReproductionStatsStore")
 
 local TICKS_PER_30MIN = 60 * 60 * 30
+local VULCANUS_SURFACE_NAME = "vulcanus"
+
+local function is_vulcanus_opened()
+  local surface = game.surfaces[VULCANUS_SURFACE_NAME]
+  if surface == nil or surface.valid == false then
+    return false
+  end
+
+  return surface.is_chunk_generated({ x = 0, y = 0 })
+end
 
 local function resolve_message(count)
   if count == 0 then
@@ -24,6 +36,10 @@ local function resolve_message(count)
 end
 
 local function on_nth_tick_30min(_event)
+  if is_vulcanus_opened() ~= true then
+    return
+  end
+
   local count = WildReproductionStatsStore.get_count()
   local message = resolve_message(count)
 

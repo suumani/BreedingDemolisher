@@ -12,6 +12,10 @@
 --     entity_name = string,
 --     chunk_x = integer,
 --     chunk_y = integer,
+--     position = {
+--       x = number,
+--       y = number,
+--     },
 --     due_tick = uint,
 --   }
 --
@@ -32,6 +36,15 @@ local function get_queue()
   return storage.bd.delayed_wild_respawn_queue
 end
 
+local function validate_position(position)
+  if type(position) ~= "table" then
+    error("DelayedWildRespawnQueueStore: entry.position must be a table")
+  end
+  if type(position.x) ~= "number" or type(position.y) ~= "number" then
+    error("DelayedWildRespawnQueueStore: entry.position.x / entry.position.y must be numbers")
+  end
+end
+
 local function validate_entry(entry)
   if type(entry) ~= "table" then
     error("DelayedWildRespawnQueueStore: entry must be a table")
@@ -45,6 +58,7 @@ local function validate_entry(entry)
   if type(entry.chunk_x) ~= "number" or type(entry.chunk_y) ~= "number" then
     error("DelayedWildRespawnQueueStore: entry.chunk_x / entry.chunk_y must be numbers")
   end
+  validate_position(entry.position)
   if type(entry.due_tick) ~= "number" then
     error("DelayedWildRespawnQueueStore: entry.due_tick must be a number")
   end
@@ -63,6 +77,10 @@ function DelayedWildRespawnQueueStore.enqueue(entry)
     entity_name = entry.entity_name,
     chunk_x = entry.chunk_x,
     chunk_y = entry.chunk_y,
+    position = {
+      x = entry.position.x,
+      y = entry.position.y,
+    },
     due_tick = entry.due_tick,
   }
 end

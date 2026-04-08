@@ -18,6 +18,7 @@
 --   - entity name / display name は segmented_unit.prototype から取得する。
 --   - body node 先頭座標から chunk を計算して保存する。
 --   - egg drop 位置は body node 先頭座標を使用する。
+--   - delayed respawn 位置には body node 先頭座標を保存する。
 -- ------------------------------------------------------------
 local Logger = require("scripts.infrastructure.logging.Logger")
 local DeterministicRandom = require("scripts.core.services.DeterministicRandom")
@@ -139,6 +140,10 @@ local function on_segmented_unit_died(event)
       entity_name = entity_name,
       chunk_x = chunk_x,
       chunk_y = chunk_y,
+      position = {
+        x = head_pos.x,
+        y = head_pos.y,
+      },
       due_tick = due_tick,
     })
 
@@ -147,6 +152,8 @@ local function on_segmented_unit_died(event)
       surface = surface.name,
       entity_name = entity_name,
       unit_number = segmented_unit.unit_number,
+      position_x = head_pos.x,
+      position_y = head_pos.y,
       chunk_x = chunk_x,
       chunk_y = chunk_y,
       due_tick = due_tick,
